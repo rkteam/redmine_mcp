@@ -1,0 +1,75 @@
+zh:
+  label_redmine_mcp: Redmine MCP
+  text_redmine_mcp_server_instructions: |
+    Redmine MCP 路由规则：
+    - 会话开始时调用 redmine_get_server_info，并根据返回的 capabilities 选择可选工具。
+    - 若工单 ID 未知，请先通过 capabilities.issue_search 搜索，再调用 redmine_get_issue。
+    - 语义、概念或相似度搜索请使用 redmine_get_server_info 报告的 semantic capability（若 available）。遵循 use_when 与 avoid_when。
+    - 关键词、标识符、字段或精确文本搜索请使用 redmine_search_issues。
+    - 若需要语义搜索但 capabilities.issue_search.semantic.available 为 false，请回退到 redmine_search_issues，并说明此次为词法而非语义搜索。
+    - 当 capabilities.issue_search.cross_resource 可用时，使用 redmine_search_all 跨资源发现（含 Wiki）。
+    - 若 project 未知，请先调用 redmine_list_projects。project 必须是字符串，如 "1" 或 "ecookbook"，不能是 JSON 数字。
+    - 在 redmine_create_issue 或 redmine_update_issue 之前，若跟踪器、状态、经办人或自定义字段 ID 未知，请调用 redmine_get_issue_form_options。可选试运行：redmine_validate_issue_create / redmine_validate_issue_update。
+    - 仅添加评论而不改工单字段时使用 redmine_add_issue_note。关注者使用 redmine_add_issue_watcher 或 redmine_remove_issue_watcher。
+    - 项目内用户查询使用 redmine_list_users；全局管理员目录仅使用 redmine_list_all_users。
+    - 仅在用户明确需要日志或私有备注时请求 redmine_get_private_notes 或 include_journals。
+    - 破坏性工具（如 redmine_delete_issue）可能需要确认；若返回 INVALID_STATE，请带上所需 confirm_* 参数重试。
+    - 除 redmine_* 核心工具外，已安装插件的工具可能以各自前缀出现。
+  text_redmine_mcp_server_instructions_read_only: 当前已启用 MCP 只读模式，写入操作被阻止。
+  label_redmine_mcp_enabled: 启用 MCP
+  label_redmine_mcp_read_only: 只读模式
+  label_redmine_mcp_extensions: MCP 扩展
+  text_redmine_mcp_extensions_help: 启用已安装插件的 MCP 集成。更改在重启 Redmine 后生效。
+  permission_use_mcp: 使用 MCP
+  error_mcp_disabled: MCP 已禁用
+  error_mcp_internal_server_error: 内部服务器错误
+  error_mcp_rest_api_disabled: REST API 已禁用
+  error_mcp_invalid_api_key: API 密钥无效
+  error_mcp_access_denied: MCP 访问被拒绝
+  error_mcp_permission_denied: 权限被拒绝
+  error_mcp_issue_not_found: 未找到工单
+  error_mcp_project_not_found: 未找到项目
+  error_mcp_project_id_or_login_required: 需要 project_id 或 login
+  error_mcp_project_required: 必须提供 project
+  error_mcp_read_only: MCP 处于只读模式。写入操作被阻止。
+  error_mcp_version_not_found: 未找到版本
+  error_mcp_membership_not_found: 未找到成员关系
+  error_mcp_category_not_found: 未找到类别
+  error_mcp_relation_not_found: 未找到关联
+  error_mcp_journal_not_found: 未找到日志
+  error_mcp_invalid_action: 无效操作
+  error_mcp_invalid_parameters: 参数无效
+  error_mcp_status_not_found: 未找到状态
+  error_mcp_issue_field_rejected: "当前用户无法使用 %{field}"
+  hint_mcp_issue_field_rejected: 请调用 redmine_get_issue_form_options 获取工单表单允许的值。
+  hint_mcp_missing_required_fields: 请检查必填的标准字段和自定义字段。自定义字段 ID 见 redmine_list_project_issue_custom_fields。
+  text_mcp_no_project_activities: 没有项目特定活动；请使用不带 project 的全局列表。
+  error_mcp_tool_execution_failed: 工具执行失败。
+  error_mcp_ambiguous_custom_field: 自定义字段名称不明确
+  error_mcp_time_entry_not_found: 未找到工时记录
+  error_mcp_wiki_not_enabled: 此项目未启用 Wiki 模块
+  error_mcp_boards_not_enabled: 此项目未启用论坛模块
+  error_mcp_board_not_found: 未找到论坛
+  error_mcp_board_message_not_found: 未找到论坛消息
+  error_mcp_query_not_found: 未找到已保存查询
+  error_mcp_activity_window_too_long: 活动时间窗口不得超过 90 天
+  error_mcp_wiki_not_found: 未找到 Wiki
+  error_mcp_wiki_page_not_found: 未找到 Wiki 页面
+  error_mcp_wiki_page_exists: Wiki 页面已存在
+  error_mcp_wiki_rename_failed: 重命名 Wiki 页面失败
+  error_mcp_attachment_not_found: 未找到附件
+  error_mcp_attachment_not_readable: 附件不可读
+  error_mcp_attachment_download_too_large: "附件超过最大下载大小（%{max_mib} MiB）"
+  error_mcp_request_too_large: 请求超过允许的大小
+  error_mcp_rate_limited: MCP 工具请求过多。请稍后重试。
+  error_mcp_tool_timeout: MCP 工具执行超时。请稍后重试。
+  error_mcp_idempotency_in_progress: 使用此 idempotency_key 的请求已在进行中。请用同一密钥重试。
+  error_mcp_idempotency_payload_mismatch: 此 idempotency_key 已用于其他参数。请使用新密钥。
+  error_mcp_file_path_not_allowed: 文件路径不在允许的上传目录中
+  error_mcp_http_error: "请求失败（HTTP %{status}）"
+  error_mcp_delete_issue_confirmation_required: "拒绝在未明确确认的情况下删除工单 %{issue_id}。"
+  hint_mcp_delete_issue_confirmation: 在 Redmine 中删除工单不可撤销，并会影响子任务、日志、附件、工时和关联。请再次调用 redmine_delete_issue 并设置 confirm_delete=true。
+  error_mcp_delete_issue_children_present: "工单 %{issue_id} 有子任务。请传入 confirm_delete_with_children=true 以级联删除。"
+  error_mcp_delete_file_confirmation_required: 拒绝删除非项目文件的附件。请传入 confirm_delete_any_attachment=true 以跳过检查。
+  hint_mcp_conflict_stale: 对象已更改。请重新读取，并用当前 updated_on 作为 expected_updated_at 重试。
+  warning_mcp_attachments_not_saved: "%{count} 个附件未能保存"

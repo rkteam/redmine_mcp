@@ -1,0 +1,75 @@
+de:
+  label_redmine_mcp: Redmine MCP
+  text_redmine_mcp_server_instructions: |
+    Redmine MCP Routing-Regeln:
+    - Rufen Sie zu Beginn der Sitzung redmine_get_server_info auf und nutzen Sie die gemeldeten capabilities zur Auswahl optionaler Tools.
+    - Wenn eine Ticket-ID unbekannt ist, suchen Sie vor redmine_get_issue über capabilities.issue_search.
+    - Für semantische, konzeptionelle oder Ähnlichkeitssuche nutzen Sie die von redmine_get_server_info gemeldete semantic capability, falls available. Folgen Sie den use_when- und avoid_when-Hinweisen.
+    - Verwenden Sie redmine_search_issues für Keyword-, Identifier-, feldbasierte oder Exact-Text-Suche.
+    - Wird semantische Suche angefordert, ist capabilities.issue_search.semantic.available aber false, fallen Sie auf redmine_search_issues zurück und geben Sie an, dass es sich um lexikalische statt semantische Suche handelt.
+    - Verwenden Sie redmine_search_all für die Suche über mehrere Ressourcentypen inklusive Wiki, wenn capabilities.issue_search.cross_resource verfügbar ist.
+    - Wenn project unbekannt ist, rufen Sie zuerst redmine_list_projects auf. project muss eine Zeichenkette wie "1" oder "ecookbook" sein, keine JSON-Zahl.
+    - Vor redmine_create_issue oder redmine_update_issue rufen Sie redmine_get_issue_form_options auf, wenn Tracker-, Status-, Assignee- oder Custom-Field-IDs unbekannt sind. Optionaler Dry-Run: redmine_validate_issue_create / redmine_validate_issue_update.
+    - Um einen Kommentar ohne Änderung der Ticketfelder hinzuzufügen, verwenden Sie redmine_add_issue_note. Beobachter ändern Sie über redmine_add_issue_watcher oder redmine_remove_issue_watcher.
+    - Verwenden Sie redmine_list_users für projektspezifische Benutzersuche; redmine_list_all_users nur für das globale Admin-Verzeichnis.
+    - Fordern Sie redmine_get_private_notes oder include_journals nur an, wenn der Benutzer Journals oder private Kommentare explizit benötigt.
+    - Destruktive Tools wie redmine_delete_issue können eine Bestätigung erfordern; bei INVALID_STATE den Aufruf mit den angeforderten confirm_*-Parametern wiederholen.
+    - Zusätzlich zu redmine_*-Core-Tools können Tools installierter Plugins mit eigenen Präfixen erscheinen.
+  text_redmine_mcp_server_instructions_read_only: Schreibvorgänge sind derzeit blockiert, weil der MCP-Nur-Lese-Modus aktiviert ist.
+  label_redmine_mcp_enabled: MCP aktivieren
+  label_redmine_mcp_read_only: Nur-Lese-Modus
+  label_redmine_mcp_extensions: MCP-Erweiterungen
+  text_redmine_mcp_extensions_help: Aktivieren Sie die MCP-Integration installierter Plugins. Änderungen werden nach einem Neustart von Redmine wirksam.
+  permission_use_mcp: MCP verwenden
+  error_mcp_disabled: MCP ist deaktiviert
+  error_mcp_internal_server_error: Interner Serverfehler
+  error_mcp_rest_api_disabled: REST-API ist deaktiviert
+  error_mcp_invalid_api_key: Ungültiger API-Schlüssel
+  error_mcp_access_denied: MCP-Zugriff verweigert
+  error_mcp_permission_denied: Keine Berechtigung
+  error_mcp_issue_not_found: Ticket nicht gefunden
+  error_mcp_project_not_found: Projekt nicht gefunden
+  error_mcp_project_id_or_login_required: Project_id oder login ist erforderlich
+  error_mcp_project_required: project ist erforderlich
+  error_mcp_read_only: MCP ist im Nur-Lese-Modus. Schreibvorgänge sind blockiert.
+  error_mcp_version_not_found: Version nicht gefunden
+  error_mcp_membership_not_found: Mitgliedschaft nicht gefunden
+  error_mcp_category_not_found: Kategorie nicht gefunden
+  error_mcp_relation_not_found: Verknüpfung nicht gefunden
+  error_mcp_journal_not_found: Journal nicht gefunden
+  error_mcp_invalid_action: Ungültige Aktion
+  error_mcp_invalid_parameters: Ungültige Parameter
+  error_mcp_status_not_found: Status nicht gefunden
+  error_mcp_issue_field_rejected: "%{field} ist für den aktuellen Benutzer nicht verfügbar"
+  hint_mcp_issue_field_rejected: Rufen Sie redmine_get_issue_form_options für zulässige Werte des Ticketformulars auf.
+  hint_mcp_missing_required_fields: Prüfen Sie Pflichtfelder und benutzerdefinierte Felder. IDs benutzerdefinierter Felder liefert redmine_list_project_issue_custom_fields.
+  text_mcp_no_project_activities: Keine projektspezifischen Aktivitäten; verwenden Sie die globale Liste ohne project.
+  error_mcp_tool_execution_failed: Tool-Ausführung fehlgeschlagen.
+  error_mcp_ambiguous_custom_field: Mehrdeutiger Name des benutzerdefinierten Felds
+  error_mcp_time_entry_not_found: Zeiteintrag nicht gefunden
+  error_mcp_wiki_not_enabled: Wiki-Modul ist für dieses Projekt nicht aktiviert
+  error_mcp_boards_not_enabled: Foren-Modul ist für dieses Projekt nicht aktiviert
+  error_mcp_board_not_found: Board nicht gefunden
+  error_mcp_board_message_not_found: Forenbeitrag nicht gefunden
+  error_mcp_query_not_found: Gespeicherte Abfrage nicht gefunden
+  error_mcp_activity_window_too_long: Das Aktivitätsfenster darf höchstens 90 Tage betragen
+  error_mcp_wiki_not_found: Wiki nicht gefunden
+  error_mcp_wiki_page_not_found: Wiki-Seite nicht gefunden
+  error_mcp_wiki_page_exists: Wiki-Seite existiert bereits
+  error_mcp_wiki_rename_failed: Umbenennen der Wiki-Seite fehlgeschlagen
+  error_mcp_attachment_not_found: Anhang nicht gefunden
+  error_mcp_attachment_not_readable: Anhang ist nicht lesbar
+  error_mcp_attachment_download_too_large: "Anhang überschreitet die maximale Download-Größe (%{max_mib} MiB)"
+  error_mcp_request_too_large: Die Anfrage überschreitet die zulässige Größe
+  error_mcp_rate_limited: Zu viele MCP-Tool-Anfragen. Später erneut versuchen.
+  error_mcp_tool_timeout: Zeitüberschreitung bei der MCP-Tool-Ausführung. Später erneut versuchen.
+  error_mcp_idempotency_in_progress: Eine Anfrage mit diesem idempotency_key läuft bereits. Mit demselben Schlüssel wiederholen.
+  error_mcp_idempotency_payload_mismatch: Dieser idempotency_key wurde bereits mit anderen Argumenten verwendet. Einen neuen Schlüssel verwenden.
+  error_mcp_file_path_not_allowed: Der Dateipfad liegt außerhalb der erlaubten Upload-Verzeichnisse
+  error_mcp_http_error: "Anfrage fehlgeschlagen (HTTP %{status})"
+  error_mcp_delete_issue_confirmation_required: "Löschen von Ticket %{issue_id} ohne ausdrückliche Bestätigung abgelehnt."
+  hint_mcp_delete_issue_confirmation: Das Löschen eines Tickets in Redmine ist unumkehrbar und betrifft Untertickets, Journale, Anhänge, Zeiteinträge und Verknüpfungen. Rufen Sie redmine_delete_issue erneut mit confirm_delete=true auf.
+  error_mcp_delete_issue_children_present: "Ticket %{issue_id} hat Untertickets. Übergeben Sie confirm_delete_with_children=true für das kaskadierende Löschen."
+  error_mcp_delete_file_confirmation_required: Löschen eines Anhangs außerhalb der Projektdateien abgelehnt. Übergeben Sie confirm_delete_any_attachment=true zum Umgehen.
+  hint_mcp_conflict_stale: Objekt geändert. Erneut lesen und mit der aktuellen updated_on als expected_updated_at wiederholen.
+  warning_mcp_attachments_not_saved: "%{count} Anhang/Anhänge wurden nicht gespeichert"

@@ -1,0 +1,646 @@
+{
+  "redmine_add_issue_note": {
+    "required": [
+      "issue_id",
+      "notes"
+    ],
+    "read_only": false,
+    "destructive": false,
+    "idempotent": false,
+    "has_output_schema": true
+  },
+  "redmine_add_issue_watcher": {
+    "required": [
+      "issue_id",
+      "user_id"
+    ],
+    "read_only": false,
+    "destructive": false,
+    "idempotent": false,
+    "has_output_schema": true
+  },
+  "redmine_add_project_member": {
+    "required": [
+      "project",
+      "role_ids"
+    ],
+    "read_only": false,
+    "destructive": false,
+    "idempotent": false,
+    "has_output_schema": true
+  },
+  "redmine_copy_issue": {
+    "required": [
+      "issue_id"
+    ],
+    "read_only": false,
+    "destructive": false,
+    "idempotent": false,
+    "has_output_schema": true
+  },
+  "redmine_create_issue": {
+    "required": [
+      "project",
+      "subject"
+    ],
+    "read_only": false,
+    "destructive": false,
+    "idempotent": false,
+    "has_output_schema": true
+  },
+  "redmine_create_issue_category": {
+    "required": [
+      "name",
+      "project"
+    ],
+    "read_only": false,
+    "destructive": false,
+    "idempotent": false,
+    "has_output_schema": true
+  },
+  "redmine_create_issue_relation": {
+    "required": [
+      "issue_id",
+      "issue_to_id"
+    ],
+    "read_only": false,
+    "destructive": false,
+    "idempotent": false,
+    "has_output_schema": true
+  },
+  "redmine_create_time_entry": {
+    "required": [
+      "hours"
+    ],
+    "read_only": false,
+    "destructive": false,
+    "idempotent": false,
+    "has_output_schema": true
+  },
+  "redmine_create_version": {
+    "required": [
+      "name",
+      "project"
+    ],
+    "read_only": false,
+    "destructive": false,
+    "idempotent": false,
+    "has_output_schema": true
+  },
+  "redmine_create_wiki_page": {
+    "required": [
+      "project",
+      "text",
+      "wiki_page_title"
+    ],
+    "read_only": false,
+    "destructive": false,
+    "idempotent": false,
+    "has_output_schema": true
+  },
+  "redmine_delete_file": {
+    "required": [
+      "file_id"
+    ],
+    "read_only": false,
+    "destructive": true,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_delete_issue": {
+    "required": [
+      "issue_id"
+    ],
+    "read_only": false,
+    "destructive": true,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_delete_issue_category": {
+    "required": [
+      "category_id"
+    ],
+    "read_only": false,
+    "destructive": true,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_delete_issue_relation": {
+    "required": [
+      "relation_id"
+    ],
+    "read_only": false,
+    "destructive": true,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_delete_version": {
+    "required": [
+      "version_id"
+    ],
+    "read_only": false,
+    "destructive": true,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_delete_wiki_page": {
+    "required": [
+      "project",
+      "wiki_page_title"
+    ],
+    "read_only": false,
+    "destructive": true,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_download_attachment": {
+    "required": [
+      "attachment_id"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_get_attachment": {
+    "required": [
+      "attachment_id"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_get_board_message": {
+    "required": [
+      "message_id"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_get_current_user": {
+    "required": [],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_get_issue": {
+    "required": [
+      "issue_id"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_get_issue_form_options": {
+    "required": [
+      "project"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_get_private_notes": {
+    "required": [
+      "issue_id"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_get_project": {
+    "required": [
+      "project"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_get_project_modules": {
+    "required": [
+      "project"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_get_server_info": {
+    "required": [],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_get_version": {
+    "required": [
+      "version_id"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_get_wiki_page": {
+    "required": [
+      "project",
+      "wiki_page_title"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_import_time_entries": {
+    "required": [
+      "entries"
+    ],
+    "read_only": false,
+    "destructive": false,
+    "idempotent": false,
+    "has_output_schema": true
+  },
+  "redmine_list_all_users": {
+    "required": [],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_board_topics": {
+    "required": [
+      "board_id"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_boards": {
+    "required": [
+      "project"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_files": {
+    "required": [
+      "project"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_groups": {
+    "required": [],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_issue_categories": {
+    "required": [
+      "project"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_issue_priorities": {
+    "required": [],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_issue_relations": {
+    "required": [
+      "issue_id"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_issue_statuses": {
+    "required": [],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_issues": {
+    "required": [],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_project_activities": {
+    "required": [
+      "project"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_project_issue_custom_fields": {
+    "required": [
+      "project"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_project_members": {
+    "required": [
+      "project"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_project_member_candidates": {
+    "required": [
+      "project"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_project_trackers": {
+    "required": [
+      "project"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_projects": {
+    "required": [],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_queries": {
+    "required": [],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_roles": {
+    "required": [
+      "project"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_subtasks": {
+    "required": [
+      "issue_id"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_time_entries": {
+    "required": [],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_time_entry_activities": {
+    "required": [],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_trackers": {
+    "required": [],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_users": {
+    "required": [],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_versions": {
+    "required": [
+      "project"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_list_wiki_pages": {
+    "required": [
+      "project"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_remove_issue_watcher": {
+    "required": [
+      "issue_id",
+      "user_id"
+    ],
+    "read_only": false,
+    "destructive": true,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_remove_project_member": {
+    "required": [
+      "membership_id"
+    ],
+    "read_only": false,
+    "destructive": true,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_rename_wiki_page": {
+    "required": [
+      "new_title",
+      "project",
+      "wiki_page_title"
+    ],
+    "read_only": false,
+    "destructive": false,
+    "idempotent": false,
+    "has_output_schema": true
+  },
+  "redmine_run_issue_query": {
+    "required": [
+      "query_id"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_search_all": {
+    "required": [
+      "query"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_search_issues": {
+    "required": [
+      "query"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_set_issue_note_private": {
+    "required": [
+      "is_private",
+      "journal_id"
+    ],
+    "read_only": false,
+    "destructive": false,
+    "idempotent": false,
+    "has_output_schema": true
+  },
+  "redmine_summarize_project_status": {
+    "required": [
+      "project"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_update_issue": {
+    "required": [
+      "issue_id"
+    ],
+    "read_only": false,
+    "destructive": false,
+    "idempotent": false,
+    "has_output_schema": true
+  },
+  "redmine_update_issue_category": {
+    "required": [
+      "category_id"
+    ],
+    "read_only": false,
+    "destructive": false,
+    "idempotent": false,
+    "has_output_schema": true
+  },
+  "redmine_update_issue_note": {
+    "required": [
+      "journal_id",
+      "notes"
+    ],
+    "read_only": false,
+    "destructive": false,
+    "idempotent": false,
+    "has_output_schema": true
+  },
+  "redmine_update_project_member": {
+    "required": [
+      "membership_id",
+      "role_ids"
+    ],
+    "read_only": false,
+    "destructive": false,
+    "idempotent": false,
+    "has_output_schema": true
+  },
+  "redmine_update_time_entry": {
+    "required": [
+      "time_entry_id"
+    ],
+    "read_only": false,
+    "destructive": false,
+    "idempotent": false,
+    "has_output_schema": true
+  },
+  "redmine_update_version": {
+    "required": [
+      "version_id"
+    ],
+    "read_only": false,
+    "destructive": false,
+    "idempotent": false,
+    "has_output_schema": true
+  },
+  "redmine_update_wiki_page": {
+    "required": [
+      "project",
+      "text",
+      "wiki_page_title"
+    ],
+    "read_only": false,
+    "destructive": false,
+    "idempotent": false,
+    "has_output_schema": true
+  },
+  "redmine_upload_file": {
+    "required": [
+      "content_base64",
+      "filename",
+      "project"
+    ],
+    "read_only": false,
+    "destructive": false,
+    "idempotent": false,
+    "has_output_schema": true
+  },
+  "redmine_validate_issue_create": {
+    "required": [
+      "project",
+      "subject"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  },
+  "redmine_validate_issue_update": {
+    "required": [
+      "issue_id"
+    ],
+    "read_only": true,
+    "destructive": false,
+    "idempotent": true,
+    "has_output_schema": true
+  }
+}

@@ -1,0 +1,75 @@
+pt-BR:
+  label_redmine_mcp: Redmine MCP
+  text_redmine_mcp_server_instructions: |
+    Regras de roteamento do Redmine MCP:
+    - No início da sessão, chame redmine_get_server_info e use as capabilities informadas para escolher tools opcionais.
+    - Se o ID da tarefa for desconhecido, pesquise antes de redmine_get_issue usando capabilities.issue_search.
+    - Para busca semântica, conceitual ou por similaridade, use a capability semantic de redmine_get_server_info se available. Siga as dicas use_when e avoid_when.
+    - Use redmine_search_issues para busca por palavra-chave, identificador, campo ou texto exato.
+    - Se a busca semântica for pedida mas capabilities.issue_search.semantic.available for false, use redmine_search_issues e deixe claro que o fallback é léxico, não semântico.
+    - Use redmine_search_all para descobrir vários tipos de recurso, incluindo wiki, quando capabilities.issue_search.cross_resource estiver disponível.
+    - Se project for desconhecido, chame primeiro redmine_list_projects. project deve ser uma string como "1" ou "ecookbook", não um número JSON.
+    - Antes de redmine_create_issue ou redmine_update_issue, chame redmine_get_issue_form_options se IDs de tracker, situação, atribuído ou campos personalizados forem desconhecidos. Dry-run opcional: redmine_validate_issue_create / redmine_validate_issue_update.
+    - Para adicionar um comentário sem alterar campos da tarefa, use redmine_add_issue_note. Para observadores, use redmine_add_issue_watcher ou redmine_remove_issue_watcher.
+    - Use redmine_list_users para busca de usuários do projeto; redmine_list_all_users apenas para o diretório global de administrador.
+    - Solicite redmine_get_private_notes ou include_journals somente quando o usuário precisar explicitamente de diários ou notas privadas.
+    - Tools destrutivas como redmine_delete_issue podem exigir confirmação; se INVALID_STATE for retornado, tente de novo com os parâmetros confirm_* pedidos.
+    - Além das core tools redmine_*, tools de plugins instalados podem aparecer com seus próprios prefixos.
+  text_redmine_mcp_server_instructions_read_only: As operações de escrita estão bloqueadas porque o modo somente leitura do MCP está ativado.
+  label_redmine_mcp_enabled: Ativar MCP
+  label_redmine_mcp_read_only: Modo somente leitura
+  label_redmine_mcp_extensions: Extensões MCP
+  text_redmine_mcp_extensions_help: Ative a integração MCP dos plugins instalados. As alterações passam a valer após reiniciar o Redmine.
+  permission_use_mcp: Usar MCP
+  error_mcp_disabled: MCP está desativado
+  error_mcp_internal_server_error: Erro interno do servidor
+  error_mcp_rest_api_disabled: A API REST está desativada
+  error_mcp_invalid_api_key: Chave de API inválida
+  error_mcp_access_denied: Acesso ao MCP negado
+  error_mcp_permission_denied: Permissão negada
+  error_mcp_issue_not_found: Tarefa não encontrada
+  error_mcp_project_not_found: Projeto não encontrado
+  error_mcp_project_id_or_login_required: Project_id ou login é obrigatório
+  error_mcp_project_required: project é obrigatório
+  error_mcp_read_only: MCP está em modo somente leitura. As operações de escrita estão bloqueadas.
+  error_mcp_version_not_found: Versão não encontrada
+  error_mcp_membership_not_found: Associação não encontrada
+  error_mcp_category_not_found: Categoria não encontrada
+  error_mcp_relation_not_found: Relação não encontrada
+  error_mcp_journal_not_found: Diário não encontrado
+  error_mcp_invalid_action: Ação inválida
+  error_mcp_invalid_parameters: Parâmetros inválidos
+  error_mcp_status_not_found: Situação não encontrada
+  error_mcp_issue_field_rejected: "%{field} não está disponível para o usuário atual"
+  hint_mcp_issue_field_rejected: Chame redmine_get_issue_form_options para os valores permitidos no formulário da tarefa.
+  hint_mcp_missing_required_fields: Verifique os campos padrão e personalizados obrigatórios. Os IDs dos campos personalizados estão em redmine_list_project_issue_custom_fields.
+  text_mcp_no_project_activities: Não há atividades específicas do projeto; use a lista global sem project.
+  error_mcp_tool_execution_failed: Falha na execução do tool.
+  error_mcp_ambiguous_custom_field: Nome de campo personalizado ambíguo
+  error_mcp_time_entry_not_found: Entrada de tempo não encontrada
+  error_mcp_wiki_not_enabled: O módulo Wiki não está ativado neste projeto
+  error_mcp_boards_not_enabled: O módulo de fóruns não está ativado neste projeto
+  error_mcp_board_not_found: Fórum não encontrado
+  error_mcp_board_message_not_found: Mensagem do fórum não encontrada
+  error_mcp_query_not_found: Consulta salva não encontrada
+  error_mcp_activity_window_too_long: A janela de atividade deve ter no máximo 90 dias
+  error_mcp_wiki_not_found: Wiki não encontrada
+  error_mcp_wiki_page_not_found: Página wiki não encontrada
+  error_mcp_wiki_page_exists: A página wiki já existe
+  error_mcp_wiki_rename_failed: Falha ao renomear a página wiki
+  error_mcp_attachment_not_found: Anexo não encontrado
+  error_mcp_attachment_not_readable: O anexo não pode ser lido
+  error_mcp_attachment_download_too_large: "O anexo excede o tamanho máximo de download (%{max_mib} MiB)"
+  error_mcp_request_too_large: A solicitação excede o tamanho permitido
+  error_mcp_rate_limited: Demasiadas solicitações aos tools MCP. Tente novamente mais tarde.
+  error_mcp_tool_timeout: Tempo esgotado na execução do tool MCP. Tente novamente mais tarde.
+  error_mcp_idempotency_in_progress: Já há uma solicitação com este idempotency_key em andamento. Tente de novo com a mesma chave.
+  error_mcp_idempotency_payload_mismatch: Este idempotency_key já foi usado com outros argumentos. Use uma nova chave.
+  error_mcp_file_path_not_allowed: O caminho do arquivo está fora dos diretórios de envio permitidos
+  error_mcp_http_error: "A solicitação falhou (HTTP %{status})"
+  error_mcp_delete_issue_confirmation_required: "Recusa em excluir a tarefa %{issue_id} sem confirmação explícita."
+  hint_mcp_delete_issue_confirmation: A exclusão de uma tarefa no Redmine é irreversível e afeta subtarefas, diários, anexos, tempos e relações. Chame redmine_delete_issue novamente com confirm_delete=true.
+  error_mcp_delete_issue_children_present: "A tarefa %{issue_id} tem subtarefas. Passe confirm_delete_with_children=true para excluir em cascata."
+  error_mcp_delete_file_confirmation_required: Recusa em excluir um anexo que não é arquivo do projeto. Passe confirm_delete_any_attachment=true para ignorar a verificação.
+  hint_mcp_conflict_stale: O objeto mudou. Leia-o novamente e tente de novo com o updated_on atual como expected_updated_at.
+  warning_mcp_attachments_not_saved: "%{count} anexo(s) não foram salvos"

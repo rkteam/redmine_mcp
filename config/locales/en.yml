@@ -1,0 +1,75 @@
+en:
+  label_redmine_mcp: Redmine MCP
+  text_redmine_mcp_server_instructions: |
+    Redmine MCP routing rules:
+    - At session start, call redmine_get_server_info and use the reported capabilities to select optional tools.
+    - When an issue ID is unknown, search before redmine_get_issue using capabilities.issue_search.
+    - For semantic, conceptual, or similarity-based search, use the semantic search capability reported by redmine_get_server_info when available. Follow that capability's use_when and avoid_when hints.
+    - Use redmine_search_issues for keyword, identifier, field-based, or exact-text issue search.
+    - If semantic search is requested but capabilities.issue_search.semantic.available is false, fall back to redmine_search_issues and clearly state that the fallback is lexical rather than semantic.
+    - Use redmine_search_all for cross-resource discovery including wiki pages when capabilities.issue_search.cross_resource is available.
+    - When project is unknown, call redmine_list_projects first. project must be a string such as "1" or "ecookbook", not a JSON number.
+    - Before redmine_create_issue or redmine_update_issue, call redmine_get_issue_form_options when tracker, status, assignee, or custom field IDs are not already known. Optional dry-run: redmine_validate_issue_create / redmine_validate_issue_update.
+    - To add a comment without changing issue fields, use redmine_add_issue_note. To change watchers, use redmine_add_issue_watcher or redmine_remove_issue_watcher.
+    - Use redmine_list_users for project-scoped user lookup; use redmine_list_all_users only for admin global directory queries.
+    - Request redmine_get_private_notes or include_journals only when the user explicitly needs journal or private note content.
+    - Destructive tools such as redmine_delete_issue may require explicit confirmation parameters; retry with the requested confirm_* flags when INVALID_STATE is returned.
+    - Additional tools from installed Redmine plugins may appear with their own prefixes alongside redmine_* core tools.
+  text_redmine_mcp_server_instructions_read_only: Write operations are currently blocked because MCP read-only mode is enabled.
+  label_redmine_mcp_enabled: Enable MCP
+  label_redmine_mcp_read_only: Read-only mode
+  label_redmine_mcp_extensions: MCP extensions
+  text_redmine_mcp_extensions_help: Enable MCP integration for installed plugins. Changes take effect after Redmine restart.
+  permission_use_mcp: Use MCP
+  error_mcp_disabled: MCP is disabled
+  error_mcp_internal_server_error: Internal server error
+  error_mcp_rest_api_disabled: REST API is disabled
+  error_mcp_invalid_api_key: Invalid API key
+  error_mcp_access_denied: MCP access denied
+  error_mcp_permission_denied: Permission denied
+  error_mcp_issue_not_found: Issue not found
+  error_mcp_project_not_found: Project not found
+  error_mcp_project_id_or_login_required: Project_id or login is required
+  error_mcp_project_required: project is required
+  error_mcp_read_only: MCP is in read-only mode. Write operations are blocked.
+  error_mcp_version_not_found: Version not found
+  error_mcp_membership_not_found: Membership not found
+  error_mcp_category_not_found: Category not found
+  error_mcp_relation_not_found: Relation not found
+  error_mcp_journal_not_found: Journal not found
+  error_mcp_invalid_action: Invalid action
+  error_mcp_invalid_parameters: Invalid parameters
+  error_mcp_status_not_found: Status not found
+  error_mcp_issue_field_rejected: "%{field} is not available for the current user"
+  hint_mcp_issue_field_rejected: Call redmine_get_issue_form_options for values allowed on the issue form.
+  hint_mcp_missing_required_fields: Check required standard fields and custom fields. Use redmine_list_project_issue_custom_fields for custom field IDs.
+  text_mcp_no_project_activities: No project-specific activities; use the global list without project.
+  error_mcp_tool_execution_failed: Tool execution failed.
+  error_mcp_ambiguous_custom_field: Ambiguous custom field name
+  error_mcp_time_entry_not_found: Time entry not found
+  error_mcp_wiki_not_enabled: Wiki module is not enabled for this project
+  error_mcp_boards_not_enabled: Boards module is not enabled for this project
+  error_mcp_board_not_found: Board not found
+  error_mcp_board_message_not_found: Board message not found
+  error_mcp_query_not_found: Saved query not found
+  error_mcp_activity_window_too_long: Activity window must be at most 90 days
+  error_mcp_wiki_not_found: Wiki not found
+  error_mcp_wiki_page_not_found: Wiki page not found
+  error_mcp_wiki_page_exists: Wiki page already exists
+  error_mcp_wiki_rename_failed: Wiki page rename failed
+  error_mcp_attachment_not_found: Attachment not found
+  error_mcp_attachment_not_readable: Attachment is not readable
+  error_mcp_attachment_download_too_large: Attachment exceeds maximum download size (%{max_mib} MiB)
+  error_mcp_request_too_large: Request payload exceeds maximum allowed size
+  error_mcp_rate_limited: Too many MCP tool requests. Retry later.
+  error_mcp_tool_timeout: MCP tool execution timed out. Retry later.
+  error_mcp_idempotency_in_progress: A request with this idempotency_key is already in progress. Retry with the same key.
+  error_mcp_idempotency_payload_mismatch: This idempotency_key was already used with different arguments. Use a new key.
+  error_mcp_file_path_not_allowed: File path is not inside an allowed upload directory
+  error_mcp_http_error: Request failed (HTTP %{status})
+  error_mcp_delete_issue_confirmation_required: "Refusing to delete issue %{issue_id} without explicit confirmation."
+  hint_mcp_delete_issue_confirmation: Issue deletion in Redmine is irreversible and cascades to subtasks, journals, attachments, time entries, and relations. Call redmine_delete_issue again with confirm_delete=true.
+  error_mcp_delete_issue_children_present: "Issue %{issue_id} has subtasks. Pass confirm_delete_with_children=true to cascade-delete."
+  error_mcp_delete_file_confirmation_required: Refusing to delete non-project file attachment. Pass confirm_delete_any_attachment=true to bypass.
+  hint_mcp_conflict_stale: Object changed. Re-read it and retry with the current updated_on as expected_updated_at.
+  warning_mcp_attachments_not_saved: "%{count} attachment(s) were not saved"

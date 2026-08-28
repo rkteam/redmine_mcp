@@ -1,0 +1,75 @@
+ja:
+  label_redmine_mcp: Redmine MCP
+  text_redmine_mcp_server_instructions: |
+    Redmine MCP ルーティング規則:
+    - セッション開始時に redmine_get_server_info を呼び出し、報告された capabilities で任意ツールを選びます。
+    - チケットIDが不明なときは、redmine_get_issue の前に capabilities.issue_search で検索します。
+    - 意味的・概念的・類似検索には、available なら redmine_get_server_info の semantic capability を使い、use_when / avoid_when に従います。
+    - キーワード、識別子、フィールド、完全一致の検索には redmine_search_issues を使います。
+    - 意味検索が求められても capabilities.issue_search.semantic.available が false のときは redmine_search_issues にフォールバックし、語彙検索であることを明示します。
+    - capabilities.issue_search.cross_resource があるときは、Wiki を含む複数リソースの発見に redmine_search_all を使います。
+    - project が不明なときは先に redmine_list_projects を呼びます。project は "1" や "ecookbook" のような文字列で、JSON の数値ではありません。
+    - redmine_create_issue または redmine_update_issue の前に、トラッカー・ステータス・担当者・カスタムフィールドの ID が不明なら redmine_get_issue_form_options を呼びます。任意のドライラン: redmine_validate_issue_create / redmine_validate_issue_update。
+    - チケット項目を変えずにコメントだけ追加するには redmine_add_issue_note を使います。ウォッチャーは redmine_add_issue_watcher / redmine_remove_issue_watcher です。
+    - プロジェクト内のユーザー検索には redmine_list_users、管理者向けグローバル一覧には redmine_list_all_users のみを使います。
+    - ジャーナルや非公開メモが明示的に必要なときだけ redmine_get_private_notes や include_journals を要求します。
+    - redmine_delete_issue などの破壊的ツールは確認が必要なことがあります。INVALID_STATE のときは要求された confirm_* で再実行します。
+    - redmine_* コアツールに加え、導入済みプラグインのツールが独自プレフィックスで現れることがあります。
+  text_redmine_mcp_server_instructions_read_only: MCP 読み取り専用モードが有効なため、書き込み操作は現在ブロックされています。
+  label_redmine_mcp_enabled: MCP を有効にする
+  label_redmine_mcp_read_only: 読み取り専用モード
+  label_redmine_mcp_extensions: MCP 拡張
+  text_redmine_mcp_extensions_help: インストール済みプラグインの MCP 連携を有効にします。変更は Redmine の再起動後に反映されます。
+  permission_use_mcp: MCP を使用
+  error_mcp_disabled: MCP は無効です
+  error_mcp_internal_server_error: 内部サーバーエラー
+  error_mcp_rest_api_disabled: REST API は無効です
+  error_mcp_invalid_api_key: API キーが無効です
+  error_mcp_access_denied: MCP アクセスが拒否されました
+  error_mcp_permission_denied: 権限がありません
+  error_mcp_issue_not_found: チケットが見つかりません
+  error_mcp_project_not_found: プロジェクトが見つかりません
+  error_mcp_project_id_or_login_required: project_id または login が必要です
+  error_mcp_project_required: project は必須です
+  error_mcp_read_only: MCP は読み取り専用です。書き込み操作はブロックされます。
+  error_mcp_version_not_found: バージョンが見つかりません
+  error_mcp_membership_not_found: メンバーシップが見つかりません
+  error_mcp_category_not_found: カテゴリが見つかりません
+  error_mcp_relation_not_found: 関連が見つかりません
+  error_mcp_journal_not_found: ジャーナルが見つかりません
+  error_mcp_invalid_action: 無効な操作です
+  error_mcp_invalid_parameters: パラメーターが無効です
+  error_mcp_status_not_found: ステータスが見つかりません
+  error_mcp_issue_field_rejected: "%{field} は現在のユーザーには利用できません"
+  hint_mcp_issue_field_rejected: チケットフォームで許可される値は redmine_get_issue_form_options で取得してください。
+  hint_mcp_missing_required_fields: 必須の標準フィールドとカスタムフィールドを確認してください。カスタムフィールド ID は redmine_list_project_issue_custom_fields にあります。
+  text_mcp_no_project_activities: プロジェクト固有の作業分類はありません。project なしのグローバル一覧を使ってください。
+  error_mcp_tool_execution_failed: ツールの実行に失敗しました。
+  error_mcp_ambiguous_custom_field: カスタムフィールド名が曖昧です
+  error_mcp_time_entry_not_found: 作業時間が見つかりません
+  error_mcp_wiki_not_enabled: このプロジェクトでは Wiki モジュールが無効です
+  error_mcp_boards_not_enabled: このプロジェクトではフォーラムモジュールが無効です
+  error_mcp_board_not_found: フォーラムが見つかりません
+  error_mcp_board_message_not_found: フォーラムのメッセージが見つかりません
+  error_mcp_query_not_found: 保存済みクエリが見つかりません
+  error_mcp_activity_window_too_long: アクティビティ期間は 90 日以内である必要があります
+  error_mcp_wiki_not_found: Wiki が見つかりません
+  error_mcp_wiki_page_not_found: Wiki ページが見つかりません
+  error_mcp_wiki_page_exists: Wiki ページは既に存在します
+  error_mcp_wiki_rename_failed: Wiki ページの名前変更に失敗しました
+  error_mcp_attachment_not_found: 添付ファイルが見つかりません
+  error_mcp_attachment_not_readable: 添付ファイルを読み取れません
+  error_mcp_attachment_download_too_large: "添付ファイルが最大ダウンロードサイズ (%{max_mib} MiB) を超えています"
+  error_mcp_request_too_large: リクエストが許可サイズを超えています
+  error_mcp_rate_limited: MCP ツールへのリクエストが多すぎます。しばらくしてから再試行してください。
+  error_mcp_tool_timeout: MCP ツールの実行がタイムアウトしました。しばらくしてから再試行してください。
+  error_mcp_idempotency_in_progress: この idempotency_key のリクエストは既に処理中です。同じキーで再試行してください。
+  error_mcp_idempotency_payload_mismatch: この idempotency_key は別の引数ですでに使われています。新しいキーを使ってください。
+  error_mcp_file_path_not_allowed: ファイルパスは許可されたアップロードディレクトリの外です
+  error_mcp_http_error: "リクエストに失敗しました (HTTP %{status})"
+  error_mcp_delete_issue_confirmation_required: "明示的な確認なしにチケット %{issue_id} を削除しません。"
+  hint_mcp_delete_issue_confirmation: Redmine でのチケット削除は取り消せず、子チケット、ジャーナル、添付、作業時間、関連に影響します。confirm_delete=true で redmine_delete_issue を再実行してください。
+  error_mcp_delete_issue_children_present: "チケット %{issue_id} には子チケットがあります。カスケード削除するには confirm_delete_with_children=true を渡してください。"
+  error_mcp_delete_file_confirmation_required: プロジェクトファイル以外の添付は削除しません。確認を省略するには confirm_delete_any_attachment=true を渡してください。
+  hint_mcp_conflict_stale: オブジェクトが変わりました。再読込し、現在の updated_on を expected_updated_at にして再試行してください。
+  warning_mcp_attachments_not_saved: "%{count} 件の添付ファイルが保存されませんでした"

@@ -1,0 +1,31 @@
+<p>
+  <%= label_tag 'settings[enabled]', l(:label_redmine_mcp_enabled) %>
+  <%= check_box_tag 'settings[enabled]', '1', @settings['enabled'] == '1' %>
+</p>
+
+<p>
+  <%= label_tag 'settings[read_only]', l(:label_redmine_mcp_read_only) %>
+  <%= check_box_tag 'settings[read_only]', '1', @settings['read_only'] == '1' %>
+</p>
+
+<% plugins = RedmineMcp::Settings.mcp_extension_plugins %>
+<fieldset class="box" id="mcp_enabled_extensions">
+  <legend>
+    <%= toggle_checkboxes_link('#mcp_enabled_extensions input[type=checkbox]') if plugins.any? %>
+    <%= l(:label_redmine_mcp_extensions) %>
+  </legend>
+  <%= hidden_field_tag 'settings[enabled_extensions][]', '' %>
+  <% if plugins.empty? %>
+    <p class="nodata"><%= l(:label_no_data) %></p>
+  <% else %>
+    <% plugins.each do |plugin| %>
+      <p>
+        <%= label_tag "settings_enabled_extensions_#{plugin.id}", plugin.name %>
+        <%= check_box_tag 'settings[enabled_extensions][]', plugin.id,
+                          !RedmineMcp::Settings.extension_disabled?(plugin.id),
+                          id: "settings_enabled_extensions_#{plugin.id}" %>
+      </p>
+    <% end %>
+  <% end %>
+  <p><em class="info"><%= l(:text_redmine_mcp_extensions_help) %></em></p>
+</fieldset>

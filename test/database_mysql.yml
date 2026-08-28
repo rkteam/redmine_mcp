@@ -1,0 +1,9 @@
+test:
+  adapter: mysql2
+  host: "db"
+  port: "3306"
+  username: "root"
+  password: "strong-pass"
+  database: "redmine"
+  variables:
+    transaction_isolation: "READ-COMMITTED"

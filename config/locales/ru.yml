@@ -1,0 +1,75 @@
+ru:
+  label_redmine_mcp: Redmine MCP
+  text_redmine_mcp_server_instructions: |
+    Правила маршрутизации Redmine MCP:
+    - В начале сессии вызывайте redmine_get_server_info и используйте reported capabilities для выбора optional tools.
+    - Если ID задачи неизвестен, сначала выполните поиск через capabilities.issue_search, затем redmine_get_issue.
+    - Для семантического, концептуального или similarity-поиска используйте semantic capability из redmine_get_server_info, если available. Следуйте use_when и avoid_when этой capability.
+    - Для keyword, identifier, field-based или exact-text поиска задач используйте redmine_search_issues.
+    - Если нужен семантический поиск, но capabilities.issue_search.semantic.available = false, используйте fallback на redmine_search_issues и явно укажите, что это лексический, а не семантический поиск.
+    - Для поиска по нескольким типам ресурсов, включая wiki, используйте redmine_search_all, если capabilities.issue_search.cross_resource доступен.
+    - Если project неизвестен, сначала вызовите redmine_list_projects. project должен быть строкой, например "1" или "ecookbook", а не JSON-числом.
+    - Перед redmine_create_issue или redmine_update_issue вызывайте redmine_get_issue_form_options, если ID трекера, статуса, исполнителя или настраиваемых полей ещё не известны. Опциональная проверка без записи: redmine_validate_issue_create / redmine_validate_issue_update.
+    - Чтобы добавить комментарий без изменения полей задачи, используйте redmine_add_issue_note. Наблюдателей меняйте через redmine_add_issue_watcher или redmine_remove_issue_watcher.
+    - Для поиска пользователей в проекте используйте redmine_list_users; redmine_list_all_users — только для глобального admin-каталога.
+    - redmine_get_private_notes или include_journals запрашивайте только когда пользователю явно нужны журналы или приватные комментарии.
+    - Для destructive-tools, например redmine_delete_issue, может потребоваться подтверждение; при INVALID_STATE повторите вызов с нужными confirm_* параметрами.
+    - Помимо redmine_* core tools могут быть доступны tools установленных плагинов со своими префиксами.
+  text_redmine_mcp_server_instructions_read_only: Операции записи сейчас заблокированы, так как включён режим read-only MCP.
+  label_redmine_mcp_enabled: Включить MCP
+  label_redmine_mcp_read_only: Режим read-only
+  label_redmine_mcp_extensions: MCP-расширения
+  text_redmine_mcp_extensions_help: Включите MCP-интеграцию установленных плагинов. Изменения применяются после перезапуска Redmine.
+  permission_use_mcp: Использовать MCP
+  error_mcp_disabled: MCP отключён
+  error_mcp_internal_server_error: Внутренняя ошибка сервера
+  error_mcp_rest_api_disabled: REST API отключён
+  error_mcp_invalid_api_key: Неверный API-ключ
+  error_mcp_access_denied: Доступ к MCP запрещён
+  error_mcp_permission_denied: Недостаточно прав
+  error_mcp_issue_not_found: Задача не найдена
+  error_mcp_project_not_found: Проект не найден
+  error_mcp_project_id_or_login_required: Требуется project_id или login
+  error_mcp_project_required: Требуется project
+  error_mcp_read_only: MCP в режиме read-only. Операции записи заблокированы.
+  error_mcp_version_not_found: Версия не найдена
+  error_mcp_membership_not_found: Участие не найдено
+  error_mcp_category_not_found: Категория не найдена
+  error_mcp_relation_not_found: Связь не найдена
+  error_mcp_journal_not_found: Журнал не найден
+  error_mcp_invalid_action: Недопустимое действие
+  error_mcp_invalid_parameters: Некорректные параметры
+  error_mcp_status_not_found: Статус не найден
+  error_mcp_issue_field_rejected: "%{field} недоступно для текущего пользователя"
+  hint_mcp_issue_field_rejected: Вызовите redmine_get_issue_form_options, чтобы получить допустимые значения формы задачи.
+  hint_mcp_missing_required_fields: Проверьте обязательные стандартные поля и настраиваемые поля. Идентификаторы настраиваемых полей — в redmine_list_project_issue_custom_fields.
+  text_mcp_no_project_activities: Нет проектных активностей; используйте глобальный список без project.
+  error_mcp_tool_execution_failed: Ошибка выполнения инструмента.
+  error_mcp_ambiguous_custom_field: Неоднозначное имя настраиваемого поля
+  error_mcp_time_entry_not_found: Запись учёта времени не найдена
+  error_mcp_wiki_not_enabled: Модуль Wiki не включён для этого проекта
+  error_mcp_boards_not_enabled: Модуль форумов не включён для этого проекта
+  error_mcp_board_not_found: Доска не найдена
+  error_mcp_board_message_not_found: Сообщение форума не найдено
+  error_mcp_query_not_found: Сохранённый запрос не найден
+  error_mcp_activity_window_too_long: Окно активности не должно превышать 90 дней
+  error_mcp_wiki_not_found: Wiki не найдена
+  error_mcp_wiki_page_not_found: Wiki-страница не найдена
+  error_mcp_wiki_page_exists: Wiki-страница уже существует
+  error_mcp_wiki_rename_failed: Не удалось переименовать wiki-страницу
+  error_mcp_attachment_not_found: Вложение не найдено
+  error_mcp_attachment_not_readable: Вложение недоступно для чтения
+  error_mcp_attachment_download_too_large: Вложение превышает максимальный размер скачивания (%{max_mib} МиБ)
+  error_mcp_request_too_large: Размер запроса превышает допустимый лимит
+  error_mcp_rate_limited: Слишком много запросов к MCP tools. Повторите позже.
+  error_mcp_tool_timeout: Превышено время выполнения MCP tool. Повторите позже.
+  error_mcp_idempotency_in_progress: Запрос с этим idempotency_key уже выполняется. Повторите с тем же ключом.
+  error_mcp_idempotency_payload_mismatch: Этот idempotency_key уже использован с другими аргументами. Используйте новый ключ.
+  error_mcp_file_path_not_allowed: Путь к файлу находится вне разрешённых директорий загрузки
+  error_mcp_http_error: Запрос не выполнен (HTTP %{status})
+  error_mcp_delete_issue_confirmation_required: "Отказ удалить задачу %{issue_id} без явного подтверждения."
+  hint_mcp_delete_issue_confirmation: Удаление задачи в Redmine необратимо и затрагивает подзадачи, журналы, вложения, трудозатраты и связи. Вызовите redmine_delete_issue снова с confirm_delete=true.
+  error_mcp_delete_issue_children_present: "У задачи %{issue_id} есть подзадачи. Передайте confirm_delete_with_children=true для каскадного удаления."
+  error_mcp_delete_file_confirmation_required: Отказ удалить вложение вне Files проекта. Передайте confirm_delete_any_attachment=true для обхода проверки.
+  hint_mcp_conflict_stale: Объект изменился. Перечитайте его и повторите с текущим updated_on в expected_updated_at.
+  warning_mcp_attachments_not_saved: "%{count} вложени(й/я) не были сохранены"

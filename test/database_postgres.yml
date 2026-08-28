@@ -1,0 +1,9 @@
+test:
+  adapter: postgresql
+  host: "db"
+  port: "5432"
+  username: "root"
+  password: "strong-pass"
+  database: "redmine"
+  encoding: "utf8"
+
