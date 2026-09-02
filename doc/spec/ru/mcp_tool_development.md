@@ -1304,13 +1304,13 @@ Boolean `confirm_delete: true` МОЖНО использовать как доп
 
 В audit log фиксируются:
 
-- имя инструмента;
-- аутентифицированный пользователь;
-- ID целевого проекта/объекта;
-- результат;
-- длительность;
-- код ошибки;
-- correlation ID запроса.
+- tool name;
+- authenticated user;
+- target project/object IDs;
+- outcome;
+- duration;
+- error code;
+- request correlation ID.
 
 ЗАПРЕЩЕНО логировать:
 
@@ -1596,7 +1596,7 @@ Call redmine_list_allowed_issue_transitions to retrieve current values.
 - изменение имени;
 - удаление параметра;
 - изменение типа;
-- изменение `required`;
+- изменение required;
 - расширение уровня риска annotations;
 - исчезновение `outputSchema`;
 - несовместимое изменение полей, типов, `required`, `enum` / `const` или success/error-веток `outputSchema`.
@@ -1723,10 +1723,12 @@ redmine_get_issue
 
 1. добавить новое имя;
 2. временно сохранить старый alias;
-3. пометить старый tool как deprecated в description;
-4. собирать метрики вызовов старого имени;
-5. удалить alias после согласованного периода;
+3. пометить старый tool как deprecated в description **или не публиковать его в `tools/list`**, если alias нужен только для `tools/call`;
+4. собирать метрики вызовов старого имени (достаточно существующего audit log по имени вызванного tool);
+5. удалить alias после согласованного периода (не раньше следующей major-версии, если период не согласован отдельно);
 6. отправить `notifications/tools/list_changed`, если сервер объявляет `listChanged`.
+
+Текущие примеры (см. [03-core-tools.md](03-core-tools.md)): `redmine_list_all_users` → `redmine_admin_list_users`; `redmine_list_files` → `redmine_list_project_files`; `redmine_delete_file` → `redmine_delete_attachment`; `redmine_get_server_info` → `redmine_get_mcp_info`. Alias принимается в `tools/call` и не публикуется в `tools/list`.
 
 ### 15.3. Изменение описаний
 
@@ -1734,7 +1736,7 @@ Description влияет на выбор инструмента моделью �
 
 ### 15.4. Версия сервера
 
-Версия MCP-сервера возвращается отдельным read-only tool или server metadata. Не следует добавлять `v1`, `v2` в каждое имя без реальной необходимости поддерживать параллельные несовместимые контракты.
+Версия MCP-плагина возвращается `redmine_get_mcp_info` (или server metadata). Не следует добавлять `v1`, `v2` в каждое имя без реальной необходимости поддерживать параллельные несовместимые контракты.
 
 ---
 
@@ -1783,14 +1785,14 @@ Description влияет на выбор инструмента моделью �
 
 | Группа | Примеры намерений | Префикс |
 |---|---|---|
-| Задачи | get, list, search, create, update, delete, copy, подзадачи | `redmine_` |
-| Связи и наблюдатели | list/create/delete relation; add/remove watcher | `redmine_` |
-| Проекты и участники | projects, modules, members, roles | `redmine_` |
-| Версии и категории | versions; категории задач | `redmine_` |
-| Учёт времени | list, create, update, import, activities | `redmine_` |
+| Issues | get, list, search, create, update, delete, copy, subtasks | `redmine_` |
+| Relations и watchers | list/create/delete relation; add/remove watcher | `redmine_` |
+| Projects и members | projects, modules, members, roles | `redmine_` |
+| Versions и categories | versions; issue categories | `redmine_` |
+| Time entries | list, create, update, import, activities | `redmine_` |
 | Wiki | list, get, create, update, rename, delete | `redmine_` |
-| Файлы и вложения | list, upload, delete, download | `redmine_` |
-| Администрирование | users, roles, server info | `redmine_admin_` или `redmine_get_server_info` |
+| Files и attachments | list, upload, delete, download | `redmine_` |
+| Admin | users, roles, MCP session info | `redmine_admin_` или `redmine_get_mcp_info` |
 | Сущности плагинов | чеклисты, поиск и т.д. | `redmine_` + `plugin_id`, напр. `redmine_advanced_search_` |
 
 Перед добавлением нового tool СЛЕДУЕТ проверить ответ MCP-метода `tools/list` и соответствующую группу: не дублировать существующий инструмент и не смешивать разные намерения в одном имени.

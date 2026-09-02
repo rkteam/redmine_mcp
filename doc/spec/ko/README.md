@@ -8,9 +8,9 @@ Redmine 내부의 MCP 서버(Model Context Protocol). AI 클라이언트가 표�
 
 ## 요구 사항
 
-| 구성 요소 | 지원 버전 |
+| 구성 요소 | 버전 |
 |---|---|
-| Redmine | 6.0–6.1 |
+| Redmine | Redmine 6.0+ (테스트: 6.0–6.1) |
 | MCP protocol | 2025-11-25 |
 | Ruby MCP SDK (`mcp`) | 0.23.x |
 
@@ -192,10 +192,10 @@ host가 일치하지 않으면 MCP 엔드포인트가 HTTP `403 Forbidden`을 �
 | `list_projects` | 프로젝트 목록 |
 | `get_project` | 프로젝트 세부 정보 |
 | `list_project_issue_custom_fields` | 프로젝트 이슈 사용자 정의 필드 |
-| `summarize_project_status` | N일간 프로젝트 활동 및 메트릭 요약 |
-| `list_project_activities` | 프로젝트 활동 피드 |
-| `list_versions` | 프로젝트 버전 |
-| `get_version` | 집계가 포함된 버전 세부 정보 |
+| `summarize_project_status` | N일간 서버가 생성한 프로젝트 메트릭 요약 |
+| `list_project_activities` | 프로젝트 활동 피드(이벤트, 시간 기록 activity 유형 아님) |
+| `list_versions` | 로드맵 버전(마일스톤) |
+| `get_version` | 로드맵 버전 세부정보(집계 포함) |
 | `create_version` | 버전 생성 |
 | `update_version` | 버전 업데이트 |
 | `delete_version` | 버전 삭제 |
@@ -251,7 +251,7 @@ host가 일치하지 않으면 MCP 엔드포인트가 HTTP `403 Forbidden`을 �
 | `list_time_entries` | 시간 기록 목록 |
 | `create_time_entry` | 시간 기록 생성 |
 | `update_time_entry` | 시간 기록 업데이트 |
-| `list_time_entry_activities` | 활동 유형(전역 또는 프로젝트별) |
+| `list_time_entry_activities` | 시간 기록 activity 유형(프로젝트 이벤트 피드 아님) |
 | `import_time_entries` | 시간 기록 일괄 가져오기 |
 
 ### 참조 데이터
@@ -262,7 +262,7 @@ host가 일치하지 않으면 MCP 엔드포인트가 HTTP `403 Forbidden`을 �
 | `list_project_trackers` | 프로젝트 트래커 |
 | `list_issue_statuses` | 이슈 상태 |
 | `list_issue_priorities` | 이슈 우선순위 |
-| `list_all_users` | 필터가 있는 사용자(관리자만) |
+| `admin_list_users` | 필터가 있는 사용자(관리자만) |
 | `get_current_user` | 현재 사용자 |
 | `list_queries` | 저장된 쿼리(메타데이터; 실행은 `run_issue_query`) |
 
@@ -290,9 +290,9 @@ host가 일치하지 않으면 MCP 엔드포인트가 HTTP `403 Forbidden`을 �
 
 | 도구 | 설명 |
 |------|-------------|
-| `list_files` | 프로젝트 파일 |
+| `list_project_files` | 프로젝트 파일 |
 | `upload_file` | 파일 업로드 |
-| `delete_file` | 파일 또는 첨부 파일 삭제 |
+| `delete_attachment` | 첨부 파일 삭제 |
 | `get_attachment` | 첨부 파일 메타데이터 및 `content_url` |
 | `download_attachment` | 첨부 파일 내용(`content_base64`, 최대 10 MiB) |
 
@@ -300,7 +300,7 @@ host가 일치하지 않으면 MCP 엔드포인트가 HTTP `403 Forbidden`을 �
 
 | 도구 | 설명 |
 |------|-------------|
-| `get_server_info` | 서버 버전, read-only 모드, 현재 사용자 및 사용 가능한 capabilities |
+| `get_mcp_info` | MCP 플러그인 버전, read-only 모드, 현재 사용자 및 사용 가능한 capabilities |
 
 ### 접근 및 응답
 

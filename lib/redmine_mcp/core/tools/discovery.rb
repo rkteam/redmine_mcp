@@ -28,7 +28,7 @@ module RedmineMcp
           register_list_project_trackers
           register_list_issue_statuses
           register_list_issue_priorities
-          register_list_all_users
+          register_admin_list_users
           register_get_current_user
           register_list_queries
         end
@@ -105,11 +105,11 @@ module RedmineMcp
           )
         end
 
-        def register_list_all_users
+        def register_admin_list_users
           Registry.instance.register_tool(
             plugin_id: PLUGIN_ID,
-            name: 'list_all_users',
-            title: 'List all users',
+            name: 'admin_list_users',
+            title: 'Admin list users',
             description: 'Return a paginated global directory of active Redmine users. Requires administrator permission. Optional filters: name substring (login, first name, last name, or email) ' \
                          'and group_id. Use for admin workflows when project scope is irrelevant; for project member lookup or assignment, prefer redmine_list_users with project. Each item ' \
                          'includes id, login, name parts, mail, and created_on. Does not modify Redmine.',
@@ -122,7 +122,8 @@ module RedmineMcp
             output_schema: RedmineMcp::Core::OutputSchemas::LIST_ALL_USERS,
             permission: ->(user, _args, _project) { user.admin? },
             annotations: Helpers::READ_ONLY_ANNOTATIONS,
-            handler: method(:list_all_users)
+            aliases: ['list_all_users'],
+            handler: method(:admin_list_users)
           )
         end
 
@@ -132,8 +133,8 @@ module RedmineMcp
             name: 'get_current_user',
             title: 'Get current user',
             description: 'Return the profile of the currently authenticated MCP user: id, login, name parts, mail, admin flag, created_on, and last_login_on. Use to confirm identity and ' \
-                         'permissions before user-scoped or admin operations. Does not include project memberships or roles. Does not modify Redmine. For server version and read-only mode, use ' \
-                         'redmine_get_server_info.',
+                         'permissions before user-scoped or admin operations. Does not include project memberships or roles. Does not modify Redmine. For MCP plugin version and read-only mode, use ' \
+                         'redmine_get_mcp_info.',
             input_schema: {properties: {}},
             output_schema: RedmineMcp::Core::OutputSchemas::CURRENT_USER,
             permission: :use_mcp,
@@ -199,7 +200,7 @@ module RedmineMcp
           end
         end
 
-        def list_all_users(args, context)
+        def admin_list_users(args, context)
           user = context[:user]
           return Helpers.error_result(:error_mcp_permission_denied) unless user.admin?
 

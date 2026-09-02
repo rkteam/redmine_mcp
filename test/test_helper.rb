@@ -44,6 +44,7 @@ class RedmineMcpTestCase < ActiveSupport::TestCase
     file_id: 1,
     attachment_id: 1,
     user_id: 2,
+    principal_id: 2,
     role_ids: [1],
     entries: [{hours: 1.0, project: 'ecookbook'}]
   }.freeze

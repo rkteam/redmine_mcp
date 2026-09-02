@@ -8,9 +8,9 @@ Redmine 内の MCP サーバー（Model Context Protocol）。AI クライアン
 
 ## 要件
 
-| コンポーネント | サポートバージョン |
+| コンポーネント | バージョン |
 |---|---|
-| Redmine | 6.0–6.1 |
+| Redmine | Redmine 6.0+（テスト済み: 6.0–6.1） |
 | MCP protocol | 2025-11-25 |
 | Ruby MCP SDK (`mcp`) | 0.23.x |
 
@@ -192,10 +192,10 @@ host が一致しない場合、MCP エンドポイントは HTTP `403 Forbidden
 | `list_projects` | プロジェクト一覧 |
 | `get_project` | プロジェクト詳細 |
 | `list_project_issue_custom_fields` | プロジェクトの課題カスタムフィールド |
-| `summarize_project_status` | N 日間のプロジェクト活動とメトリクスの概要 |
-| `list_project_activities` | プロジェクト活動フィード |
-| `list_versions` | プロジェクトバージョン |
-| `get_version` | 集計付きバージョン詳細 |
+| `summarize_project_status` | N 日間のプロジェクトメトリクス要約（サーバー生成） |
+| `list_project_activities` | プロジェクトアクティビティフィード（イベント。時間記録の activity タイプではない） |
+| `list_versions` | ロードマップのバージョン（マイルストーン） |
+| `get_version` | ロードマップバージョンの詳細（集計付き） |
 | `create_version` | バージョン作成 |
 | `update_version` | バージョン更新 |
 | `delete_version` | バージョン削除 |
@@ -251,7 +251,7 @@ host が一致しない場合、MCP エンドポイントは HTTP `403 Forbidden
 | `list_time_entries` | 時間記録一覧 |
 | `create_time_entry` | 時間記録作成 |
 | `update_time_entry` | 時間記録更新 |
-| `list_time_entry_activities` | 活動タイプ（グローバルまたはプロジェクト別） |
+| `list_time_entry_activities` | 時間記録の activity タイプ（プロジェクトイベントフィードではない） |
 | `import_time_entries` | 時間記録の一括インポート |
 
 ### 参照データ
@@ -262,7 +262,7 @@ host が一致しない場合、MCP エンドポイントは HTTP `403 Forbidden
 | `list_project_trackers` | プロジェクトのトラッカー |
 | `list_issue_statuses` | 課題ステータス |
 | `list_issue_priorities` | 課題優先度 |
-| `list_all_users` | フィルタ付きユーザー（管理者のみ） |
+| `admin_list_users` | フィルタ付きユーザー（管理者のみ） |
 | `get_current_user` | 現在のユーザー |
 | `list_queries` | 保存済みクエリ（メタデータ; 実行は `run_issue_query`） |
 
@@ -290,9 +290,9 @@ host が一致しない場合、MCP エンドポイントは HTTP `403 Forbidden
 
 | ツール | 説明 |
 |------|-------------|
-| `list_files` | プロジェクトファイル |
+| `list_project_files` | プロジェクトファイル |
 | `upload_file` | ファイルアップロード |
-| `delete_file` | ファイルまたは添付ファイル削除 |
+| `delete_attachment` | 添付ファイルを削除 |
 | `get_attachment` | 添付ファイルメタデータと `content_url` |
 | `download_attachment` | 添付ファイル内容（`content_base64`、最大 10 MiB） |
 
@@ -300,7 +300,7 @@ host が一致しない場合、MCP エンドポイントは HTTP `403 Forbidden
 
 | ツール | 説明 |
 |------|-------------|
-| `get_server_info` | サーバーバージョン、読み取り専用モード、現在のユーザー、利用可能な capabilities |
+| `get_mcp_info` | MCP プラグインバージョン、読み取り専用モード、現在のユーザー、利用可能な capabilities |
 
 ### アクセスと応答
 

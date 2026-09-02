@@ -2,18 +2,19 @@ es:
   label_redmine_mcp: Redmine MCP
   text_redmine_mcp_server_instructions: |
     Reglas de enrutamiento de Redmine MCP:
-    - Al inicio de la sesión, llame a redmine_get_server_info y use las capabilities informadas para elegir tools opcionales.
+    - Al inicio de la sesión, llame a redmine_get_mcp_info y use las capabilities informadas para elegir tools opcionales.
     - Si el ID de la petición es desconocido, busque antes de redmine_get_issue usando capabilities.issue_search.
-    - Para búsqueda semántica, conceptual o por similitud, use la capability semantic de redmine_get_server_info si available. Siga las pistas use_when y avoid_when.
+    - Para búsqueda semántica, conceptual o por similitud, use la capability semantic de redmine_get_mcp_info si available. Siga las pistas use_when y avoid_when.
     - Use redmine_search_issues para búsqueda por palabra clave, identificador, campo o texto exacto.
     - Si se pide búsqueda semántica pero capabilities.issue_search.semantic.available es false, use redmine_search_issues e indique que el fallback es léxico, no semántico.
     - Use redmine_search_all para descubrir varios tipos de recursos, incluidas páginas wiki, cuando capabilities.issue_search.cross_resource esté disponible.
     - Si project es desconocido, llame primero a redmine_list_projects. project debe ser una cadena como "1" o "ecookbook", no un número JSON.
     - Antes de redmine_create_issue o redmine_update_issue, llame a redmine_get_issue_form_options si los ID de tracker, estado, asignado o campos personalizados no se conocen. Dry-run opcional: redmine_validate_issue_create / redmine_validate_issue_update.
     - Para añadir un comentario sin cambiar campos de la petición, use redmine_add_issue_note. Para observadores, use redmine_add_issue_watcher o redmine_remove_issue_watcher.
-    - Use redmine_list_users para buscar usuarios del proyecto; redmine_list_all_users solo para el directorio global de administrador.
+    - Use redmine_list_users para buscar usuarios del proyecto; redmine_admin_list_users solo para el directorio global de administrador.
     - Solicite redmine_get_private_notes o include_journals solo cuando el usuario necesite explícitamente diarios o notas privadas.
     - Las tools destructivas como redmine_delete_issue pueden requerir confirmación; si se devuelve INVALID_STATE, reintente con los parámetros confirm_* pedidos.
+    - Al citar una petición al usuario, copie el campo url del resultado del tool. No invente un hostname.
     - Además de las core tools redmine_* pueden aparecer tools de plugins instalados con sus propios prefijos.
   text_redmine_mcp_server_instructions_read_only: Las operaciones de escritura están bloqueadas porque el modo de solo lectura MCP está activado.
   label_redmine_mcp_enabled: Activar MCP

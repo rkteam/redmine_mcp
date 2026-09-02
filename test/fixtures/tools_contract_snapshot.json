@@ -11,8 +11,7 @@
   },
   "redmine_add_issue_watcher": {
     "required": [
-      "issue_id",
-      "user_id"
+      "issue_id"
     ],
     "read_only": false,
     "destructive": false,
@@ -98,7 +97,7 @@
     "idempotent": false,
     "has_output_schema": true
   },
-  "redmine_delete_file": {
+  "redmine_delete_attachment": {
     "required": [
       "file_id"
     ],
@@ -232,7 +231,7 @@
     "idempotent": true,
     "has_output_schema": true
   },
-  "redmine_get_server_info": {
+  "redmine_get_mcp_info": {
     "required": [],
     "read_only": true,
     "destructive": false,
@@ -267,7 +266,7 @@
     "idempotent": false,
     "has_output_schema": true
   },
-  "redmine_list_all_users": {
+  "redmine_admin_list_users": {
     "required": [],
     "read_only": true,
     "destructive": false,
@@ -292,7 +291,7 @@
     "idempotent": true,
     "has_output_schema": true
   },
-  "redmine_list_files": {
+  "redmine_list_project_files": {
     "required": [
       "project"
     ],
@@ -472,8 +471,7 @@
   },
   "redmine_remove_issue_watcher": {
     "required": [
-      "issue_id",
-      "user_id"
+      "issue_id"
     ],
     "read_only": false,
     "destructive": true,

@@ -8,9 +8,9 @@ Um servidor MCP (Model Context Protocol) dentro do Redmine. Permite que clientes
 
 ## Requisitos
 
-| Componente | Versão suportada |
+| Componente | Versão |
 |---|---|
-| Redmine | 6.0–6.1 |
+| Redmine | Redmine 6.0+ (testado: 6.0–6.1) |
 | MCP protocol | 2025-11-25 |
 | Ruby MCP SDK (`mcp`) | 0.23.x |
 
@@ -192,10 +192,10 @@ Com cache local ao processo, as garantias de rate limiting e idempotência se ap
 | `list_projects` | Listar projetos |
 | `get_project` | Detalhes do projeto |
 | `list_project_issue_custom_fields` | Campos customizados de tarefas do projeto |
-| `summarize_project_status` | Resumo de atividade e métricas do projeto por N dias |
-| `list_project_activities` | Feed de atividade do projeto |
-| `list_versions` | Versões do projeto |
-| `get_version` | Detalhes da versão com agregados |
+| `summarize_project_status` | Resumo de métricas do projeto gerado pelo servidor por N dias |
+| `list_project_activities` | Feed de atividade do projeto (eventos, não tipos de atividade de registro de tempo) |
+| `list_versions` | Versões do roadmap (marcos) |
+| `get_version` | Detalhes da versão do roadmap com agregados |
 | `create_version` | Criar uma versão |
 | `update_version` | Atualizar uma versão |
 | `delete_version` | Excluir uma versão |
@@ -251,7 +251,7 @@ Com cache local ao processo, as garantias de rate limiting e idempotência se ap
 | `list_time_entries` | Listar registros de tempo |
 | `create_time_entry` | Criar um registro de tempo |
 | `update_time_entry` | Atualizar um registro de tempo |
-| `list_time_entry_activities` | Tipos de atividade (globais ou por projeto) |
+| `list_time_entry_activities` | Tipos de atividade de registro de tempo (não o feed de eventos do projeto) |
 | `import_time_entries` | Importação em massa de registros de tempo |
 
 ### Dados de referência
@@ -262,7 +262,7 @@ Com cache local ao processo, as garantias de rate limiting e idempotência se ap
 | `list_project_trackers` | Trackers do projeto |
 | `list_issue_statuses` | Status das tarefas |
 | `list_issue_priorities` | Prioridades das tarefas |
-| `list_all_users` | Usuários com filtros (apenas administrador) |
+| `admin_list_users` | Usuários com filtros (apenas administrador) |
 | `get_current_user` | Usuário atual |
 | `list_queries` | Queries salvas (metadados; execução é `run_issue_query`) |
 
@@ -290,9 +290,9 @@ Com cache local ao processo, as garantias de rate limiting e idempotência se ap
 
 | Ferramenta | Descrição |
 |------|-------------|
-| `list_files` | Arquivos do projeto |
+| `list_project_files` | Arquivos do projeto |
 | `upload_file` | Enviar um arquivo |
-| `delete_file` | Excluir um arquivo ou anexo |
+| `delete_attachment` | Excluir um anexo |
 | `get_attachment` | Metadados do anexo e `content_url` |
 | `download_attachment` | Conteúdo do anexo (`content_base64`, até 10 MiB) |
 
@@ -300,7 +300,7 @@ Com cache local ao processo, as garantias de rate limiting e idempotência se ap
 
 | Ferramenta | Descrição |
 |------|-------------|
-| `get_server_info` | Versão do servidor, modo somente leitura, usuário atual e capabilities disponíveis |
+| `get_mcp_info` | Versão do plugin MCP, modo somente leitura, usuário atual e capabilities disponíveis |
 
 ### Acesso e respostas
 

@@ -105,6 +105,8 @@ Fornire ai client AI operazioni di gestione progetti, operazioni sulle issue, re
 | `list_time_entry_activities` | R | `log_time` |
 | `import_time_entries` | W | `log_time` |
 
+`list_time_entry_activities` — catalogo dei tipi di attività di lavoro per la registrazione del tempo, non il feed eventi del progetto (`list_project_activities`).
+
 ### Scoperta / enumerazione
 
 | Strumento | R/W | Permesso |
@@ -113,7 +115,7 @@ Fornire ai client AI operazioni di gestione progetti, operazioni sulle issue, re
 | `list_project_trackers` | R | `view_issues` |
 | `list_issue_statuses` | R | `view_issues` |
 | `list_issue_priorities` | R | `view_issues` |
-| `list_all_users` | R | admin |
+| `admin_list_users` | R | admin |
 | `get_current_user` | R | `use_mcp` |
 | `list_queries` | R | `view_issues` |
 
@@ -141,9 +143,9 @@ Fornire ai client AI operazioni di gestione progetti, operazioni sulle issue, re
 
 | Strumento | R/W | Permesso |
 |------|-----|------------|
-| `list_files` | R | `view_files` |
+| `list_project_files` | R | `view_files` |
 | `upload_file` | W | `manage_files` |
-| `delete_file` | W | `manage_files` (o permessi del contenitore) |
+| `delete_attachment` | W | `manage_files` (o permessi del contenitore) |
 | `get_attachment` | R | permessi sul contenitore dell'allegato |
 | `download_attachment` | R | permessi sul contenitore dell'allegato |
 
@@ -151,9 +153,11 @@ Fornire ai client AI operazioni di gestione progetti, operazioni sulle issue, re
 
 | Strumento | R/W | Permesso |
 |------|-----|------------|
-| `get_server_info` | R | `use_mcp` |
+| `get_mcp_info` | R | `use_mcp` |
 
-`get_server_info` restituisce `server_version`, `read_only_mode`, `auth_mode`, brevi dati dell'utente corrente e `capabilities.issue_search`. L'installazione di plugin di terze parti non è elencata nella risposta: i loro strumenti MCP sono visibili tramite `tools/list` e tramite `capabilities` che le estensioni registrano autonomamente.
+`get_mcp_info` restituisce i metadati del plugin MCP della sessione corrente, non la versione o le impostazioni dell'applicazione Redmine: `server_version` (versione del plugin MCP), `read_only_mode`, `auth_mode`, brevi dati dell'utente corrente e `capabilities.issue_search`. L'installazione di plugin di terze parti non è elencata nella risposta: i loro strumenti MCP sono visibili tramite `tools/list` e tramite `capabilities` che le estensioni registrano autonomamente.
+
+Nome completo canonico — `redmine_get_mcp_info`. Il nome precedente `get_server_info` (`redmine_get_server_info`) resta un alias invocabile almeno fino alla prossima versione major: stessi permessi, input, output e comportamento; `tools/call` con il vecchio nome esegue la stessa operazione; l'alias non è pubblicato in `tools/list`; le chiamate alias sono distinguibili nell'audit log dal nome dello strumento invocato. I link da altri strumenti usano il nome canonico.
 
 `capabilities.issue_search` contiene le modalità di ricerca:
 
@@ -176,9 +180,10 @@ Quando `semantic.available: true`, la capability DEVE includere `tool`, `provide
 - `create_issue_relation` applica solo gli attributi di relazione consentiti e scrive la modifica nel journal dell'issue. `delete_issue_relation` è consentito solo se la relazione può essere eliminata dall'utente corrente (entrambe le issue sono visibili e l'utente ha il permesso di gestire le relazioni su almeno un lato); l'eliminazione viene anch'essa scritta nel journal.
 - `add_project_member` / `update_project_member` accettano solo ruoli che l'utente corrente può gestire nel progetto. Un ruolo al di fuori di quell'insieme viene rifiutato; i ruoli non vengono assegnati parzialmente.
 - `create_issue_category` / `update_issue_category`: `assigned_to_id` è un ID principal (utente o gruppo), non solo un utente.
-- `delete_file` per un allegato di issue segue la regola "è possibile eliminare gli allegati su questa issue" (incluse le proprie issue e i permessi del tracker), non solo il globale `edit_issues`. In `tools/list`, lo strumento è visibile se l'utente può eliminare almeno un allegato (file di progetto, issue o wiki), non solo con il globale `manage_files`.
+- `delete_attachment` per un allegato di issue segue la regola "è possibile eliminare gli allegati su questa issue" (incluse le proprie issue e i permessi del tracker), non solo il globale `edit_issues`. In `tools/list`, lo strumento è visibile se l'utente può eliminare almeno un allegato (file di progetto, issue o wiki), non solo con il globale `manage_files`.
 - `get_wiki_page`: `attachments` è sempre nella risposta; per impostazione predefinita `[]` e `attachments_pagination: null`; con `include_attachments=true` — una lista paginata di allegati con `attachment_limit`/`attachment_offset` (predefinito e massimo 100). La `version` storica richiede il permesso di visualizzare le modifiche wiki. Modificare, rinominare o eliminare una pagina protetta richiede il permesso di proteggere le pagine wiki.
 - `list_issues`, `search_issues`, `list_subtasks`, `run_issue_query`: campi di riepilogo per impostazione predefinita; descrizione completa tramite `fields` o `get_issue`.
+- Gli oggetti issue di `get_issue`, `list_issues`, `search_issues`, `list_subtasks`, `run_issue_query`, `create_issue`, `update_issue` e `copy_issue` includono `url` — un link assoluto all'UI web. L'host proviene dalle impostazioni Redmine «Nome host e percorso» e dal protocollo, come nelle e-mail. Se «Nome host e percorso» è vuoto, `url` è `null` invece di un link non valido. Il riepilogo list/search include `url` per impostazione predefinita. Gli elementi `search_all` con `type` `issues` e i `children` annidati di `get_issue` includono anch'essi `url`. Nel citare una segnalazione all'utente, il client copia `url` dal risultato del tool.
 - `create_issue` e `update_issue` accettano attributi **espliciti** dell'issue (`subject`, `description`, `tracker_id`, `status_id`, `custom_fields`, ecc.). Tutti gli attributi passati esplicitamente, inclusi `subject` e `description` in creazione, passano attraverso le stesse regole di scrittura del form web di Redmine. Prima di create/update, l'agente DOVREBBE chiamare `get_issue_form_options` quando i valori consentiti dei campi sono sconosciuti. Un valore passato esplicitamente che Redmine non ha applicato comporta un errore, non un successo parziale.
 - Se il client **non ha passato** `start_date` in `create_issue` / `validate_issue_create`, e Redmine ha abilitato "data di inizio = data di creazione" (`default_issue_start_date_to_creation_date`), MCP imposta `start_date` al giorno odierno dell'utente — come il form di nuova issue. Un `start_date` esplicito (incluso `null`) disabilita questa sostituzione. `copy_issue` e `update_issue` non sostituiscono la data autonomamente.
 - `update_issue` non accetta `notes`, `private_notes` o `watcher_user_ids`. Commenti — `add_issue_note`; watcher — `add_issue_watcher` / `remove_issue_watcher`.
@@ -188,18 +193,18 @@ Quando `semantic.available: true`, la capability DEVE includere `tool`, `provide
 - `update_issue` accetta `uploads[*].content_base64` e `uploads[*].filename`. Dopo un upload riuscito, la risposta contiene `added_attachments` — solo i file di questa chiamata, non l'intera lista di allegati dell'issue. Base64 corrotto è un errore di parametro.
 - `update_issue` accetta `status_name` e lo risolve in `status_id`.
 - `upload_file` accetta `content_base64` (fino a 20 MiB); `project`, `filename` e `content_base64` sono obbligatori.
-- `get_attachment` restituisce `attachment_id`, `filename`, `content_type`, `size` (dimensione del file allegato) e `content_url` (senza byte del file).
-- `download_attachment` restituisce `attachment_id`, `filename`, `content_type`, `size` (dimensione effettiva del contenuto in byte) e `content_base64` per un singolo allegato visibile all'utente corrente. Se il MIME è sconosciuto — `application/octet-stream`. Non incrementa il contatore `downloads`. Il limite di dimensione è 10 MiB (controlla `File.size` su disco prima della lettura e `bytesize` dopo la lettura); se superato — `FILE_TOO_LARGE`. I percorsi del filesystem del server non vengono restituiti nella risposta. `attachment_id` proviene da `redmine_get_issue` / `redmine_get_wiki_page` con `include_attachments=true`, `redmine_list_files` o `redmine_get_attachment`. Per leggere, analizzare o elaborare un allegato come file, decodificare `content_base64` localmente. Allegati inesistenti e inaccessibili restituiscono la stessa risposta "not found".
+- `get_attachment` restituisce `attachment_id`, `filename`, `content_type`, `size` (dimensione del file allegato) e `content_url` (senza byte del file). Se «Nome host e percorso» è vuoto, `content_url` è `null`.
+- `download_attachment` restituisce `attachment_id`, `filename`, `content_type`, `size` (dimensione effettiva del contenuto in byte) e `content_base64` per un singolo allegato visibile all'utente corrente. Se il MIME è sconosciuto — `application/octet-stream`. Non incrementa il contatore `downloads`. Il limite di dimensione è 10 MiB (controlla `File.size` su disco prima della lettura e `bytesize` dopo la lettura); se superato — `FILE_TOO_LARGE`. I percorsi del filesystem del server non vengono restituiti nella risposta. `attachment_id` proviene da `redmine_get_issue` / `redmine_get_wiki_page` con `include_attachments=true`, `redmine_list_project_files` o `redmine_get_attachment`. Per leggere, analizzare o elaborare un allegato come file, decodificare `content_base64` localmente. Allegati inesistenti e inaccessibili restituiscono la stessa risposta "not found".
 - `create_time_entry` e gli elementi di `import_time_entries.entries` richiedono `hours` e `project` o `issue_id`. `hours` può essere 0; la validità dello zero e il massimo giornaliero sono verificati da Redmine (`timelog_accept_0_hours`, `timelog_max_hours_per_day`).
-- `assigned_to_id` in creazione/aggiornamento issue è un ID principal (utente o gruppo da `get_issue_form_options.assignees`); `null` cancella l'assegnatario. `user_id` in `add_issue_watcher` / `remove_issue_watcher` è un ID principal (utente o gruppo). Negli altri strumenti, `user_id` è un ID utente. Per l'utente corrente, usare `assignee_ref` o `user_ref` con valore `me`.
+- `assigned_to_id` in creazione/aggiornamento issue è un ID principal (utente o gruppo da `get_issue_form_options.assignees`); `null` cancella l'assegnatario. Per `add_issue_watcher` / `remove_issue_watcher`, l'input canonico è `principal_id` (utente o gruppo). Il precedente `user_id` è accettato come alias dello stesso ID; non si possono passare entrambi insieme. La risposta include `principal_id` e un duplicato `user_id` con lo stesso valore. Negli altri strumenti, `user_id` è un ID utente. Per l'utente corrente, usare `assignee_ref` o `user_ref` con valore `me`.
 - `expected_updated_at` (opzionale) su update/delete sensibili: se non corrisponde a `updated_on`, restituisce `CONFLICT`.
 - `idempotency_key` (opzionale) su `create_issue`, `copy_issue`, `update_issue`, `add_issue_note`, `create_time_entry`, `import_time_entries`, `upload_file`: un retry con la stessa chiave e **lo stesso insieme di argomenti** (eccetto la chiave stessa) restituisce il risultato di successo in cache (TTL 24 h). La stessa chiave con payload diverso — `CONFLICT`, nessuna scrittura duplicata. Mentre la prima richiesta è ancora in esecuzione, un retry con la stessa chiave non esegue un'altra scrittura (il marcatore "in progress" vive le stesse 24 h di un risultato di successo). Una voce in cache senza fingerprint (cache da prima di questa versione) con la stessa chiave viene restituita come prima fino alla scadenza del TTL. Il timeout del server di 60 s si applica alle **letture**. Le operazioni di scrittura non vengono interrotte dal timeout del server affinché dopo un salvataggio riuscito possa essere registrato il risultato di idempotenza; il client può riprovare con la stessa chiave se ha perso la connessione. Un'eccezione imprevista in `import_time_entries` annulla le voci già inserite in quella chiamata; gli errori di validazione normali per singole righe vengono comunque raccolti senza annullare quelle riuscite.
-- `delete_file` per impostazione predefinita elimina solo file di progetto/versione; per allegati di issue/wiki, è richiesto `confirm_delete_any_attachment=true`.
+- `delete_attachment` per impostazione predefinita elimina solo file di progetto/versione; per allegati di issue/wiki, è richiesto `confirm_delete_any_attachment=true`. Nome completo canonico — `redmine_delete_attachment`. Il nome precedente `delete_file` (`redmine_delete_file`) resta un alias invocabile almeno fino alla prossima versione major: stessi permessi, input, output e comportamento; `tools/call` con il vecchio nome esegue la stessa operazione; l'alias non è pubblicato in `tools/list`; le chiamate alias sono distinguibili nell'audit log dal nome dello strumento invocato. I link da altri strumenti usano il nome canonico.
 - Liste/ricerche usano `limit`/`offset`. Per le query DB, la pagina è limitata a livello di query, non tagliando una lista completa già caricata. Qualsiasi collezione MCP paginata ha un ordine esplicito stabile; l'ultimo criterio è sempre `id` così le pagine non saltano o duplicano elementi.
 - La ricerca per sottostringa (`query`, `login`, `name` e `search_issues` testuale) corrisponde ai caratteri letteralmente: `%` e `_` non sono wildcard SQL.
 - Limiti MCP: timeout 60 s sugli strumenti di lettura, rate limit 120 richieste/min per utente, corpo HTTP della richiesta MCP 36 MiB, dimensione massima degli argomenti JSON dello strumento 32 MiB, upload base64 fino a 20 MiB, download base64 fino a 10 MiB. Base64 corrotto in qualsiasi `content_base64` è un errore di parametro prima dell'esecuzione dello strumento.
 - Ogni chiamata allo strumento, incluso il diniego di accesso, viene scritta in un audit log strutturato (tool, utente, ID target, esito, durata, correlation_id) e conteggiata nel rate limit; il contenuto base64 e le note private non vengono registrati. Gli ID target includono `board_id`, `message_id`, `query_id`, `user_id`, `group_id`, tra gli altri.
-- L'`outputSchema` di ogni core tool descrive il livello superiore di `data` (per le liste — i campi dell'elemento `items`), non un oggetto arbitrario aperto. L'insieme di campi dello schema corrisponde alla risposta effettiva: `list_users` senza `created_on`, `list_all_users` con `created_on`; `get_attachment` include `size` e `content_url`. I campi che possono essere vuoti nella risposta reale consentono `null` (inclusi `time_entry.issue`, `*_pagination` senza include, `estimation_accuracy`, `content_type` dell'allegato). I valori dei campi personalizzati e `possible_values` non sono limitati a oggetti. `attachments_not_saved` è un array di nomi file.
+- L'`outputSchema` di ogni core tool descrive il livello superiore di `data` (per le liste — i campi dell'elemento `items`), non un oggetto arbitrario aperto. L'insieme di campi dello schema corrisponde alla risposta effettiva: `list_users` senza `created_on`, `admin_list_users` con `created_on`; `get_attachment` include `size` e `content_url`. I campi che possono essere vuoti nella risposta reale consentono `null` (inclusi `time_entry.issue`, `*_pagination` senza include, `estimation_accuracy`, `content_type` dell'allegato). I valori dei campi personalizzati e `possible_values` non sono limitati a oggetti. `attachments_not_saved` è un array di nomi file.
 - `summarize_project_status.days` nello schema: predefinito 30, minimo 1, massimo 365.
 - `search_all.resources`: al massimo due valori univoci.
 - `version_id`, `file_id`, `tracker_id` sono interi non inferiori a 1.
@@ -284,6 +289,7 @@ Quando `semantic.available: true`, la capability DEVE includere `tool`, `provide
 
 ### `list_project_activities`
 
+- Questo è il feed eventi del progetto ("cosa è successo"), non il catalogo dei tipi di attività di lavoro per la registrazione del tempo. I tipi di attività di lavoro — `list_time_entry_activities`.
 - Input: `project` (obbligatorio); opzionalmente `from`, `to` (date `YYYY-MM-DD`), `author_id`, `event_types` (array di stringhe), `limit`/`offset`.
 - Finestra predefinita — ultimi 7 giorni (`to` = oggi, `from` = oggi meno 6 giorni). Lunghezza massima della finestra — 90 giorni; se superata — errore di parametro.
 - Eventi dal feed attività del progetto: tipo, ora, autore (`id`/`name`), `title`, `description`, `url`. Ordine — eventi più recenti prima; per uguale ora — `id` più alto prima.
@@ -292,6 +298,8 @@ Quando `semantic.available: true`, la capability DEVE includere `tool`, `provide
 - `author_id` inesistente — lista vuota, non un errore.
 
 ### `summarize_project_status`
+
+Non è un oggetto Redmine, ma un'aggregazione lato server su issue e registrazioni tempo visibili del progetto.
 
 I campi esistenti sono preservati: `project_id`, `project_name`, `analysis_period_days`, `recent_activity` (`created_count`, `updated_count`), `totals` (`issues_count`, `open_count`, `closed_count`), `status_breakdown`, `priority_breakdown`, `assignee_breakdown`.
 
@@ -310,6 +318,10 @@ Campi aggiuntivi:
 - `reopened_count` — numero di issue visibili il cui stato nel journal è passato da chiuso ad aperto entro la finestra `days`. Ogni issue viene contata al massimo una volta.
 
 Lo strumento restituisce fatti, non un'analisi testuale dello "stato di salute del progetto".
+
+### `list_versions` / `get_version`
+
+`Version` in questi strumenti è un'entità Redmine (fase roadmap / milestone), non la versione di un prodotto software. `list_versions` restituisce le versioni roadmap del progetto, incluse quelle condivise.
 
 ### `get_version`
 
@@ -331,9 +343,27 @@ Lo strumento restituisce fatti, non un'analisi testuale dello "stato di salute d
 ### `list_users`
 
 - Con `project`: membri attivi del progetto di tipo **user** (permesso `view_members`). L'appartenenza a un gruppo nel progetto non appare come gruppo; gli utenti di un gruppo solo se sono membri essi stessi. Senza `project` — solo amministratore.
-- Elemento: `id`, `login`, `firstname`, `lastname`, `mail`. Non include `created_on` (quel campo è su `list_all_users`).
+- Elemento: `id`, `login`, `firstname`, `lastname`, `mail`. Non include `created_on` (quel campo è su `admin_list_users`).
 - Opzionale `query`: sottostringa case-insensitive su `login`, `firstname` e `lastname`.
 - L'opzionale `login` è preservato (solo sottostringa del login) per compatibilità. Se sia `query` che `login` sono impostati, entrambe le condizioni si applicano (AND).
+
+
+### `admin_list_users`
+
+- Catalogo globale degli utenti attivi dell'installazione. Solo amministratore. Per i membri del progetto e l'assegnazione nel progetto, usare `list_users` con `project`.
+- Input: opzionalmente `name` (substring case-insensitive su login, firstname, lastname o email), `group_id`, paginazione.
+- Elemento: `id`, `login`, `firstname`, `lastname`, `mail`, `created_on`.
+- Nome completo canonico — `redmine_admin_list_users`.
+- Il nome precedente `list_all_users` (`redmine_list_all_users`) resta un alias invocabile almeno fino alla prossima versione major: stessi permessi, input, output e comportamento; `tools/call` con il vecchio nome esegue la stessa operazione; l'alias non è pubblicato in `tools/list`; le chiamate alias sono distinguibili nell'audit log dal nome dello strumento invocato.
+- Le istruzioni server e i link da altri strumenti usano il nome canonico.
+
+### `list_project_files`
+
+- Elenco paginato dei file dalla sezione File del progetto e allegati delle sue versioni. Non include allegati di issue o Wiki — leggerli tramite `get_issue` / `get_wiki_page` con `include_attachments`.
+- Input: `project` (obbligatorio), paginazione. Permesso `view_files`.
+- Nome completo canonico — `redmine_list_project_files`.
+- Il nome precedente `list_files` (`redmine_list_files`) resta un alias invocabile almeno fino alla prossima versione major: stessi permessi, input, output e comportamento; `tools/call` con il vecchio nome esegue la stessa operazione; l'alias non è pubblicato in `tools/list`; le chiamate alias sono distinguibili nell'audit log dal nome dello strumento invocato.
+- I link da altri strumenti usano il nome canonico.
 
 ### `list_groups`
 
@@ -389,7 +419,7 @@ Lo strumento restituisce fatti, non un'analisi testuale dello "stato di salute d
 5. `delete_issue` senza `confirm_delete` restituisce `INVALID_STATE` e impact; con conferma elimina.
 6. `create_time_entry` richiede `hours` e `project` o `issue_id`; `import_time_entries` accetta un batch.
 7. `list_wiki_pages` / `get_wiki_page` / `create_wiki_page` funzionano con il modulo Wiki abilitato.
-8. `upload_file` richiede `filename` e `content_base64`; `delete_file` per allegato di issue richiede conferma.
+8. `upload_file` richiede `filename` e `content_base64`; `delete_attachment` per allegato di issue richiede conferma.
 9. Utente senza `use_mcp` non supera l'autenticazione MCP; senza permesso per lo strumento non lo vede in `tools/list`.
 10. Retry di `create_issue` con la stessa `idempotency_key` e gli stessi argomenti non crea un duplicato; stessa chiave con subject diverso — `CONFLICT`.
 11. `download_attachment` per allegato di issue visibile restituisce `content_base64` con `size` del contenuto effettivo; per file > 10 MiB su disco (anche con metadati piccoli) — `FILE_TOO_LARGE`; allegato inesistente e inaccessibile sono indistinguibili.
@@ -435,7 +465,7 @@ Lo strumento restituisce fatti, non un'analisi testuale dello "stato di salute d
 51. Versione storica di pagina wiki senza `view_wiki_edits` è inaccessibile; pagina protetta non può essere modificata senza permesso di proteggere wiki.
 52. `copy_issue` senza permesso di aggiungere watcher non copia i watcher; `link_copied_issue` / `copy_attachments_on_issue_copy` = `no` vietano collegamento e allegati; il genitore nello stesso progetto viene preservato.
 53. Strumento di scrittura Extension in read-only mode non invoca l'handler.
-54. `delete_file` visibile in `tools/list` per utente che può eliminare allegati di issue, senza `manage_files`.
+54. `delete_attachment` visibile in `tools/list` per utente che può eliminare allegati di issue, senza `manage_files`.
 55. `add_issue_watcher` / `remove_issue_watcher` accettano principal di gruppo.
 56. `get_version` con `project` restituisce versione condivisa che `list_versions` per quel progetto ha restituito.
 57. `get_issue` / `get_wiki_page` / `get_board_message` limitano le liste annidate con `limit`/`offset` e restituiscono `*_pagination`; senza include la paginazione è `null`.
@@ -447,3 +477,8 @@ Lo strumento restituisce fatti, non un'analisi testuale dello "stato di salute d
 63. `get_issue` con journal `attr`, `cf` e `relation` contemporaneamente non fallisce e restituisce solo voci visibili.
 64. Journal con dettaglio di campo personalizzato nascosto e note di spazi, tab o interruzioni di riga non è incluso in `get_issue`.
 65. `get_private_notes` non restituisce un commento composto solo da spazi, tab o interruzioni di riga.
+66. L'amministratore chiama `admin_list_users` e ottiene il catalogo globale; il non amministratore non vede lo strumento in `tools/list` e riceve un rifiuto alla chiamata.
+67. Chiamare l'alias `list_all_users` restituisce lo stesso risultato di `admin_list_users`; `redmine_list_all_users` è assente da `tools/list`.
+68. Chiamare l'alias `list_files` restituisce lo stesso risultato di `list_project_files`; `redmine_list_files` è assente da `tools/list`.
+69. Chiamare l'alias `delete_file` restituisce lo stesso risultato di `delete_attachment`; `redmine_delete_file` è assente da `tools/list`.
+70. Chiamare l'alias `get_server_info` restituisce lo stesso risultato di `get_mcp_info`; `redmine_get_server_info` è assente da `tools/list`.

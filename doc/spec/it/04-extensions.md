@@ -91,7 +91,7 @@ Tramite l'Extension API, un plugin di estensione può:
 - registrare uno strumento una sola volta (senza duplicazione al reload);
 - registrare uno strumento legato alle issue con controlli di permesso standard e ricerca dell'issue; se l'issue è scomparsa prima dell'esecuzione dell'handler, la risposta è "not found", non un errore interno;
 - estendere uno strumento core esistente con parametri e handler before/after;
-- registrare modalità di capability per `redmine_get_server_info` (ad esempio `issue_search.semantic`);
+- registrare modalità di capability per `redmine_get_mcp_info` (ad esempio `issue_search.semantic`);
 - chiamare l'API REST di Redmine o del plugin in-process per conto dell'utente corrente tramite `internal_request` (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`; l'endpoint di destinazione deve accettare l'autenticazione API); gli errori REST vengono mappati ai codici MCP canonici senza lo stato HTTP della richiesta interna;
 - pubblicare `outputSchema` nel formato envelope `{ ok, data | error }`.
 

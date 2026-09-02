@@ -354,7 +354,7 @@ Ne pas implémenter la même logique métier séparément pour REST et MCP. Si l
 |---|---|
 | `register_resource` | vous avez besoin d'une ressource MCP |
 | `register_prompt` | vous avez besoin d'un prompt MCP |
-| `register_capability` | vous devez ajouter une capacité à `redmine_get_server_info` |
+| `register_capability` | vous devez ajouter une capacité à `redmine_get_mcp_info` |
 | `extend_tool` | vous devez étendre un outil existant plutôt que créer un nouveau |
 | `on` | vous avez besoin d'un hook de cycle de vie |
 | `internal_request` | vous devez appeler un point de terminaison REST Redmine ou plugin en processus en tant qu'utilisateur actuel (`method`, `path`, `params` et `body` optionnels) |

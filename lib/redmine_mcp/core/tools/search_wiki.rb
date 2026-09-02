@@ -40,9 +40,10 @@ module RedmineMcp
             plugin_id: PLUGIN_ID,
             name: 'search_all',
             title: 'Search Redmine',
-            description: 'Search across issues and wiki pages by free-text query. query is required; optional resources limits results to issues, wiki_pages, or both. Each item includes type, ' \
-                         'title, project, status when available, updated_on, and excerpt. Use for broad discovery across resource types. For issue-only text search, use redmine_search_issues ' \
-                         'instead. ' \
+            description: 'Search across issues and wiki pages by free-text query. query is required; optional resources ' \
+                         'limits results to issues, wiki_pages, or both. Each item includes type, title, project, ' \
+                         'status when available, updated_on, excerpt, and url for issues. ' \
+                         'Use for broad discovery across resource types. For issue-only text search, use redmine_search_issues instead. ' \
                          'Requires view_issues and/or view_wiki_pages for the requested resource types. ' \
                          'Default limit 25, maximum 100. Does not modify Redmine.',
             input_schema: {
@@ -401,6 +402,7 @@ module RedmineMcp
             {
               id: record.id,
               type: 'issues',
+              url: Helpers.issue_url(record),
               title: record.subject,
               project: record.project.name,
               status: record.status.name,
@@ -411,6 +413,7 @@ module RedmineMcp
             {
               id: record.id,
               type: 'wiki_pages',
+              url: nil,
               title: record.title,
               project: record.project.name,
               status: nil,
@@ -421,6 +424,7 @@ module RedmineMcp
             {
               id: record.try(:id),
               type: record.class.name.underscore.pluralize,
+              url: nil,
               title: record.try(:event_title) || record.try(:name) || record.try(:title),
               project: nil,
               status: nil,

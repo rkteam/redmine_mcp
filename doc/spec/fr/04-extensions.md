@@ -91,7 +91,7 @@ Via l'API d'extension, un plugin d'extension peut :
 - enregistrer un outil une fois (sans duplication au rechargement) ;
 - enregistrer un outil lié à un ticket avec des vérifications de permission standard et recherche de ticket ; si le ticket a disparu avant l'exécution du handler, la réponse est « not found », pas une erreur interne ;
 - étendre un outil de base existant avec des paramètres et des handlers before/after ;
-- enregistrer des modes de capacité pour `redmine_get_server_info` (par exemple `issue_search.semantic`) ;
+- enregistrer des modes de capacité pour `redmine_get_mcp_info` (par exemple `issue_search.semantic`) ;
 - appeler l'API REST Redmine ou plugin en processus au nom de l'utilisateur actuel via `internal_request` (`GET`, `POST`, `PUT`, `PATCH`, `DELETE` ; le point de terminaison cible doit accepter l'auth API) ; les erreurs REST sont mappées aux codes MCP canoniques sans le statut HTTP de la requête interne ;
 - publier `outputSchema` au format d'enveloppe `{ ok, data | error }`.
 

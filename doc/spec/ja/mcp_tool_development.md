@@ -1723,10 +1723,12 @@ redmine_get_issue
 
 1. 新しい名前を追加;
 2. 一時的に古いエイリアスを保持;
-3. 説明で古いツールを非推奨とマーク;
-4. 古い名前呼び出しのメトリクスを収集;
-5. 合意期間後にエイリアスを削除;
+3. 説明で古いツールを非推奨とマーク**するか、alias が `tools/call` のみに必要な場合は `tools/list` に公開しない**;
+4. 古い名前呼び出しのメトリクスを収集（呼び出されたツール名による既存の audit log で十分）;
+5. 合意期間後にエイリアスを削除（別途合意がない限り、次のメジャーバージョンより前には削除しない）;
 6. サーバーが `listChanged` を宣言する場合 `notifications/tools/list_changed` を送信。
+
+現在の例（[03-core-tools.md](03-core-tools.md) 参照）: `redmine_list_all_users` → `redmine_admin_list_users`; `redmine_list_files` → `redmine_list_project_files`; `redmine_delete_file` → `redmine_delete_attachment`; `redmine_get_server_info` → `redmine_get_mcp_info`。alias は `tools/call` で受け付けられ、`tools/list` には公開されない。
 
 ### 15.3. 説明の変更
 
@@ -1734,7 +1736,7 @@ redmine_get_issue
 
 ### 15.4. サーバーバージョン
 
-MCP サーバーバージョンは別の読み取り専用ツールまたはサーバーメタデータで返される。並行非互換契約をサポートする実際の必要がない限り、すべての名前に `v1`、`v2` を追加しない。
+MCP プラグインバージョンは `redmine_get_mcp_info`（またはサーバーメタデータ）で返される。並行非互換契約をサポートする実際の必要がない限り、すべての名前に `v1`、`v2` を追加しない。並行非互換契約をサポートする実際の必要がない限り、すべての名前に `v1`、`v2` を追加しない。
 
 ---
 
@@ -1790,7 +1792,7 @@ MCP サーバーバージョンは別の読み取り専用ツールまたはサ�
 | 工数記録 | list, create, update, import, 活動 | `redmine_` |
 | Wiki | list, get, create, update, rename, delete | `redmine_` |
 | ファイルと添付 | list, upload, delete, download | `redmine_` |
-| 管理 | ユーザー、ロール、サーバー情報 | `redmine_admin_` または `redmine_get_server_info` |
+| 管理 | ユーザー、ロール、MCP セッション情報 | `redmine_admin_` または `redmine_get_mcp_info` |
 | プラグインエンティティ | チェックリスト、検索など | `redmine_` + `plugin_id`、たとえば `redmine_advanced_search_` |
 
 新規ツール追加前に MCP `tools/list` 応答と対応グループを確認すべき（SHOULD）: 既存ツールを重複させず、異なる意図を 1 つの名前に混在させない。

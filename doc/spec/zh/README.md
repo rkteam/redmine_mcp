@@ -8,9 +8,9 @@ Redmine 内的 MCP 服务器（Model Context Protocol）。让 AI 客户端通�
 
 ## 要求
 
-| 组件 | 支持版本 |
+| 组件 | 版本 |
 |---|---|
-| Redmine | 6.0–6.1 |
+| Redmine | Redmine 6.0+（已测试：6.0–6.1） |
 | MCP protocol | 2025-11-25 |
 | Ruby MCP SDK (`mcp`) | 0.23.x |
 
@@ -192,10 +192,10 @@ redmine.example.com
 | `list_projects` | 项目列表 |
 | `get_project` | 项目详情 |
 | `list_project_issue_custom_fields` | 项目议题自定义字段 |
-| `summarize_project_status` | N 天内项目活动与指标摘要 |
-| `list_project_activities` | 项目活动 feed |
-| `list_versions` | 项目版本 |
-| `get_version` | 含聚合数据的版本详情 |
+| `summarize_project_status` | 服务器构建的 N 天项目指标摘要 |
+| `list_project_activities` | 项目活动 feed（事件，非工时 activity 类型） |
+| `list_versions` | 路线图版本（里程碑） |
+| `get_version` | 路线图版本详情（含聚合） |
 | `create_version` | 创建版本 |
 | `update_version` | 更新版本 |
 | `delete_version` | 删除版本 |
@@ -251,7 +251,7 @@ redmine.example.com
 | `list_time_entries` | 工时记录列表 |
 | `create_time_entry` | 创建工时记录 |
 | `update_time_entry` | 更新工时记录 |
-| `list_time_entry_activities` | 活动类型（全局或按项目） |
+| `list_time_entry_activities` | 工时 activity 类型（非项目事件 feed） |
 | `import_time_entries` | 批量导入工时记录 |
 
 ### 参考数据
@@ -262,7 +262,7 @@ redmine.example.com
 | `list_project_trackers` | 项目跟踪器 |
 | `list_issue_statuses` | 议题状态 |
 | `list_issue_priorities` | 议题优先级 |
-| `list_all_users` | 带筛选的用户（仅管理员） |
+| `admin_list_users` | 带筛选的用户（仅管理员） |
 | `get_current_user` | 当前用户 |
 | `list_queries` | 已保存查询（元数据；执行为 `run_issue_query`） |
 
@@ -290,9 +290,9 @@ redmine.example.com
 
 | 工具 | 描述 |
 |------|-------------|
-| `list_files` | 项目文件 |
+| `list_project_files` | 项目文件 |
 | `upload_file` | 上传文件 |
-| `delete_file` | 删除文件或附件 |
+| `delete_attachment` | 删除附件 |
 | `get_attachment` | 附件元数据和 `content_url` |
 | `download_attachment` | 附件内容（`content_base64`，最大 10 MiB） |
 
@@ -300,7 +300,7 @@ redmine.example.com
 
 | 工具 | 描述 |
 |------|-------------|
-| `get_server_info` | 服务器版本、read-only 模式、当前用户和可用 capabilities |
+| `get_mcp_info` | MCP 插件版本、read-only 模式、当前用户和可用 capabilities |
 
 ### 访问与响应
 

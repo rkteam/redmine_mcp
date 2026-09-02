@@ -2,18 +2,19 @@ ja:
   label_redmine_mcp: Redmine MCP
   text_redmine_mcp_server_instructions: |
     Redmine MCP ルーティング規則:
-    - セッション開始時に redmine_get_server_info を呼び出し、報告された capabilities で任意ツールを選びます。
+    - セッション開始時に redmine_get_mcp_info を呼び出し、報告された capabilities で任意ツールを選びます。
     - チケットIDが不明なときは、redmine_get_issue の前に capabilities.issue_search で検索します。
-    - 意味的・概念的・類似検索には、available なら redmine_get_server_info の semantic capability を使い、use_when / avoid_when に従います。
+    - 意味的・概念的・類似検索には、available なら redmine_get_mcp_info の semantic capability を使い、use_when / avoid_when に従います。
     - キーワード、識別子、フィールド、完全一致の検索には redmine_search_issues を使います。
     - 意味検索が求められても capabilities.issue_search.semantic.available が false のときは redmine_search_issues にフォールバックし、語彙検索であることを明示します。
     - capabilities.issue_search.cross_resource があるときは、Wiki を含む複数リソースの発見に redmine_search_all を使います。
     - project が不明なときは先に redmine_list_projects を呼びます。project は "1" や "ecookbook" のような文字列で、JSON の数値ではありません。
     - redmine_create_issue または redmine_update_issue の前に、トラッカー・ステータス・担当者・カスタムフィールドの ID が不明なら redmine_get_issue_form_options を呼びます。任意のドライラン: redmine_validate_issue_create / redmine_validate_issue_update。
     - チケット項目を変えずにコメントだけ追加するには redmine_add_issue_note を使います。ウォッチャーは redmine_add_issue_watcher / redmine_remove_issue_watcher です。
-    - プロジェクト内のユーザー検索には redmine_list_users、管理者向けグローバル一覧には redmine_list_all_users のみを使います。
+    - プロジェクト内のユーザー検索には redmine_list_users、管理者向けグローバル一覧には redmine_admin_list_users のみを使います。
     - ジャーナルや非公開メモが明示的に必要なときだけ redmine_get_private_notes や include_journals を要求します。
     - redmine_delete_issue などの破壊的ツールは確認が必要なことがあります。INVALID_STATE のときは要求された confirm_* で再実行します。
+    - ユーザーにチケットを示すときは、ツール結果の url フィールドをコピーしてください。ホスト名を作らないでください。
     - redmine_* コアツールに加え、導入済みプラグインのツールが独自プレフィックスで現れることがあります。
   text_redmine_mcp_server_instructions_read_only: MCP 読み取り専用モードが有効なため、書き込み操作は現在ブロックされています。
   label_redmine_mcp_enabled: MCP を有効にする

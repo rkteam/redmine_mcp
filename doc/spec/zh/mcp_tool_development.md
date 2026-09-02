@@ -1723,10 +1723,12 @@ redmine_get_issue
 
 1. 添加新名称；
 2. 暂时保留旧 alias；
-3. 在 description 中将旧工具标记为 deprecated；
+3. 在 description 中将旧工具标记为 deprecated **或若 alias 仅用于 `tools/call` 则不将其发布到 `tools/list`**；
 4. 收集旧名称调用 metrics；
 5. 约定期满后移除 alias；
 6. 若服务器声明 `listChanged`，发送 `notifications/tools/list_changed`。
+
+当前示例（见 [03-core-tools.md](03-core-tools.md)）：`redmine_list_all_users` → `redmine_admin_list_users`；`redmine_list_files` → `redmine_list_project_files`；`redmine_delete_file` → `redmine_delete_attachment`；`redmine_get_server_info` → `redmine_get_mcp_info`。alias 在 `tools/call` 中被接受，不在 `tools/list` 中发布。
 
 ### 15.3. 更改描述
 
@@ -1790,7 +1792,7 @@ MCP 服务器版本由单独 read-only 工具或服务器 metadata 返回。无�
 | 工时记录 | list、create、update、import、活动 | `redmine_` |
 | Wiki | list、get、create、update、rename、delete | `redmine_` |
 | 文件与附件 | list、upload、delete、download | `redmine_` |
-| 管理 | 用户、角色、服务器信息 | `redmine_admin_` 或 `redmine_get_server_info` |
+| 管理 | 用户、角色、MCP 会话信息 | `redmine_admin_` 或 `redmine_get_mcp_info` |
 | 插件实体 | 清单、搜索等 | `redmine_` + `plugin_id`，如 `redmine_advanced_search_` |
 
 添加新工具前 SHOULD 检查 MCP `tools/list` 响应和对应组：不重复现有工具，不在一个名称中混合不同意图。

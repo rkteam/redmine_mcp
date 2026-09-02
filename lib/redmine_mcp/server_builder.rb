@@ -29,12 +29,14 @@ module RedmineMcp
           login: user.login
         }
 
+        listed_tools = registry.to_mcp_tools(user)
         server = McpServer.new(
           name: SERVER_NAME,
           title: I18n.t(:label_redmine_mcp),
           version: RedmineMcp::VERSION,
           instructions: server_instructions,
-          tools: registry.to_mcp_tools(user),
+          tools: listed_tools + registry.to_mcp_alias_tools(user),
+          listed_tool_names: listed_tools.map(&:name_value),
           prompts: registry.to_mcp_prompts(user),
           resources: registry.to_mcp_resources(user),
           server_context: server_context,

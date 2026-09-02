@@ -1723,10 +1723,12 @@ folgen:
 
 1. neuen Namen hinzufügen;
 2. alten Alias vorübergehend beibehalten;
-3. Markieren Sie das alte Tool in der Beschreibung als veraltet.
-4. Sammeln Sie Metriken alter Namensanrufe.
-5. Alias nach vereinbarter Frist entfernen;
-6. Senden Sie `notifications/tools/list_changed`, wenn der Server `listChanged` deklariert.
+3. altes Tool in der Beschreibung als veraltet markieren **oder nicht in `tools/list` veröffentlichen**, wenn der Alias nur für `tools/call` benötigt wird;
+4. Metriken alter Namensaufrufe sammeln (das vorhandene Audit-Log nach aufgerufenem Tool-Namen ist ausreichend);
+5. Alias nach vereinbarter Frist entfernen (nicht vor der nächsten Major-Version, sofern kein anderer Zeitraum vereinbart wurde);
+6. `notifications/tools/list_changed` senden, wenn der Server `listChanged` deklariert.
+
+Aktuelle Beispiele (siehe [03-core-tools.md](03-core-tools.md)): `redmine_list_all_users` → `redmine_admin_list_users`; `redmine_list_files` → `redmine_list_project_files`; `redmine_delete_file` → `redmine_delete_attachment`; `redmine_get_server_info` → `redmine_get_mcp_info`. Ein Alias wird in `tools/call` akzeptiert und nicht in `tools/list` veröffentlicht.
 
 ### 15.3. Beschreibungen ändern
 
@@ -1734,7 +1736,7 @@ Die Beschreibung wirkt sich auf die Auswahl des Modellwerkzeugs aus und gilt als
 
 ### 15.4. Serverversion
 
-Die MCP-Serverversion wird von einem separaten schreibgeschützten Tool oder Servermetadaten zurückgegeben. Fügen Sie nicht `v1` oder `v2` zu jedem Namen hinzu, ohne dass die Unterstützung paralleler inkompatibler Verträge wirklich erforderlich ist.
+Die MCP-Plugin-Version wird von `redmine_get_mcp_info` (oder Server-Metadaten) zurückgegeben. Fügen Sie nicht `v1` oder `v2` zu jedem Namen hinzu, ohne dass die Unterstützung paralleler inkompatibler Verträge wirklich erforderlich ist.
 
 ---
 
@@ -1790,7 +1792,7 @@ Die vollständige aktuelle Werkzeugliste ist in diesem Dokument nicht dupliziert
 | Zeiteinträge | list, create, update, import, Aktivitäten | `redmine_` |
 | Wiki | list, get, create, update, rename, delete | `redmine_` |
 | Dateien und Anhänge | list, upload, delete, download | `redmine_` |
-| Administration | Benutzer, Rollen, Server-Info | `redmine_admin_` oder `redmine_get_server_info` |
+| Administration | Benutzer, Rollen, MCP-Sitzungsinfo | `redmine_admin_` oder `redmine_get_mcp_info` |
 | Plugin-Entitäten | Checklisten, Suche usw. | `redmine_` + `plugin_id`, z. B. `redmine_advanced_search_` |
 
 Bevor Sie ein neues Tool hinzufügen, SOLLTEN Sie die MCP-Antwort `tools/list` und die entsprechende Gruppe überprüfen: Vorhandenes Tool nicht duplizieren und keine unterschiedlichen Absichten in einem Namen vermischen.

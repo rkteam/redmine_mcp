@@ -91,7 +91,7 @@ Einen einheitlichen Ansatz zur Integration von Redmine-Plugins mit AI bereitstel
 - ein Tool einmal registrieren (ohne Duplikat beim Reload);
 - ein vorgangsbezogenes Tool mit Standard-Berechtigungsprüfungen und Vorgangssuche registrieren; ist der Vorgang vor dem Handler-Lauf verschwunden, liefert die Antwort „not found“, keinen internen Fehler;
 - ein bestehendes Core-Tool mit Parametern und before/after-Handlern erweitern;
-- Capability-Modi für `redmine_get_server_info` registrieren (z. B. `issue_search.semantic`);
+- Capability-Modi für `redmine_get_mcp_info` registrieren (z. B. `issue_search.semantic`);
 - die Redmine- oder Plugin-REST-API in-process im Namen des aktuellen Benutzers über `internal_request` aufrufen (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`; der Ziel-Endpunkt muss API-Auth akzeptieren); REST-Fehler werden auf kanonische MCP-Codes abgebildet ohne internen HTTP-Status der Anfrage;
 - `outputSchema` im `{ ok, data | error }`-Hüllenformat veröffentlichen.
 

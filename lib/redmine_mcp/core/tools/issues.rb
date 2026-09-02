@@ -22,7 +22,7 @@ module RedmineMcp
     module Tools
       module Issues
         ISSUE_SUMMARY_FIELD_KEYS = %w[
-          id subject project status priority tracker author assigned_to created_on updated_on
+          id url subject project status priority tracker author assigned_to created_on updated_on
         ].freeze
 
         ISSUE_LIST_FIELDS = (
@@ -34,14 +34,34 @@ module RedmineMcp
         ISSUE_SEARCH_SCOPES = %w[all my_project subprojects].freeze
         REQUIRED_ERROR_TYPES = [:blank, :empty].freeze
 
+        WATCHER_PRINCIPAL_ID_SCHEMA = {
+          type: 'integer',
+          minimum: 1,
+          description: 'Watcher principal ID (user or group). Call redmine_list_users or redmine_list_groups when unknown.'
+        }.freeze
+        WATCHER_INPUT_SCHEMA = {
+          properties: {
+            issue_id: Helpers::ISSUE_ID_SCHEMA,
+            principal_id: WATCHER_PRINCIPAL_ID_SCHEMA,
+            user_id: WATCHER_PRINCIPAL_ID_SCHEMA.merge(
+              description: 'Deprecated alias of principal_id. Same meaning: user or group ID. Do not send together with principal_id.'
+            )
+          },
+          required: ['issue_id'],
+          oneOf: [
+            {required: ['principal_id'], not: {required: ['user_id']}},
+            {required: ['user_id'], not: {required: ['principal_id']}},
+          ]
+        }.freeze
+
         PROJECT_SCHEMA = Helpers::PROJECT_SCHEMA
 
         ISSUE_FIELDS_SCHEMA = {
           type: 'array',
           uniqueItems: true,
           items: {type: 'string', enum: ISSUE_LIST_FIELDS + %w[* all]},
-          description: 'Optional field names. Default: summary (id, subject, project, status, priority, tracker, author, assigned_to, created_on, updated_on). Use * or all for all list fields ' \
-                       'including description.'
+          description: 'Optional field names. Default: summary (id, url, subject, project, status, priority, tracker, ' \
+                       'author, assigned_to, created_on, updated_on). Use * or all for all list fields including description.'
         }.freeze
 
         CUSTOM_FIELD_VALUE_SCHEMA = {
@@ -252,7 +272,7 @@ module RedmineMcp
             plugin_id: PLUGIN_ID,
             name: 'get_issue',
             title: 'Get Redmine issue',
-            description: "Returns one issue.\n\nDefault:\n- no journals\n- no attachments\n- no watchers, relations, or children\n\nUse include_* to request them.\nUse redmine_search_issues when" \
+            description: "Returns one issue.\n\nDefault:\n- no journals\n- no attachments\n- no watchers, relations, or children\n\nUse include_* to request them.\nUse redmine_search_issues when " \
                          'issue_id is unknown.',
             input_schema: {
               properties: {
@@ -313,7 +333,7 @@ module RedmineMcp
             plugin_id: PLUGIN_ID,
             name: 'list_issues',
             title: 'List issues',
-            description: "Returns a paginated list of issues matching structured filters.\n\nDefault: summary fields only; limit 25, max 100.\nUse redmine_get_issue for full detail.\nUse" \
+            description: "Returns a paginated list of issues matching structured filters.\n\nDefault: summary fields only; limit 25, max 100.\nUse redmine_get_issue for full detail.\nUse " \
                          "redmine_search_issues for free-text lookup.\nOptional filters array uses Redmine query operators for advanced filtering.\nCall redmine_get_issue_form_options or " \
                          'redmine_list_projects / redmine_list_issue_statuses / redmine_list_trackers when filter IDs are unknown.',
             input_schema: {
@@ -367,7 +387,7 @@ module RedmineMcp
             name: 'search_issues',
             title: 'Search issues',
             description: "Searches issues by free-text query against subject and description.\n\nDefault: summary fields; limit 25, max 100.\nOptional scope: all (default), my_project (projects " \
-                         "where the user is a member), or subprojects (requires project; searches that project and its descendants).\nUse redmine_list_issues for structured filters.\nUse" \
+                         "where the user is a member), or subprojects (requires project; searches that project and its descendants).\nUse redmine_list_issues for structured filters.\nUse " \
                          "redmine_search_all for wiki and other resources.\nUse redmine_get_issue for full detail.",
             input_schema: {
               properties: {
@@ -646,7 +666,7 @@ module RedmineMcp
             name: 'list_issue_relations',
             title: 'List issue relations',
             description: 'Return a paginated list of relations linked to one issue by issue_id. Each item includes relation id, type, delay, and linked issue references. Use to inspect blocks, ' \
-                         'duplicates, relates, and other links before redmine_create_issue_relation or redmine_delete_issue_relation. For a non-paginated relation snapshot inside full issue' \
+                         'duplicates, relates, and other links before redmine_create_issue_relation or redmine_delete_issue_relation. For a non-paginated relation snapshot inside full issue ' \
                          'detail, ' \
                          '' \
                          '' \
@@ -738,17 +758,12 @@ module RedmineMcp
             plugin_id: PLUGIN_ID,
             name: 'add_issue_watcher',
             title: 'Add issue watcher',
-            description: 'Add one principal (user or group) as a watcher on an issue. Requires issue_id and user_id. ' \
-                         'Returns the issue_id and user_id pair. Requires permission to add watchers on the issue. ' \
+            description: 'Add one principal (user or group) as a watcher on an issue. Requires issue_id and principal_id. ' \
+                         'user_id is a deprecated alias of principal_id. Returns the issue_id, principal_id, and user_id. ' \
+                         'Requires permission to add watchers on the issue. ' \
                          'Blocked when MCP read-only mode is enabled. Call redmine_list_users or redmine_list_groups ' \
                          'when the watcher ID is unknown.',
-            input_schema: {
-              properties: {
-                issue_id: Helpers::ISSUE_ID_SCHEMA,
-                user_id: {type: 'integer', minimum: 1, description: 'Watcher principal ID (user or group).'}
-              },
-              required: %w[issue_id user_id]
-            },
+            input_schema: WATCHER_INPUT_SCHEMA,
             output_schema: RedmineMcp::Core::OutputSchemas::WATCHER,
             permission: ->(user, args, _project) { add_issue_watcher_allowed?(user, args) },
             annotations: Helpers::CREATE_ANNOTATIONS,
@@ -762,16 +777,11 @@ module RedmineMcp
             name: 'remove_issue_watcher',
             title: 'Remove issue watcher',
             description: 'Remove one principal (user or group) from the watchers of an issue. Requires issue_id and ' \
-                         'user_id. Returns the issue_id and user_id pair. Requires permission to delete watchers on ' \
+                         'principal_id. user_id is a deprecated alias of principal_id. Returns the issue_id, principal_id, ' \
+                         'and user_id. Requires permission to delete watchers on ' \
                          'the issue. Blocked when MCP read-only mode is enabled. To inspect current watchers, use ' \
                          'redmine_get_issue with include_watchers.',
-            input_schema: {
-              properties: {
-                issue_id: Helpers::ISSUE_ID_SCHEMA,
-                user_id: {type: 'integer', minimum: 1, description: 'Watcher principal ID (user or group) to remove.'}
-              },
-              required: %w[issue_id user_id]
-            },
+            input_schema: WATCHER_INPUT_SCHEMA,
             output_schema: RedmineMcp::Core::OutputSchemas::WATCHER,
             permission: ->(user, args, _project) { remove_issue_watcher_allowed?(user, args) },
             annotations: Helpers::DELETE_ANNOTATIONS,
@@ -1005,6 +1015,7 @@ module RedmineMcp
           ) do |child|
             {
               id: Helpers.integer_id(child.id),
+              url: Helpers.issue_url(child),
               subject: child.subject,
               tracker: Helpers.serialize_named_ref(child.tracker)
             }
@@ -1479,11 +1490,14 @@ module RedmineMcp
           issue, err = find_visible_issue(user, args[:issue_id])
           return err if err
 
-          target = resolve_addable_watcher(issue, args[:user_id])
-          return Helpers.error_result(:error_mcp_invalid_parameters) unless target
+          principal_id, id_err = watcher_principal_id_from_args(args)
+          return id_err if id_err
+
+          target = resolve_addable_watcher(issue, principal_id)
+          return watcher_add_error(user, issue, principal_id) unless target
 
           issue.add_watcher(target)
-          {issue_id: issue.id, user_id: target.id}
+          serialize_watcher(issue, target)
         end
 
         def remove_issue_watcher(args, context)
@@ -1494,11 +1508,14 @@ module RedmineMcp
           issue, err = find_visible_issue(user, args[:issue_id])
           return err if err
 
-          target = issue.watcher_users.find_by(id: args[:user_id])
-          return Helpers.error_result(:error_mcp_invalid_parameters) unless target
+          principal_id, id_err = watcher_principal_id_from_args(args)
+          return id_err if id_err
+
+          target = resolve_removable_watcher(issue, principal_id)
+          return watcher_remove_error(user, issue, principal_id) unless target
 
           issue.remove_watcher(target)
-          {issue_id: issue.id, user_id: target.id}
+          serialize_watcher(issue, target)
         end
 
         def add_issue_note(args, context)
@@ -1953,6 +1970,7 @@ module RedmineMcp
         def serialize_issue_detail(issue)
           {
             id: Helpers.integer_id(issue.id),
+            url: Helpers.issue_url(issue),
             subject: issue.subject,
             description: issue.description.to_s,
             project: Helpers.serialize_project(issue.project),
@@ -2177,6 +2195,21 @@ module RedmineMcp
           category
         end
 
+        def watcher_principal_id_from_args(args)
+          principal_id = args[:principal_id]
+          user_id = args[:user_id]
+          return [nil, Helpers.error_result(:error_mcp_invalid_parameters)] if principal_id.present? && user_id.present? && principal_id.to_i != user_id.to_i
+
+          id = principal_id.presence || user_id
+          return [nil, Helpers.error_result(:error_mcp_invalid_parameters)] if id.blank?
+
+          [id, nil]
+        end
+
+        def serialize_watcher(issue, principal)
+          {issue_id: issue.id, principal_id: principal.id, user_id: principal.id}
+        end
+
         def resolve_addable_watcher(issue, user_id)
           return nil if user_id.blank?
 
@@ -2190,6 +2223,26 @@ module RedmineMcp
           return nil unless issue.valid_watcher?(principal)
 
           principal
+        end
+
+        def watcher_add_error(user, issue, principal_id)
+          return Helpers.error_result(:error_mcp_permission_denied) unless user.allowed_to?(:add_issue_watchers, issue.project)
+          return Helpers.error_result(:error_mcp_invalid_parameters) if issue.watchers.exists?(user_id: principal_id.to_i)
+          return Helpers.error_result(:error_mcp_permission_denied) if principal_id.to_i == user.id
+
+          Helpers.error_result(:error_mcp_invalid_parameters)
+        end
+
+        def watcher_remove_error(user, issue, _principal_id)
+          return Helpers.error_result(:error_mcp_permission_denied) unless user.allowed_to?(:delete_issue_watchers, issue.project)
+
+          Helpers.error_result(:error_mcp_invalid_parameters)
+        end
+
+        def resolve_removable_watcher(issue, principal_id)
+          return nil if principal_id.blank?
+
+          issue.watchers.find_by(user_id: principal_id.to_i)&.user
         end
 
         def copy_flag_from_setting?(setting_value, explicit)

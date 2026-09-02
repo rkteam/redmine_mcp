@@ -30,8 +30,20 @@ class RedmineMcpToolExecutionTest < RedmineMcpTestCase
 
     assert payload[:ok]
     assert_equal 1, payload.dig(:data, :id)
+    assert_equal "#{Setting.protocol}://#{Setting.host_name}/issues/1", payload.dig(:data, :url)
     assert_empty payload.dig(:data, :journals)
     assert_empty payload.dig(:data, :attachments)
+  end
+
+  test 'get_issue returns null url when host_name is blank' do
+    admin = User.find(1)
+
+    with_settings host_name: '' do
+      payload = invoke_mcp_tool('get_issue', user: admin, args: {issue_id: 1})
+
+      assert payload[:ok]
+      assert_nil payload.dig(:data, :url)
+    end
   end
 
   test 'list_issues returns paginated envelope' do
@@ -40,6 +52,10 @@ class RedmineMcpToolExecutionTest < RedmineMcpTestCase
 
     assert payload[:ok]
     assert_kind_of Array, payload.dig(:data, :items)
+    first = payload.dig(:data, :items).first
+
+    assert first
+    assert_equal "#{Setting.protocol}://#{Setting.host_name}/issues/#{first[:id]}", first[:url]
     assert payload.dig(:meta, :total_count)
     assert payload.dig(:meta, :has_more).in?([true, false])
   end
@@ -577,13 +593,61 @@ class RedmineMcpToolExecutionTest < RedmineMcpTestCase
     items.each { |item| assert item[:login].present? }
   end
 
-  test 'list_all_users name filter matches email addresses' do
-    payload = invoke_mcp_tool('list_all_users', user: User.find(1), args: {name: 'jsmith@somenet.foo'})
+  test 'admin_list_users name filter matches email addresses' do
+    payload = invoke_mcp_tool('admin_list_users', user: User.find(1), args: {name: 'jsmith@somenet.foo'})
 
     assert_mcp_ok(payload)
     ids = Array(payload.dig(:data, :items)).map { |item| item[:id] }
 
     assert_includes ids, 2
+  end
+
+  test 'list_all_users alias remains callable with the same result' do
+    canonical = invoke_mcp_tool('admin_list_users', user: User.find(1), args: {})
+    aliased = invoke_mcp_tool('list_all_users', user: User.find(1), args: {})
+
+    assert_mcp_ok(canonical)
+    assert_mcp_ok(aliased)
+    assert_equal canonical.dig(:data, :items), aliased.dig(:data, :items)
+  end
+
+  test 'list_files alias remains callable with the same result as list_project_files' do
+    args = {project: 'ecookbook'}
+    canonical = invoke_mcp_tool('list_project_files', user: User.find(1), args: args)
+    aliased = invoke_mcp_tool('list_files', user: User.find(1), args: args)
+
+    assert_mcp_ok(canonical)
+    assert_mcp_ok(aliased)
+    assert_equal canonical.dig(:data, :items), aliased.dig(:data, :items)
+  end
+
+  test 'delete_file alias remains callable' do
+    uploaded = invoke_mcp_tool(
+      'upload_file',
+      user: User.find(1),
+      args: {
+        project: 'ecookbook',
+        filename: 'mcp-delete-alias.txt',
+        content_base64: Base64.strict_encode64('alias delete')
+      }
+    )
+
+    assert_mcp_ok(uploaded)
+    file_id = uploaded.dig(:data, :id)
+    aliased = invoke_mcp_tool('delete_file', user: User.find(1), args: {file_id: file_id})
+
+    assert_mcp_ok(aliased)
+    assert_equal file_id, aliased.dig(:data, :deleted_file_id)
+    assert_not Attachment.exists?(file_id)
+  end
+
+  test 'get_server_info alias remains callable with the same result as get_mcp_info' do
+    canonical = invoke_mcp_tool('get_mcp_info', user: User.find(1), args: {})
+    aliased = invoke_mcp_tool('get_server_info', user: User.find(1), args: {})
+
+    assert_mcp_ok(canonical)
+    assert_mcp_ok(aliased)
+    assert_equal canonical[:data], aliased[:data]
   end
 
   test 'get_version with project returns a shared version from list_versions' do

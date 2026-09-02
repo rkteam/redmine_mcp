@@ -453,8 +453,21 @@ module RedmineMcp
         [true, 'true', '1', 1].include?(value)
       end
 
+      def absolute_public_url(path)
+        return nil if Setting.host_name.to_s.strip.blank?
+
+        normalized_path = path.start_with?('/') ? path : "/#{path}"
+        "#{Setting.protocol}://#{Setting.host_name}#{normalized_path}"
+      end
+
       def attachment_url(attachment)
-        "#{Setting.protocol}://#{Setting.host_name}/attachments/download/#{attachment.id}/#{ERB::Util.url_encode(attachment.filename)}"
+        absolute_public_url(
+          "/attachments/download/#{attachment.id}/#{ERB::Util.url_encode(attachment.filename)}"
+        )
+      end
+
+      def issue_url(issue)
+        absolute_public_url("/issues/#{integer_id(issue.id)}")
       end
 
       def serialize_attachment(attachment)

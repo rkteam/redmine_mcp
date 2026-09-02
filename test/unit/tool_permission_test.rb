@@ -30,7 +30,7 @@ class RedmineMcpToolPermissionTest < RedmineMcpTestCase
 
   test 'non admin cannot list all users' do
     user = User.find(2)
-    payload = invoke_mcp_tool('list_all_users', user: user, args: {})
+    payload = invoke_mcp_tool('admin_list_users', user: user, args: {})
 
     assert_equal false, payload[:ok]
     assert_equal 'FORBIDDEN', payload.dig(:error, :code)
@@ -159,11 +159,12 @@ class RedmineMcpToolPermissionTest < RedmineMcpTestCase
     end
   end
 
-  test 'delete_file is listed when the user can delete issue attachments without manage_files' do
+  test 'delete_attachment is listed when the user can delete issue attachments without manage_files' do
     _project, user = generate_stats_project(permissions: %i[view_issues edit_issues add_issues])
     names = mcp_registry.tools_for_user(user).map(&:name)
 
-    assert_includes names, 'delete_file'
+    assert_includes names, 'delete_attachment'
+    assert_not_includes names, 'delete_file'
   end
 
   test 'get_issue hides journals that only change an invisible custom field' do

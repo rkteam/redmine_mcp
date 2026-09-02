@@ -354,7 +354,7 @@ return result if internal_request_error?(result)
 |---|---|
 | `register_resource` | 需要 MCP 资源时 |
 | `register_prompt` | 需要 MCP 提示时 |
-| `register_capability` | 需要向 `redmine_get_server_info` 添加能力时 |
+| `register_capability` | 需要向 `redmine_get_mcp_info` 添加能力时 |
 | `extend_tool` | 需要扩展现有工具而非创建新工具时 |
 | `on` | 需要生命周期钩子时 |
 | `internal_request` | 需要以当前用户身份在进程内调用 Redmine 或插件 REST 端点时（`method`、`path`，可选 `params` 和 `body`） |

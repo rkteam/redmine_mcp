@@ -105,6 +105,8 @@
 | `list_time_entry_activities` | R | `log_time` |
 | `import_time_entries` | W | `log_time` |
 
+`list_time_entry_activities` — справочник видов работ для списания времени, не лента событий проекта (`list_project_activities`).
+
 ### Обнаружение / перечисление
 
 | Инструмент | R/W | Право |
@@ -113,7 +115,7 @@
 | `list_project_trackers` | R | `view_issues` |
 | `list_issue_statuses` | R | `view_issues` |
 | `list_issue_priorities` | R | `view_issues` |
-| `list_all_users` | R | admin |
+| `admin_list_users` | R | admin |
 | `get_current_user` | R | `use_mcp` |
 | `list_queries` | R | `view_issues` |
 
@@ -141,9 +143,9 @@
 
 | Инструмент | R/W | Право |
 |------|-----|-------|
-| `list_files` | R | `view_files` |
+| `list_project_files` | R | `view_files` |
 | `upload_file` | W | `manage_files` |
-| `delete_file` | W | `manage_files` (или права на контейнер) |
+| `delete_attachment` | W | `manage_files` (или права на контейнер) |
 | `get_attachment` | R | права на контейнер вложения |
 | `download_attachment` | R | права на контейнер вложения |
 
@@ -151,9 +153,11 @@
 
 | Инструмент | R/W | Право |
 |------|-----|-------|
-| `get_server_info` | R | `use_mcp` |
+| `get_mcp_info` | R | `use_mcp` |
 
-`get_server_info` возвращает `server_version`, `read_only_mode`, `auth_mode`, краткие данные текущего пользователя и `capabilities.issue_search`. Установка сторонних плагинов в ответе не перечисляется: наличие их MCP-tools видно через `tools/list` и через `capabilities`, которые расширения регистрируют сами.
+`get_mcp_info` возвращает метаданные MCP-плагина текущей сессии, а не версию или настройки приложения Redmine: `server_version` (версия плагина MCP), `read_only_mode`, `auth_mode`, краткие данные текущего пользователя и `capabilities.issue_search`. Установка сторонних плагинов в ответе не перечисляется: наличие их MCP-tools видно через `tools/list` и через `capabilities`, которые расширения регистрируют сами.
+
+Каноническое полное имя — `redmine_get_mcp_info`. Прежнее имя `get_server_info` (`redmine_get_server_info`) остаётся callable alias как минимум до следующей major-версии: те же права, вход, выход и поведение; `tools/call` со старым именем выполняет ту же операцию; в `tools/list` alias не публикуется; вызовы alias отличимы в audit log по имени вызванного tool. Ссылки из других tools используют каноническое имя.
 
 `capabilities.issue_search` содержит режимы поиска:
 
@@ -176,9 +180,10 @@
 - `create_issue_relation` применяет только допустимые атрибуты связи и пишет изменение в журнал задачи. `delete_issue_relation` допускается, только если связь можно удалить текущему пользователю (видимы обе задачи и есть право управлять связями хотя бы на одной стороне); удаление тоже пишется в журнал.
 - `add_project_member` / `update_project_member` принимают только роли, которыми текущий пользователь может управлять в проекте. Роль вне этого набора — отказ, роли не назначаются частично.
 - `create_issue_category` / `update_issue_category`: `assigned_to_id` — ID principal (пользователь или группа), не только пользователя.
-- `delete_file` для вложения задачи следует правилу «можно ли удалять вложения этой задачи» (включая собственные задачи и права трекера), а не только глобальному `edit_issues`. В `tools/list` инструмент виден, если у пользователя может существовать хотя бы одно удаляемое вложение (файлы проекта, задачи или wiki), а не только при глобальном `manage_files`.
+- `delete_attachment` для вложения задачи следует правилу «можно ли удалять вложения этой задачи» (включая собственные задачи и права трекера), а не только глобальному `edit_issues`. В `tools/list` инструмент виден, если у пользователя может существовать хотя бы одно удаляемое вложение (файлы проекта, задачи или wiki), а не только при глобальном `manage_files`.
 - `get_wiki_page`: `attachments` всегда в ответе; по умолчанию `[]` и `attachments_pagination: null`; при `include_attachments=true` — страница вложений с `attachment_limit`/`attachment_offset` (по умолчанию и максимум 100). Историческая `version` требует право видеть правки wiki. Изменение, переименование и удаление защищённой страницы требуют право защищать wiki-страницы.
 - `list_issues`, `search_issues`, `list_subtasks`, `run_issue_query`: по умолчанию summary-поля; полное описание — через `fields` или `get_issue`.
+- Объект задачи в `get_issue`, `list_issues`, `search_issues`, `list_subtasks`, `run_issue_query`, `create_issue`, `update_issue` и `copy_issue` содержит `url` — абсолютную ссылку на веб-UI. Хост берётся из настроек Redmine «Имя хоста и путь» и протокола, как в письмах. Если «Имя хоста и путь» пустое, `url` равен `null`, а не битой ссылке. В summary list/search `url` входит по умолчанию. Элементы `search_all` с `type` `issues` и вложенные `children` в `get_issue` тоже содержат `url`. При цитировании задачи пользователю клиент копирует `url` из результата.
 - `create_issue` и `update_issue` принимают явные **атрибуты** задачи (`subject`, `description`, `tracker_id`, `status_id`, `custom_fields` и др.). Все явно переданные атрибуты, включая `subject` и `description` при создании, проходят те же правила записи, что веб-форма Redmine. Перед create/update агенту СЛЕДУЕТ вызывать `get_issue_form_options`, когда допустимые значения полей неизвестны. Явно переданное значение, которое Redmine не применил, даёт ошибку, а не частичный успех.
 - Если клиент **не передал** `start_date` в `create_issue` / `validate_issue_create`, а в настройках Redmine включено «дата начала = дата создания» (`default_issue_start_date_to_creation_date`), MCP ставит `start_date` на сегодняшнюю дату пользователя — как форма новой задачи. Явный `start_date` (включая `null`) эту подстановку отключает. `copy_issue` и `update_issue` дату сами не подставляют.
 - `update_issue` не принимает `notes`, `private_notes` и `watcher_user_ids`. Комментарий — `add_issue_note`; наблюдатели — `add_issue_watcher` / `remove_issue_watcher`.
@@ -188,18 +193,18 @@
 - `update_issue` принимает `uploads[*].content_base64` и `uploads[*].filename`. После успешной загрузки ответ содержит `added_attachments` — только файлы этого вызова, не полный список вложений задачи. Повреждённый Base64 — ошибка параметров.
 - `update_issue` принимает `status_name` и резолвит его в `status_id`.
 - `upload_file` принимает `content_base64` (до 20 MiB); обязательны `project`, `filename` и `content_base64`.
-- `get_attachment` возвращает `attachment_id`, `filename`, `content_type`, `size` (filesize вложения) и `content_url` (без байтов файла).
-- `download_attachment` возвращает `attachment_id`, `filename`, `content_type`, `size` (фактический размер содержимого в байтах) и `content_base64` для одного вложения, видимого текущему пользователю. Если MIME неизвестен — `application/octet-stream`. Не увеличивает счётчик `downloads`. Лимит размера — 10 MiB (проверка `File.size` на диске до чтения и `bytesize` после чтения); при превышении — `FILE_TOO_LARGE`. Пути файловой системы сервера в ответе не возвращаются. `attachment_id` берут из `redmine_get_issue` / `redmine_get_wiki_page` с `include_attachments=true`, `redmine_list_files` или `redmine_get_attachment`. Чтобы прочитать, разобрать или обработать вложение как файл, декодируйте `content_base64` локально. Несуществующее и недоступное вложение дают одинаковый ответ «не найдено».
+- `get_attachment` возвращает `attachment_id`, `filename`, `content_type`, `size` (filesize вложения) и `content_url` (без байтов файла). Если «Имя хоста и путь» пустое, `content_url` равен `null`.
+- `download_attachment` возвращает `attachment_id`, `filename`, `content_type`, `size` (фактический размер содержимого в байтах) и `content_base64` для одного вложения, видимого текущему пользователю. Если MIME неизвестен — `application/octet-stream`. Не увеличивает счётчик `downloads`. Лимит размера — 10 MiB (проверка `File.size` на диске до чтения и `bytesize` после чтения); при превышении — `FILE_TOO_LARGE`. Пути файловой системы сервера в ответе не возвращаются. `attachment_id` берут из `redmine_get_issue` / `redmine_get_wiki_page` с `include_attachments=true`, `redmine_list_project_files` или `redmine_get_attachment`. Чтобы прочитать, разобрать или обработать вложение как файл, декодируйте `content_base64` локально. Несуществующее и недоступное вложение дают одинаковый ответ «не найдено».
 - `create_time_entry` и элементы `import_time_entries.entries` требуют `hours` и либо `project`, либо `issue_id`. `hours` может быть 0; допустимость нуля и дневного максимума проверяет Redmine (`timelog_accept_0_hours`, `timelog_max_hours_per_day`).
-- `assigned_to_id` при создании/обновлении задачи — ID principal (пользователь или группа из `get_issue_form_options.assignees`); `null` снимает исполнителя. `user_id` у `add_issue_watcher` / `remove_issue_watcher` — ID principal (пользователь или группа). В остальных tools `user_id` — ID пользователя. Для текущего пользователя используйте `assignee_ref` или `user_ref` со значением `me`.
+- `assigned_to_id` при создании/обновлении задачи — ID principal (пользователь или группа из `get_issue_form_options.assignees`); `null` снимает исполнителя. У `add_issue_watcher` / `remove_issue_watcher` канонический вход — `principal_id` (пользователь или группа). Прежний `user_id` принимается как alias того же ID; передавать оба одновременно нельзя. В ответе — `principal_id` и дублирующий `user_id` с тем же значением. В остальных tools `user_id` — ID пользователя. Для текущего пользователя используйте `assignee_ref` или `user_ref` со значением `me`.
 - `expected_updated_at` (опционально) на чувствительных update/delete: при расхождении с `updated_on` возвращается `CONFLICT`.
 - `idempotency_key` (опционально) на `create_issue`, `copy_issue`, `update_issue`, `add_issue_note`, `create_time_entry`, `import_time_entries`, `upload_file`: повтор с тем же ключом и **тем же набором аргументов** (кроме самого ключа) возвращает закешированный успешный результат (TTL 24 ч). Тот же ключ с другим payload — `CONFLICT`, повторная запись не выполняется. Пока первый запрос ещё выполняется, повтор с тем же ключом не выполняет запись ещё раз (маркер «в процессе» живёт те же 24 ч, что и успешный результат). Запись без fingerprint (кэш до этой версии) при том же ключе возвращается как раньше до истечения TTL. Серверный timeout 60 с действует на **чтение**. Операции записи не прерываются серверным timeout, чтобы после успешного сохранения можно было записать результат идемпотентности; клиент может повторить с тем же ключом, если сам потерял соединение. Неожиданное исключение в `import_time_entries` откатывает уже вставленные в этом вызове записи; обычные ошибки валидации отдельных строк по-прежнему собираются без отката успешных.
-- `delete_file` по умолчанию удаляет только project/version files; для issue/wiki вложений нужен `confirm_delete_any_attachment=true`.
+- `delete_attachment` по умолчанию удаляет только project/version files; для issue/wiki вложений нужен `confirm_delete_any_attachment=true`. Каноническое полное имя — `redmine_delete_attachment`. Прежнее имя `delete_file` (`redmine_delete_file`) остаётся callable alias как минимум до следующей major-версии: те же права, вход, выход и поведение; `tools/call` со старым именем выполняет ту же операцию; в `tools/list` alias не публикуется; вызовы alias отличимы в audit log по имени вызванного tool. Ссылки из других tools используют каноническое имя.
 - List/search используют `limit`/`offset`. Для выборок из БД страница ограничивается на уровне запроса, а не обрезкой уже загруженного полного списка. Любая MCP-коллекция с пагинацией имеет явный стабильный порядок; последним критерием всегда является `id`, чтобы страницы не пропускали и не повторяли элементы.
 - Подстроковый поиск (`query`, `login`, `name` и текстовый `search_issues`) ищет символы буквально: `%` и `_` не являются SQL-шаблонами.
 - Лимиты MCP: timeout 60 с на read-tools, rate limit 120 запросов/мин на пользователя, HTTP-тело MCP-запроса 36 MiB, максимальный размер JSON args tool 32 MiB, upload base64 до 20 MiB, download base64 до 10 MiB. Повреждённый Base64 в любом `content_base64` — ошибка параметров ещё до выполнения tool.
 - Каждый вызов tool, включая отказ в доступе, пишется в structured audit log (tool, user, target IDs, outcome, duration, correlation_id) и учитывается в rate limit; содержимое base64 и private notes не логируется. Target IDs включают в том числе `board_id`, `message_id`, `query_id`, `user_id`, `group_id`.
-- `outputSchema` каждого core-tool описывает верхний уровень `data` (для списков — поля элемента `items`), а не открытый произвольный объект. Набор полей схемы совпадает с фактическим ответом: `list_users` без `created_on`, `list_all_users` с `created_on`; `get_attachment` включает `size` и `content_url`. Поля, которые в реальном ответе бывают пустыми, допускают `null` (в том числе `time_entry.issue`, `*_pagination` без include, `estimation_accuracy`, `content_type` вложения). Значения custom fields и `possible_values` не ограничены объектами. `attachments_not_saved` — массив имён файлов.
+- `outputSchema` каждого core-tool описывает верхний уровень `data` (для списков — поля элемента `items`), а не открытый произвольный объект. Набор полей схемы совпадает с фактическим ответом: `list_users` без `created_on`, `admin_list_users` с `created_on`; `get_attachment` включает `size` и `content_url`. Поля, которые в реальном ответе бывают пустыми, допускают `null` (в том числе `time_entry.issue`, `*_pagination` без include, `estimation_accuracy`, `content_type` вложения). Значения custom fields и `possible_values` не ограничены объектами. `attachments_not_saved` — массив имён файлов.
 - `summarize_project_status.days` в схеме: по умолчанию 30, минимум 1, максимум 365.
 - `search_all.resources`: не более двух уникальных значений.
 - `version_id`, `file_id`, `tracker_id` — целые числа не меньше 1.
@@ -284,6 +289,7 @@
 
 ### `list_project_activities`
 
+- Это лента событий проекта («что произошло»), а не справочник видов работ для списания времени. Виды работ — `list_time_entry_activities`.
 - Вход: `project` (обязателен); опционально `from`, `to` (даты `YYYY-MM-DD`), `author_id`, `event_types` (массив строк), `limit`/`offset`.
 - По умолчанию окно — последние 7 дней (`to` = сегодня, `from` = сегодня минус 6 дней). Максимальная длина окна — 90 дней; при превышении — ошибка параметров.
 - События из ленты активности проекта: тип, время, автор (`id`/`name`), `title`, `description`, `url`. Порядок — новые события сначала; при равном времени — больший `id` раньше.
@@ -292,6 +298,8 @@
 - Несуществующий `author_id` — пустой список, не ошибка.
 
 ### `summarize_project_status`
+
+Это не объект Redmine, а серверная агрегация по видимым задачам и трудозатратам проекта.
 
 Существующие поля сохраняются: `project_id`, `project_name`, `analysis_period_days`, `recent_activity` (`created_count`, `updated_count`), `totals` (`issues_count`, `open_count`, `closed_count`), `status_breakdown`, `priority_breakdown`, `assignee_breakdown`.
 
@@ -310,6 +318,10 @@
 - `reopened_count` — число видимых задач, у которых в окне `days` в журнале статус сменился с закрытого на открытый. Одна задача учитывается не более одного раза.
 
 Инструмент отдаёт факты, не текстовый «анализ здоровья» проекта.
+
+### `list_versions` / `get_version`
+
+`Version` в этих tools — сущность Redmine (этап roadmap / milestone), а не версия программного продукта. `list_versions` возвращает roadmap-версии проекта, включая shared.
 
 ### `get_version`
 
@@ -331,9 +343,26 @@
 ### `list_users`
 
 - С `project`: активные **пользователи**-участники проекта (право `view_members`). Membership группы в проекте не попадает в список как группа; пользователи из группы — только если они сами участники. Без `project` — только администратор.
-- Элемент: `id`, `login`, `firstname`, `lastname`, `mail`. Не включает `created_on` (это поле есть у `list_all_users`).
+- Элемент: `id`, `login`, `firstname`, `lastname`, `mail`. Не включает `created_on` (это поле есть у `admin_list_users`).
 - Опциональный `query`: регистронезависимый substring по `login`, `firstname` и `lastname`.
 - Опциональный `login` сохраняется (только substring по login) для совместимости. Если заданы и `query`, и `login`, применяются оба условия (AND).
+
+### `admin_list_users`
+
+- Глобальный каталог активных пользователей инсталляции. Только администратор. Для участников проекта и назначения в проекте использовать `list_users` с `project`.
+- Вход: опционально `name` (регистронезависимый substring по login, firstname, lastname или email), `group_id`, пагинация.
+- Элемент: `id`, `login`, `firstname`, `lastname`, `mail`, `created_on`.
+- Каноническое полное имя — `redmine_admin_list_users`.
+- Прежнее имя `list_all_users` (`redmine_list_all_users`) остаётся callable alias как минимум до следующей major-версии: те же права, вход, выход и поведение; `tools/call` со старым именем выполняет ту же операцию; в `tools/list` alias не публикуется; вызовы alias отличимы в audit log по имени вызванного tool.
+- Server instructions и ссылки из других tools используют каноническое имя.
+
+### `list_project_files`
+
+- Пагинированный список файлов раздела «Файлы» проекта и вложений его версий. Не включает вложения задач и Wiki — их читают через `get_issue` / `get_wiki_page` с `include_attachments`.
+- Вход: `project` (обязателен), пагинация. Право `view_files`.
+- Каноническое полное имя — `redmine_list_project_files`.
+- Прежнее имя `list_files` (`redmine_list_files`) остаётся callable alias как минимум до следующей major-версии: те же права, вход, выход и поведение; `tools/call` со старым именем выполняет ту же операцию; в `tools/list` alias не публикуется; вызовы alias отличимы в audit log по имени вызванного tool.
+- Ссылки из других tools используют каноническое имя.
 
 ### `list_groups`
 
@@ -389,7 +418,7 @@
 5. `delete_issue` без `confirm_delete` возвращает `INVALID_STATE` и impact; с подтверждением удаляет.
 6. `create_time_entry` требует `hours` и `project` или `issue_id`; `import_time_entries` принимает пачку.
 7. `list_wiki_pages` / `get_wiki_page` / `create_wiki_page` работают при включённом модуле Wiki.
-8. `upload_file` требует `filename` и `content_base64`; `delete_file` для issue-вложения требует confirm.
+8. `upload_file` требует `filename` и `content_base64`; `delete_attachment` для issue-вложения требует confirm.
 9. Пользователь без `use_mcp` не проходит аутентификацию MCP; без права на tool не видит его в `tools/list`.
 10. Повтор `create_issue` с тем же `idempotency_key` и теми же аргументами не создаёт дубликат; тот же ключ с другим subject — `CONFLICT`.
 11. `download_attachment` для видимого issue-вложения возвращает `content_base64` с `size` фактического содержимого; для файла > 10 MiB на диске (даже при малом metadata) — `FILE_TOO_LARGE`; несуществующее и недоступное вложение неотличимы.
@@ -435,8 +464,8 @@
 51. Историческая версия wiki-страницы без `view_wiki_edits` недоступна; защищённую страницу нельзя изменить без права защищать wiki.
 52. `copy_issue` без права добавлять наблюдателей не копирует watchers; настройки `link_copied_issue` / `copy_attachments_on_issue_copy` = `no` запрещают связь и вложения; parent в том же проекте сохраняется.
 53. Write-tool расширения в read-only mode не вызывает handler.
-54. `delete_file` виден в `tools/list` пользователю, который может удалять вложения задачи, без `manage_files`.
-55. `add_issue_watcher` / `remove_issue_watcher` принимают group principal.
+54. `delete_attachment` виден в `tools/list` пользователю, который может удалять вложения задачи, без `manage_files`.
+55. `add_issue_watcher` / `remove_issue_watcher` принимают group principal по `principal_id` или устаревшему `user_id`.
 56. `get_version` с `project` возвращает shared-версию, которую отдал `list_versions` этого проекта.
 57. `get_issue` / `get_wiki_page` / `get_board_message` ограничивают вложенные списки `limit`/`offset` и отдают `*_pagination`; без include пагинация — `null`.
 58. Реальные ответы tools, включая nullable-поля, соответствуют опубликованному `outputSchema`.
@@ -447,3 +476,8 @@
 63. `get_issue` с журналами `attr`, `cf` и `relation` одновременно не падает и отдаёт только видимые записи.
 64. Журнал со скрытой custom-field detail и notes из пробелов, табуляции или перевода строки не входит в `get_issue`.
 65. `get_private_notes` не возвращает комментарий из одних пробелов, табуляций или переводов строки.
+66. Администратор вызывает `admin_list_users` и получает глобальный каталог; не-администратор не видит tool в `tools/list` и получает отказ при вызове.
+67. Вызов alias `list_all_users` даёт тот же результат, что `admin_list_users`; в `tools/list` имя `redmine_list_all_users` отсутствует.
+68. Вызов alias `list_files` даёт тот же результат, что `list_project_files`; в `tools/list` имя `redmine_list_files` отсутствует.
+69. Вызов alias `delete_file` даёт тот же результат, что `delete_attachment`; в `tools/list` имя `redmine_delete_file` отсутствует.
+70. Вызов alias `get_server_info` даёт тот же результат, что `get_mcp_info`; в `tools/list` имя `redmine_get_server_info` отсутствует.

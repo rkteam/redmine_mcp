@@ -91,7 +91,7 @@ Extension API를 통해 확장 플러그인은 다음을 수행할 수 있습니
 - 도구를 한 번만 등록(재로드 시 중복 없음);
 - 표준 권한 확인 및 이슈 조회가 있는 이슈 범위 도구 등록; handler 실행 전 이슈가 사라진 경우 내부 오류가 아닌 "not found" 응답;
 - 매개변수 및 before/after handler로 기존 코어 도구 확장;
-- `redmine_get_server_info`용 capability 모드 등록(예: `issue_search.semantic`);
+- `redmine_get_mcp_info`용 capability 모드 등록(예: `issue_search.semantic`);
 - `internal_request`를 통해 현재 사용자를 대신하여 프로세스 내 Redmine 또는 플러그인 REST API 호출(`GET`, `POST`, `PUT`, `PATCH`, `DELETE`; 대상 엔드포인트는 API auth 수락); REST 오류는 내부 요청 HTTP 상태 없이 정규 MCP 코드로 매핑;
 - `{ ok, data | error }` 래퍼 형식으로 `outputSchema` 게시.
 

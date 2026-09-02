@@ -60,20 +60,20 @@ module RedmineMcp
       module_function
 
         def register!
-          register_list_files
+          register_list_project_files
           register_upload_file
-          register_delete_file
+          register_delete_attachment
           register_get_attachment
           register_download_attachment
         end
 
-        def register_list_files
+        def register_list_project_files
           Registry.instance.register_tool(
             plugin_id: PLUGIN_ID,
-            name: 'list_files',
+            name: 'list_project_files',
             title: 'List project files',
             description: 'Return a paginated list of files in one project Files section, including attachments on the project and its versions. Each item includes attachment metadata such as ' \
-                         'filename, size, author, and version reference. Use to obtain file_id before redmine_delete_file. For issue or wiki attachments, use redmine_get_issue with ' \
+                         'filename, size, author, and version reference. Use to obtain file_id before redmine_delete_attachment. For issue or wiki attachments, use redmine_get_issue with ' \
                          'include_attachments or ' \
                          'redmine_get_wiki_page with include_attachments. Requires project and view_files. Default limit 25, maximum 100. Does not modify Redmine.',
             input_schema: {
@@ -85,7 +85,8 @@ module RedmineMcp
             output_schema: RedmineMcp::Core::OutputSchemas::LIST_FILES,
             permission: :view_files,
             annotations: Helpers::READ_ONLY_ANNOTATIONS,
-            handler: method(:list_files)
+            aliases: ['list_files'],
+            handler: method(:list_project_files)
           )
         end
 
@@ -118,14 +119,15 @@ module RedmineMcp
           )
         end
 
-        def register_delete_file
+        def register_delete_attachment
           Registry.instance.register_tool(
             plugin_id: PLUGIN_ID,
-            name: 'delete_file',
-            title: 'Delete project file',
-            description: 'Delete one attachment by file_id. By default only project or version files may be deleted; pass confirm_delete_any_attachment=true to delete issue or wiki attachments. ' \
+            name: 'delete_attachment',
+            title: 'Delete attachment',
+            description: 'Delete one attachment by file_id. ' \
+                         'By default only project or version files may be deleted; pass confirm_delete_any_attachment=true to also delete issue or wiki attachments. ' \
                          'Returns deleted_file_id only. Requires manage_files or the matching edit/delete permission for the attachment container. Blocked when MCP read-only mode is enabled. Call ' \
-                         'redmine_list_files or redmine_get_issue with include_attachments to obtain file_id.',
+                         'redmine_list_project_files or redmine_get_issue with include_attachments to obtain file_id.',
             input_schema: {
               properties: {
                 file_id: Helpers::POSITIVE_ID_SCHEMA.merge(description: 'ID of the attachment to delete'),
@@ -137,9 +139,10 @@ module RedmineMcp
               required: ['file_id']
             },
             output_schema: RedmineMcp::Core::OutputSchemas::DELETED_FILE,
-            permission: ->(user, args, _project) { delete_file_allowed?(user, args) },
+            permission: ->(user, args, _project) { delete_attachment_allowed?(user, args) },
             annotations: Helpers::DELETE_ANNOTATIONS,
-            handler: method(:delete_file)
+            aliases: ['delete_file'],
+            handler: method(:delete_attachment)
           )
         end
 
@@ -151,14 +154,14 @@ module RedmineMcp
             description: "Return metadata and a downloadable content_url for one attachment by attachment_id.\n\n" \
                          "Does not return file bytes. Use redmine_download_attachment for Base64-encoded content.\n\n" \
                          "Works for project, version, issue, wiki, and document attachments visible to the current user.\n" \
-                         "Obtain attachment_id from redmine_get_issue or redmine_get_wiki_page with include_attachments=true, or redmine_list_files.\n" \
+                         "Obtain attachment_id from redmine_get_issue or redmine_get_wiki_page with include_attachments=true, or redmine_list_project_files.\n" \
                          'Does not modify Redmine.',
             input_schema: {
               properties: {
                 attachment_id: {
                   type: 'integer',
                   minimum: 1,
-                  description: 'Attachment ID from redmine_get_issue/redmine_get_wiki_page with include_attachments=true, or redmine_list_files.',
+                  description: 'Attachment ID from redmine_get_issue/redmine_get_wiki_page with include_attachments=true, or redmine_list_project_files.',
                   examples: [1]
                 }
               },
@@ -184,13 +187,13 @@ module RedmineMcp
                          "Does not modify Redmine.\n\n" \
                          "For metadata and content_url only, use redmine_get_attachment.\n" \
                          'Obtain attachment_id from redmine_get_issue or redmine_get_wiki_page with ' \
-                         'include_attachments=true, or from redmine_list_files.',
+                         'include_attachments=true, or from redmine_list_project_files.',
             input_schema: {
               properties: {
                 attachment_id: {
                   type: 'integer',
                   minimum: 1,
-                  description: 'Attachment ID from redmine_get_issue/redmine_get_wiki_page with include_attachments=true, or redmine_list_files.',
+                  description: 'Attachment ID from redmine_get_issue/redmine_get_wiki_page with include_attachments=true, or redmine_list_project_files.',
                   examples: [1]
                 }
               },
@@ -203,7 +206,7 @@ module RedmineMcp
           )
         end
 
-        def list_files(args, context)
+        def list_project_files(args, context)
           user = context[:user]
           project = Helpers.find_project(user, args[:project])
           return Helpers.error_result(:error_mcp_project_not_found) unless project
@@ -256,7 +259,7 @@ module RedmineMcp
           end
         end
 
-        def delete_file(args, context)
+        def delete_attachment(args, context)
           blocked = ReadOnly.guard_write!
           return blocked if blocked
 
@@ -373,7 +376,7 @@ module RedmineMcp
           attachment
         end
 
-        def delete_file_allowed?(user, args)
+        def delete_attachment_allowed?(user, args)
           return attachment_delete_discovery_allowed?(user) if args[:file_id].blank?
 
           attachment = find_visible_attachment(user, args[:file_id])

@@ -91,7 +91,7 @@ Through Extension API, an extension plugin can:
 - register a tool once (without duplication on reload);
 - register an issue-scoped tool with standard permission checks and issue lookup; if the issue disappeared before the handler runs, the response is "not found", not an internal error;
 - extend an existing core tool with parameters and before/after handlers;
-- register capability modes for `redmine_get_server_info` (for example `issue_search.semantic`);
+- register capability modes for `redmine_get_mcp_info` (for example `issue_search.semantic`);
 - call the Redmine or plugin REST API in-process on behalf of the current user through `internal_request` (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`; the target endpoint must accept API auth); REST errors are mapped to canonical MCP codes without the internal request HTTP status;
 - publish `outputSchema` in the `{ ok, data | error }` envelope format.
 

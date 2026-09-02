@@ -55,12 +55,16 @@ module RedmineMcp
       result
     end
 
-    def full_name
-      if plugin_id == :redmine
+    def self.full_name_for(plugin_id, name)
+      if plugin_id.to_sym == :redmine
         "redmine_#{name}"
       else
         "redmine_#{plugin_id}_#{name}"
       end
+    end
+
+    def full_name
+      self.class.full_name_for(plugin_id, name)
     end
 
     def mutating?
