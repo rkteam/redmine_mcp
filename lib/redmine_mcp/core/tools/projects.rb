@@ -26,7 +26,7 @@ module RedmineMcp
         VERSION_ID_SCHEMA = {
           type: 'integer',
           minimum: 1,
-          description: 'Version ID from redmine_list_versions.'
+          description: 'Roadmap version (milestone) ID from redmine_list_versions.'
         }.freeze
         VERSION_NAME_SCHEMA = {
           type: 'string',
@@ -142,8 +142,9 @@ module RedmineMcp
             plugin_id: PLUGIN_ID,
             name: 'summarize_project_status',
             title: 'Summarize project status',
-            description: 'Return a server-built project health summary for one project over a recent time window. Includes issue totals, open and closed counts, recent created and updated counts, ' \
-                         'breakdowns by status, priority, and assignee, plus deterministic metrics such as overdue_count, unassigned_count, stale_issues_count, issues_closed_during_period, ' \
+            description: 'Return a server-built project health summary for one project over a recent time window. This is not a Redmine object; the MCP server computes deterministic metrics from ' \
+                         'visible issues and time entries. Includes issue totals, open and closed counts, recent created and updated counts, ' \
+                         'breakdowns by status, priority, and assignee, plus metrics such as overdue_count, unassigned_count, stale_issues_count, issues_closed_during_period, ' \
                          'estimated_hours, spent_hours, average_resolution_hours, estimation_accuracy, and reopened_count. Use for dashboards instead of aggregating redmine_list_issues manually. ' \
                          'days defaults to 30 and is clamped between 1 and 365. Requires project. Does not return individual issues; use redmine_list_issues for issue lists. Does not modify Redmine.',
             input_schema: {
@@ -171,7 +172,8 @@ module RedmineMcp
             plugin_id: PLUGIN_ID,
             name: 'list_project_activities',
             title: 'List project activities',
-            description: 'Return a paginated activity feed for one project. Each item includes event type, datetime, ' \
+            description: 'Return a paginated activity feed for one project (events such as issue and wiki changes). This is not the time-logging activity catalog; for time entry activity types use ' \
+                         'redmine_list_time_entry_activities. Each item includes event type, datetime, ' \
                          'author, title, description, and url. Newest events first. Optional from/to (YYYY-MM-DD), author_id, and ' \
                          'event_types. Default window is the last 7 days; maximum window length is 90 days. Requires ' \
                          'project. Use for "what happened" timelines; use redmine_summarize_project_status for aggregates. ' \
@@ -202,7 +204,8 @@ module RedmineMcp
             plugin_id: PLUGIN_ID,
             name: 'list_versions',
             title: 'List project versions',
-            description: 'Return a paginated list of roadmap versions (milestones) for one project, including shared versions. Each item includes id, name, status, due date, sharing, and project ' \
+            description: 'Return a paginated list of Redmine roadmap versions (milestones) for one project, including shared versions. A version is a project milestone, not a software product ' \
+                         'release. Each item includes id, name, status, due date, sharing, and project ' \
                          'reference. Optional status_filter accepts open, locked, or closed. Use before redmine_create_issue or redmine_update_issue when fixed_version_id is unknown. Requires ' \
                          'project. For ' \
                          'creating or changing versions, use redmine_create_version or redmine_update_version. Default limit 25, maximum 100. Does not modify Redmine.',
@@ -229,7 +232,7 @@ module RedmineMcp
             plugin_id: PLUGIN_ID,
             name: 'get_version',
             title: 'Get project version',
-            description: 'Return one roadmap version by version_id with aggregates: issues_count, open_issues_count, ' \
+            description: 'Return one Redmine roadmap version (milestone, not a software product release) by version_id with aggregates: issues_count, open_issues_count, ' \
                          'closed_issues_count, estimated_hours, spent_hours, and completed_percent. Optional project selects a ' \
                          'visible project whose shared versions include this version_id. Without project, the version must be ' \
                          'visible on its source project. Does not return the issue list. Call ' \
@@ -254,7 +257,7 @@ module RedmineMcp
             name: 'create_version',
             title: 'Create project version',
             description: 'Create one roadmap version in a Redmine project. Requires project and name; optional fields include description, status, due_date, sharing, and wiki_page_title. ' \
-                         'Returns the created version object. Requires manage_versions on the project. Blocked when MCP read-only mode is enabled. Call redmine_list_versions first when checking' \
+                         'Returns the created version object. Requires manage_versions on the project. Blocked when MCP read-only mode is enabled. Call redmine_list_versions first when checking ' \
                          'for ' \
                          '' \
                          '' \
@@ -353,7 +356,7 @@ module RedmineMcp
             description: 'Return a paginated list of members for one project, including users or groups and their assigned roles. Each item includes membership id, principal reference, project ' \
                          'reference, and role list. Use to obtain membership_id before redmine_update_project_member or redmine_remove_project_member, and to distinguish project members from the ' \
                          'global user ' \
-                         'directory in redmine_list_users or redmine_list_all_users. To find people or groups to add, use ' \
+                         'directory in redmine_list_users or redmine_admin_list_users. To find people or groups to add, use ' \
                          'redmine_list_project_member_candidates. Requires project and view_members. Default limit 25, maximum 100. Does not modify Redmine.',
             input_schema: {
               properties: {
@@ -844,7 +847,7 @@ module RedmineMcp
           user = context[:user]
           member = find_manageable_membership(user, args[:membership_id])
           return Helpers.error_result(:error_mcp_membership_not_found) unless member
-          return Helpers.error_result(:error_mcp_invalid_parameters) unless member.deletable?
+          return Helpers.error_result(:error_mcp_permission_denied) unless member.deletable?
 
           membership_id = member.id
           member.destroy

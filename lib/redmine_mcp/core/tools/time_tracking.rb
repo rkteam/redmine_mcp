@@ -136,7 +136,8 @@ module RedmineMcp
             plugin_id: PLUGIN_ID,
             name: 'list_time_entry_activities',
             title: 'List time entry activities',
-            description: 'Return a paginated list of time logging activity types. Without project, returns global shared activities; with project, returns activities enabled for that ' \
+            description: 'Return a paginated list of time logging activity types (the catalog used when logging time). This is not the project activity feed; for project events use ' \
+                         'redmine_list_project_activities. Without project, returns global shared activities; with project, returns activities enabled for that ' \
                          'project. Each item includes id, name, active, and is_default. Use before redmine_create_time_entry or redmine_import_time_entries when activity_id is unknown. Default ' \
                          'limit 25, maximum ' \
                          '100. Does not modify Redmine.',

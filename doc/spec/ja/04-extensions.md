@@ -91,7 +91,7 @@ Extension API を通じて、拡張プラグインは次を行える:
 - ツールを 1 回だけ登録（リロード時の重複なし）;
 - 標準権限チェックと課題検索付きの課題スコープツールを登録; ハンドラー実行前に課題が消失した場合、応答は内部エラーではなく "not found" である;
 - パラメータと before/after ハンドラーで既存のコアツールを拡張;
-- `redmine_get_server_info` の capability モードを登録（例: `issue_search.semantic`）;
+- `redmine_get_mcp_info` の capability モードを登録（例: `issue_search.semantic`）;
 - `internal_request` を通じて現在のユーザーとして Redmine またはプラグイン REST API をプロセス内で呼び出す（`GET`、`POST`、`PUT`、`PATCH`、`DELETE`; 対象エンドポイントは API 認証を受け付ける必要がある）; REST エラーは内部リクエスト HTTP ステータスなしで正規 MCP コードにマッピングされる;
 - `{ ok, data | error }` エンベロープ形式で `outputSchema` を公開する。
 

@@ -8,9 +8,9 @@ Un serveur MCP (Model Context Protocol) au sein de Redmine. Il permet aux client
 
 ## Prérequis
 
-| Composant | Version prise en charge |
+| Composant | Version |
 |---|---|
-| Redmine | 6.0–6.1 |
+| Redmine | Redmine 6.0+ (testé : 6.0–6.1) |
 | MCP protocol | 2025-11-25 |
 | Ruby MCP SDK (`mcp`) | 0.23.x |
 
@@ -192,10 +192,10 @@ Avec un cache local au processus, les garanties de limitation de débit et d'ide
 | `list_projects` | Lister les projets |
 | `get_project` | Détails du projet |
 | `list_project_issue_custom_fields` | Champs personnalisés de tickets du projet |
-| `summarize_project_status` | Résumé de l'activité et des métriques du projet sur N jours |
-| `list_project_activities` | Flux d'activité du projet |
-| `list_versions` | Versions du projet |
-| `get_version` | Détails de la version avec agrégats |
+| `summarize_project_status` | Résumé des métriques du projet construit par le serveur pour N jours |
+| `list_project_activities` | Flux d'activité du projet (événements, pas les types d'activité de saisie du temps) |
+| `list_versions` | Versions de la feuille de route (jalons) |
+| `get_version` | Détails de version de la feuille de route avec agrégats |
 | `create_version` | Créer une version |
 | `update_version` | Mettre à jour une version |
 | `delete_version` | Supprimer une version |
@@ -251,7 +251,7 @@ Avec un cache local au processus, les garanties de limitation de débit et d'ide
 | `list_time_entries` | Lister les entrées de temps |
 | `create_time_entry` | Créer une entrée de temps |
 | `update_time_entry` | Mettre à jour une entrée de temps |
-| `list_time_entry_activities` | Types d'activité (globaux ou par projet) |
+| `list_time_entry_activities` | Types d'activité de saisie du temps (pas le flux d'événements du projet) |
 | `import_time_entries` | Import en masse d'entrées de temps |
 
 ### Données de référence
@@ -262,7 +262,7 @@ Avec un cache local au processus, les garanties de limitation de débit et d'ide
 | `list_project_trackers` | Trackers du projet |
 | `list_issue_statuses` | Statuts de tickets |
 | `list_issue_priorities` | Priorités de tickets |
-| `list_all_users` | Utilisateurs avec filtres (administrateur uniquement) |
+| `admin_list_users` | Utilisateurs avec filtres (administrateur uniquement) |
 | `get_current_user` | Utilisateur actuel |
 | `list_queries` | Requêtes enregistrées (métadonnées ; l'exécution passe par `run_issue_query`) |
 
@@ -290,9 +290,9 @@ Avec un cache local au processus, les garanties de limitation de débit et d'ide
 
 | Outil | Description |
 |------|-------------|
-| `list_files` | Fichiers du projet |
+| `list_project_files` | Fichiers du projet |
 | `upload_file` | Téléverser un fichier |
-| `delete_file` | Supprimer un fichier ou une pièce jointe |
+| `delete_attachment` | Supprimer une pièce jointe |
 | `get_attachment` | Métadonnées de la pièce jointe et `content_url` |
 | `download_attachment` | Contenu de la pièce jointe (`content_base64`, jusqu'à 10 MiB) |
 
@@ -300,7 +300,7 @@ Avec un cache local au processus, les garanties de limitation de débit et d'ide
 
 | Outil | Description |
 |------|-------------|
-| `get_server_info` | Version du serveur, mode lecture seule, utilisateur actuel et capacités disponibles |
+| `get_mcp_info` | Version du plugin MCP, mode lecture seule, utilisateur actuel et capacités disponibles |
 
 ### Accès et réponses
 

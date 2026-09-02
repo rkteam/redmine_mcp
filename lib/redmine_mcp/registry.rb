@@ -27,6 +27,7 @@ module RedmineMcp
     def initialize
       @mutex = Mutex.new
       @tools = {}
+      @tool_aliases = {}
       @tool_extensions = Hash.new { |hash, key| hash[key] = [] }
       @resources = []
       @prompts = {}
@@ -35,6 +36,7 @@ module RedmineMcp
     end
 
     def register_tool(plugin_id:, name:, description:, input_schema:, permission:, handler:, **options)
+      alias_names = Array(options[:aliases])
       definition = @mutex.synchronize do
         tool = ToolDefinition.new(
           plugin_id: plugin_id,
@@ -48,9 +50,18 @@ module RedmineMcp
           annotations: options.fetch(:annotations, {})
         )
         key = tool.full_name
-        raise ArgumentError, "tool already registered: #{key}" if @tools.key?(key)
+        raise ArgumentError, "tool already registered: #{key}" if @tools.key?(key) || @tool_aliases.key?(key)
+
+        alias_keys = alias_names.map { |alias_name| ToolDefinition.full_name_for(plugin_id, alias_name) }
+        alias_keys.each do |alias_key|
+          raise ArgumentError, "tool already registered: #{alias_key}" if @tools.key?(alias_key) || @tool_aliases.key?(alias_key)
+        end
 
         @tools[key] = tool
+        alias_keys.each do |alias_key|
+          @tool_aliases[alias_key] = key
+          Logger.info("registered tool alias #{alias_key} -> #{key} from #{plugin_id}")
+        end
         Logger.info("registered tool #{key} from #{plugin_id}")
         tool
       end
@@ -236,6 +247,14 @@ module RedmineMcp
       end
     end
 
+    def to_mcp_alias_tools(user)
+      tools_for_user(user).flat_map do |definition|
+        alias_keys_for(definition).map do |alias_key|
+          build_mcp_tool(definition, published_name: alias_key)
+        end
+      end
+    end
+
     def to_mcp_resources(user)
       resources_for_user(user).map(&:to_mcp_resource)
     end
@@ -260,20 +279,37 @@ module RedmineMcp
       name = tool_name.to_s
       return name if @tools.key?(name)
 
+      aliased = @tool_aliases[name]
+      return aliased if aliased
+
+      named = @tools.values.select { |tool| tool.name == name }
+      return named.first.full_name if named.one?
+
       matching = @tools.keys.select { |key| key.end_with?("_#{name}") }
       return matching.first if matching.one?
+
+      alias_matching = @tool_aliases.keys.select { |key| key.end_with?("_#{name}") }
+      return @tool_aliases[alias_matching.first] if alias_matching.one?
 
       name
     end
 
-    def build_mcp_tool(definition)
+    def alias_keys_for(definition)
+      canonical = definition.full_name
+      @tool_aliases.each_with_object([]) do |(alias_key, target), keys|
+        keys << alias_key if target == canonical
+      end
+    end
+
+    def build_mcp_tool(definition, published_name: nil)
+      call_name = published_name || definition.full_name
       extensions = tool_extensions(definition.full_name)
       input_schema = ToolRunner.merge_schemas(definition, extensions)
       set_locale = method(:set_user_locale)
       finish = method(:audited_tool_response)
 
       MCP::Tool.define(
-        name: definition.full_name,
+        name: call_name,
         title: definition.title,
         description: definition.description,
         input_schema: input_schema,
@@ -288,7 +324,7 @@ module RedmineMcp
         correlation_id = SecureRandom.uuid
         started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         call_meta = {
-          definition: definition,
+          tool_name: call_name,
           user: current_user,
           args: args,
           correlation_id: correlation_id,
@@ -298,7 +334,7 @@ module RedmineMcp
         return finish.call(**call_meta, payload: limit_error) if limit_error
 
         unless definition.allowed_for?(current_user, args)
-          Logger.warn("permission denied for tool #{definition.full_name}, user=#{current_user&.login}")
+          Logger.warn("permission denied for tool #{call_name}, user=#{current_user&.login}")
           payload = ToolResponse.failure(
             code: 'FORBIDDEN',
             message: I18n.t(:error_mcp_permission_denied)
@@ -327,9 +363,9 @@ module RedmineMcp
       end
     end
 
-    def audited_tool_response(definition:, user:, args:, correlation_id:, started_at:, payload:)
+    def audited_tool_response(tool_name:, user:, args:, correlation_id:, started_at:, payload:)
       audit_tool_call(
-        definition: definition,
+        tool_name: tool_name,
         user: user,
         args: args,
         correlation_id: correlation_id,
@@ -339,10 +375,10 @@ module RedmineMcp
       tool_response(payload)
     end
 
-    def audit_tool_call(definition:, user:, args:, correlation_id:, started_at:, payload:)
+    def audit_tool_call(tool_name:, user:, args:, correlation_id:, started_at:, payload:)
       duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at) * 1000).round
       AuditLog.record(
-        tool_name: definition.full_name,
+        tool_name: tool_name,
         user: user,
         args: args,
         outcome: ToolResponse.error?(payload) ? 'error' : 'success',

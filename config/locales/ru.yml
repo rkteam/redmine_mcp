@@ -2,18 +2,19 @@ ru:
   label_redmine_mcp: Redmine MCP
   text_redmine_mcp_server_instructions: |
     Правила маршрутизации Redmine MCP:
-    - В начале сессии вызывайте redmine_get_server_info и используйте reported capabilities для выбора optional tools.
+    - В начале сессии вызывайте redmine_get_mcp_info и используйте reported capabilities для выбора optional tools.
     - Если ID задачи неизвестен, сначала выполните поиск через capabilities.issue_search, затем redmine_get_issue.
-    - Для семантического, концептуального или similarity-поиска используйте semantic capability из redmine_get_server_info, если available. Следуйте use_when и avoid_when этой capability.
+    - Для семантического, концептуального или similarity-поиска используйте semantic capability из redmine_get_mcp_info, если available. Следуйте use_when и avoid_when этой capability.
     - Для keyword, identifier, field-based или exact-text поиска задач используйте redmine_search_issues.
     - Если нужен семантический поиск, но capabilities.issue_search.semantic.available = false, используйте fallback на redmine_search_issues и явно укажите, что это лексический, а не семантический поиск.
     - Для поиска по нескольким типам ресурсов, включая wiki, используйте redmine_search_all, если capabilities.issue_search.cross_resource доступен.
     - Если project неизвестен, сначала вызовите redmine_list_projects. project должен быть строкой, например "1" или "ecookbook", а не JSON-числом.
     - Перед redmine_create_issue или redmine_update_issue вызывайте redmine_get_issue_form_options, если ID трекера, статуса, исполнителя или настраиваемых полей ещё не известны. Опциональная проверка без записи: redmine_validate_issue_create / redmine_validate_issue_update.
     - Чтобы добавить комментарий без изменения полей задачи, используйте redmine_add_issue_note. Наблюдателей меняйте через redmine_add_issue_watcher или redmine_remove_issue_watcher.
-    - Для поиска пользователей в проекте используйте redmine_list_users; redmine_list_all_users — только для глобального admin-каталога.
+    - Для поиска пользователей в проекте используйте redmine_list_users; redmine_admin_list_users — только для глобального admin-каталога.
     - redmine_get_private_notes или include_journals запрашивайте только когда пользователю явно нужны журналы или приватные комментарии.
     - Для destructive-tools, например redmine_delete_issue, может потребоваться подтверждение; при INVALID_STATE повторите вызов с нужными confirm_* параметрами.
+    - При цитировании задачи пользователю копируйте поле url из результата tool. Не выдумывайте hostname.
     - Помимо redmine_* core tools могут быть доступны tools установленных плагинов со своими префиксами.
   text_redmine_mcp_server_instructions_read_only: Операции записи сейчас заблокированы, так как включён режим read-only MCP.
   label_redmine_mcp_enabled: Включить MCP

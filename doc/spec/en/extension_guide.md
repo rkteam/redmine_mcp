@@ -354,7 +354,7 @@ Do not implement the same business logic separately for REST and MCP. If both la
 |---|---|
 | `register_resource` | you need an MCP resource |
 | `register_prompt` | you need an MCP prompt |
-| `register_capability` | you need to add a capability to `redmine_get_server_info` |
+| `register_capability` | you need to add a capability to `redmine_get_mcp_info` |
 | `extend_tool` | you need to extend an existing tool instead of creating a new one |
 | `on` | you need a lifecycle hook |
 | `internal_request` | you need to call a Redmine or plugin REST endpoint in-process as the current user (`method`, `path`, optional `params` and `body`) |

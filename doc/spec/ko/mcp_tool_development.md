@@ -1723,10 +1723,12 @@ redmine_get_issue
 
 1. 새 이름 추가;
 2. 일시적으로 이전 alias 유지;
-3. description에서 이전 도구를 deprecated로 표시;
-4. 이전 이름 호출 메트릭 수집;
-5. 합의된 기간 후 alias 제거;
+3. description에서 이전 도구를 deprecated로 표시**하거나 alias가 `tools/call`에만 필요한 경우 `tools/list`에 게시하지 않음**;
+4. 이전 이름 호출 메트릭 수집(호출된 도구 이름별 기존 audit log로 충분);
+5. 합의된 기간 후 alias 제거(별도 합의가 없으면 다음 major 버전 이전에는 제거하지 않음);
 6. 서버가 `listChanged`를 선언하면 `notifications/tools/list_changed` 전송.
+
+현재 예([03-core-tools.md](03-core-tools.md) 참조): `redmine_list_all_users` → `redmine_admin_list_users`; `redmine_list_files` → `redmine_list_project_files`; `redmine_delete_file` → `redmine_delete_attachment`; `redmine_get_server_info` → `redmine_get_mcp_info`. alias는 `tools/call`에서 허용되며 `tools/list`에는 게시되지 않음.
 
 ### 15.3. description 변경
 
@@ -1790,7 +1792,7 @@ MCP 서버 버전은 별도 읽기 전용 도구 또는 서버 메타데이터�
 | 시간 기록 | list, create, update, import, 활동 | `redmine_` |
 | Wiki | list, get, create, update, rename, delete | `redmine_` |
 | 파일 및 첨부 | list, upload, delete, download | `redmine_` |
-| 관리 | 사용자, 역할, 서버 정보 | `redmine_admin_` 또는 `redmine_get_server_info` |
+| 관리 | 사용자, 역할, MCP 세션 정보 | `redmine_admin_` 또는 `redmine_get_mcp_info` |
 | 플러그인 엔티티 | 체크리스트, 검색 등 | `redmine_` + `plugin_id`, 예: `redmine_advanced_search_` |
 
 새 도구 추가 전 SHOULD MCP `tools/list` 응답과 해당 그룹을 확인: 기존 도구를 중복하지 않고 다른 의도를 하나의 이름에 섞지 않음.

@@ -354,7 +354,7 @@ REST と MCP で同じビジネスロジックを別々に実装しないでく�
 |---|---|
 | `register_resource` | MCP リソースが必要 |
 | `register_prompt` | MCP プロンプトが必要 |
-| `register_capability` | `redmine_get_server_info` に capability を追加 |
+| `register_capability` | `redmine_get_mcp_info` に capability を追加 |
 | `extend_tool` | 新規作成ではなく既存ツールを拡張 |
 | `on` | ライフサイクルフックが必要 |
 | `internal_request` | 現在のユーザーとして Redmine またはプラグイン REST エンドポイントをプロセス内で呼び出す（`method`、`path`、オプションで `params` と `body`） |

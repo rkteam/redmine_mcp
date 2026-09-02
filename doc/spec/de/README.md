@@ -8,9 +8,9 @@ Ein MCP-Server (Model Context Protocol) innerhalb von Redmine. Er ermöglicht AI
 
 ## Anforderungen
 
-| Komponente | Unterstützte Version |
+| Komponente | Version |
 |---|---|
-| Redmine | 6.0–6.1 |
+| Redmine | Redmine 6.0+ (getestet: 6.0–6.1) |
 | MCP protocol | 2025-11-25 |
 | Ruby MCP SDK (`mcp`) | 0.23.x |
 
@@ -192,10 +192,10 @@ Bei einem prozesslokalen Cache gelten Rate-Limiting- und Idempotenzgarantien nur
 | `list_projects` | Projekte auflisten |
 | `get_project` | Projektdetails |
 | `list_project_issue_custom_fields` | Benutzerdefinierte Vorgangsfelder des Projekts |
-| `summarize_project_status` | Zusammenfassung der Projektaktivität und Metriken für N Tage |
-| `list_project_activities` | Projektaktivitäts-Feed |
-| `list_versions` | Projektversionen |
-| `get_version` | Versionsdetails mit Aggregationen |
+| `summarize_project_status` | Vom Server erstellte Projektmetrik-Zusammenfassung für N Tage |
+| `list_project_activities` | Projektaktivitäts-Feed (Ereignisse, keine Zeitbuchungs-Aktivitätstypen) |
+| `list_versions` | Roadmap-Versionen (Meilensteine) |
+| `get_version` | Roadmap-Versionsdetails mit Aggregationen |
 | `create_version` | Version erstellen |
 | `update_version` | Version aktualisieren |
 | `delete_version` | Version löschen |
@@ -251,7 +251,7 @@ Bei einem prozesslokalen Cache gelten Rate-Limiting- und Idempotenzgarantien nur
 | `list_time_entries` | Zeiteinträge auflisten |
 | `create_time_entry` | Zeiteintrag erstellen |
 | `update_time_entry` | Zeiteintrag aktualisieren |
-| `list_time_entry_activities` | Aktivitätstypen (global oder pro Projekt) |
+| `list_time_entry_activities` | Aktivitätstypen für Zeitbuchungen (nicht der Projekt-Ereignis-Feed) |
 | `import_time_entries` | Massenimport von Zeiteinträgen |
 
 ### Referenzdaten
@@ -262,7 +262,7 @@ Bei einem prozesslokalen Cache gelten Rate-Limiting- und Idempotenzgarantien nur
 | `list_project_trackers` | Projekt-Tracker |
 | `list_issue_statuses` | Vorgangsstatus |
 | `list_issue_priorities` | Vorgangsprioritäten |
-| `list_all_users` | Benutzer mit Filtern (nur Administrator) |
+| `admin_list_users` | Benutzer mit Filtern (nur Administrator) |
 | `get_current_user` | Aktueller Benutzer |
 | `list_queries` | Gespeicherte Abfragen (Metadaten; Ausführung über `run_issue_query`) |
 
@@ -290,9 +290,9 @@ Bei einem prozesslokalen Cache gelten Rate-Limiting- und Idempotenzgarantien nur
 
 | Tool | Beschreibung |
 |------|-------------|
-| `list_files` | Projektdateien |
+| `list_project_files` | Projektdateien |
 | `upload_file` | Datei hochladen |
-| `delete_file` | Datei oder Anhang löschen |
+| `delete_attachment` | Anhang löschen |
 | `get_attachment` | Anhang-Metadaten und `content_url` |
 | `download_attachment` | Anhang-Inhalt (`content_base64`, bis 10 MiB) |
 
@@ -300,7 +300,7 @@ Bei einem prozesslokalen Cache gelten Rate-Limiting- und Idempotenzgarantien nur
 
 | Tool | Beschreibung |
 |------|-------------|
-| `get_server_info` | Serverversion, Nur-Lese-Modus, aktueller Benutzer und verfügbare Capabilities |
+| `get_mcp_info` | MCP-Plugin-Version, Nur-Lese-Modus, aktueller Benutzer und verfügbare Capabilities |
 
 ### Zugriff und Antworten
 

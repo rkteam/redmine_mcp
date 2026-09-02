@@ -354,7 +354,7 @@ Implementieren Sie dieselbe Geschäftslogik nicht separat für REST und MCP. Ben
 |---|---|
 | `register_resource` | MCP-Resource benötigt |
 | `register_prompt` | MCP-Prompt benötigt |
-| `register_capability` | Capability zu `redmine_get_server_info` hinzufügen |
+| `register_capability` | Capability zu `redmine_get_mcp_info` hinzufügen |
 | `extend_tool` | bestehendes Tool erweitern statt neues erstellen |
 | `on` | Lifecycle-Hook benötigt |
 | `internal_request` | Redmine- oder Plugin-REST-Endpunkt in-process als aktueller Benutzer aufrufen (`method`, `path`, optional `params` und `body`) |

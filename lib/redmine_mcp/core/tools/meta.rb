@@ -26,23 +26,24 @@ module RedmineMcp
         def register!
           Registry.instance.register_tool(
             plugin_id: PLUGIN_ID,
-            name: 'get_server_info',
-            title: 'Get MCP server info',
-            description: 'Return MCP server metadata for the current session: plugin version, ' \
+            name: 'get_mcp_info',
+            title: 'Get MCP info',
+            description: 'Return MCP plugin and session metadata, not Redmine application or host information: plugin version, ' \
                          'read-only mode, search capabilities (capabilities.issue_search), ' \
                          'and a brief authenticated-user summary. ' \
-                         'Use at session start to learn server capabilities, which search modes ' \
+                         'Use at session start to learn MCP capabilities, which search modes ' \
                          'are available, and whether writes are allowed. Does not modify Redmine. ' \
                          'For full user profile fields, use redmine_get_current_user.',
             input_schema: {properties: {}},
             output_schema: RedmineMcp::Core::OutputSchemas::SERVER_INFO,
             permission: :use_mcp,
             annotations: Helpers::READ_ONLY_ANNOTATIONS,
-            handler: method(:get_server_info)
+            aliases: ['get_server_info'],
+            handler: method(:get_mcp_info)
           )
         end
 
-        def get_server_info(_args, context)
+        def get_mcp_info(_args, context)
           user = context[:user]
           {
             server_version: RedmineMcp::VERSION,

@@ -31,7 +31,7 @@ module RedmineMcp
         filesize: N::ID,
         content_type: N::NULLABLE_STRING,
         description: N::STRING,
-        content_url: N::STRING,
+        content_url: N::NULLABLE_STRING,
         author: N::USER_REF,
         created_on: N::DATETIME
       }.freeze
@@ -48,6 +48,7 @@ module RedmineMcp
       }.freeze
       ISSUE_PROPS = {
         id: N::ID,
+        url: N::NULLABLE_STRING,
         subject: N::STRING,
         description: N::STRING,
         project: N::PROJECT_REF,
@@ -283,7 +284,7 @@ module RedmineMcp
       LIST_RELATIONS = N.list_output(RELATION_PROPS).freeze
       RELATION = N.object_output(RELATION_PROPS).freeze
       DELETED_RELATION = N.object_output(deleted_relation_id: N::ID).freeze
-      WATCHER = N.object_output(issue_id: N::ID, user_id: N::ID).freeze
+      WATCHER = N.object_output(issue_id: N::ID, principal_id: N::ID, user_id: N::ID).freeze
       JOURNAL = N.object_output(JOURNAL_PROPS).freeze
       NOTE_PRIVACY = N.object_output(journal_id: N::ID, private_notes: N::BOOLEAN).freeze
       LIST_JOURNALS = N.list_output(JOURNAL_PROPS).freeze
@@ -365,6 +366,7 @@ module RedmineMcp
       LIST_SEARCH = N.list_output(
         id: N::ID,
         type: N::STRING,
+        url: N::NULLABLE_STRING,
         title: N::STRING,
         project: N::NULLABLE_STRING,
         status: N::NULLABLE_STRING,
@@ -434,7 +436,7 @@ module RedmineMcp
         filename: N::STRING,
         content_type: N::NULLABLE_STRING,
         size: N::ID,
-        content_url: N::STRING
+        content_url: N::NULLABLE_STRING
       ).freeze
       DELETED_VERSION = N.object_output(version_id: N::ID).freeze
       DELETED_WIKI = N.object_output(title: N::STRING).freeze

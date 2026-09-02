@@ -1723,10 +1723,12 @@ suivre:
 
 1. ajouter un nouveau nom ;
 2. conserver temporairement l'ancien alias ;
-3. marquer l'ancien outil comme obsolète dans la description ;
-4. collecter des mesures sur les anciens noms ;
-5. supprimer l'alias après la période convenue ;
-6. envoyez `notifications/tools/list_changed` si le serveur déclare `listChanged`.
+3. marquer l'ancien outil comme obsolète dans la description **ou ne pas le publier dans `tools/list`** si l'alias n'est nécessaire que pour `tools/call` ;
+4. collecter les métriques des appels de l'ancien nom (l'audit log existant par nom d'outil invoqué suffit) ;
+5. supprimer l'alias après la période convenue (pas avant la prochaine version majeure, sauf période convenue séparément) ;
+6. envoyer `notifications/tools/list_changed` si le serveur déclare `listChanged`.
+
+Exemples actuels (voir [03-core-tools.md](03-core-tools.md)) : `redmine_list_all_users` → `redmine_admin_list_users` ; `redmine_list_files` → `redmine_list_project_files` ; `redmine_delete_file` → `redmine_delete_attachment` ; `redmine_get_server_info` → `redmine_get_mcp_info`. Un alias est accepté dans `tools/call` et n'est pas publié dans `tools/list`.
 
 ### 15.3. Modification des descriptions
 
@@ -1734,7 +1736,7 @@ La description affecte la sélection des outils de modèle et est considérée c
 
 ### 15.4. Version du serveur
 
-La version du serveur MCP est renvoyée par un outil en lecture seule distinct ou par des métadonnées de serveur. N'ajoutez pas `v1`, `v2` à chaque nom sans avoir réellement besoin de prendre en charge des contrats parallèles incompatibles.
+La version du plugin MCP est retournée par `redmine_get_mcp_info` (ou les métadonnées serveur). N'ajoutez pas `v1`, `v2` à chaque nom sans besoin réel de supporter des contrats incompatibles en parallèle.
 
 ---
 
@@ -1790,7 +1792,7 @@ La liste complète des outils actuels n’est pas dupliquée dans ce document : 
 | Entrées de temps | lister, créer, mettre à jour, importer, activités | `redmine_` |
 | Wiki | lister, obtenir, créer, mettre à jour, renommer, supprimer | `redmine_` |
 | Fichiers et pièces jointes | lister, télécharger, supprimer, télécharger | `redmine_` |
-| Administrateur | utilisateurs, rôles, informations sur le serveur | `redmine_admin_` ou `redmine_get_server_info` |
+| Administrateur | utilisateurs, rôles, info de session MCP | `redmine_admin_` ou `redmine_get_mcp_info` |
 | Entités de plugin | listes de contrôle, recherche, etc. | `redmine_` + `plugin_id`, par ex. `redmine_advanced_search_` |
 
 Avant d'ajouter un nouvel outil, DEVRAIT vérifier la réponse MCP `tools/list` et le groupe correspondant : ne dupliquez pas l'outil existant et ne mélangez pas différentes intentions dans un seul nom.

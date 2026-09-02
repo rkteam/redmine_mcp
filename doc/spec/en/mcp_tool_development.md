@@ -1723,10 +1723,12 @@ follow:
 
 1. add new name;
 2. temporarily keep old alias;
-3. mark old tool as deprecated in description;
-4. collect metrics of old name calls;
-5. remove alias after agreed period;
+3. mark old tool as deprecated in description **or do not publish it in `tools/list`** if the alias is only needed for `tools/call`;
+4. collect metrics of old name calls (the existing audit log by invoked tool name is sufficient);
+5. remove alias after agreed period (not before the next major version unless a different period is agreed separately);
 6. send `notifications/tools/list_changed` if server declares `listChanged`.
+
+Current examples (see [03-core-tools.md](03-core-tools.md)): `redmine_list_all_users` → `redmine_admin_list_users`; `redmine_list_files` → `redmine_list_project_files`; `redmine_delete_file` → `redmine_delete_attachment`; `redmine_get_server_info` → `redmine_get_mcp_info`. An alias is accepted in `tools/call` and is not published in `tools/list`.
 
 ### 15.3. Changing descriptions
 
@@ -1734,7 +1736,7 @@ Description affects model tool selection and is considered a behavioral change. 
 
 ### 15.4. Server version
 
-MCP server version is returned by separate read-only tool or server metadata. Do not add `v1`, `v2` to every name without real need to support parallel incompatible contracts.
+MCP plugin version is returned by `redmine_get_mcp_info` (or server metadata). Do not add `v1`, `v2` to every name without real need to support parallel incompatible contracts.
 
 ---
 
@@ -1790,7 +1792,7 @@ The full current tool list is not duplicated in this document — it quickly bec
 | Time entries | list, create, update, import, activities | `redmine_` |
 | Wiki | list, get, create, update, rename, delete | `redmine_` |
 | Files and attachments | list, upload, delete, download | `redmine_` |
-| Admin | users, roles, server info | `redmine_admin_` or `redmine_get_server_info` |
+| Admin | users, roles, MCP session info | `redmine_admin_` or `redmine_get_mcp_info` |
 | Plugin entities | checklists, search, etc. | `redmine_` + `plugin_id`, e.g. `redmine_advanced_search_` |
 
 Before adding a new tool SHOULD check MCP `tools/list` response and corresponding group: do not duplicate existing tool and do not mix different intents in one name.

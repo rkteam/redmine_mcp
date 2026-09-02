@@ -74,6 +74,10 @@ class RedmineMcpToolsSchemaTest < RedmineMcpTestCase
 
     assert_mcp_ok(issue_payload)
     assert_nil issue_payload.dig(:data, :journal_pagination)
+    assert issue_payload[:data].key?(:url)
+    issue_props = output_schema_data_properties('get_issue')
+
+    assert issue_props.key?(:url) || issue_props.key?('url')
     assert_mcp_output_schema('get_issue', issue_payload)
 
     form_payload = invoke_mcp_tool('get_issue_form_options', user: admin, args: {project: 'ecookbook'})
@@ -82,16 +86,16 @@ class RedmineMcpToolsSchemaTest < RedmineMcpTestCase
     assert form_payload.dig(:data, :project).present?
     assert_mcp_output_schema('get_issue_form_options', form_payload)
 
-    users_payload = invoke_mcp_tool('list_all_users', user: admin, args: {})
+    users_payload = invoke_mcp_tool('admin_list_users', user: admin, args: {})
 
     assert_mcp_ok(users_payload)
     assert users_payload.dig(:data, :items).first&.key?(:created_on)
-    assert_mcp_output_schema('list_all_users', users_payload)
+    assert_mcp_output_schema('admin_list_users', users_payload)
 
     listed_users = invoke_mcp_tool('list_users', user: admin, args: {project: 'ecookbook'})
     listed_item = listed_users.dig(:data, :items).first
     user_item_props = output_schema_item_properties('list_users')
-    all_user_item_props = output_schema_item_properties('list_all_users')
+    all_user_item_props = output_schema_item_properties('admin_list_users')
 
     assert_mcp_ok(listed_users)
     assert listed_item

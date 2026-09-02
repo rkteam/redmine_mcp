@@ -354,7 +354,7 @@ Non implementare la stessa logica di business separatamente per REST e MCP. Se e
 |---|---|
 | `register_resource` | serve una risorsa MCP |
 | `register_prompt` | serve un prompt MCP |
-| `register_capability` | serve aggiungere una capacità a `redmine_get_server_info` |
+| `register_capability` | serve aggiungere una capacità a `redmine_get_mcp_info` |
 | `extend_tool` | serve estendere uno strumento esistente invece di crearne uno nuovo |
 | `on` | serve un hook del ciclo di vita |
 | `internal_request` | serve chiamare un endpoint REST di Redmine o del plugin in-process come utente corrente (`method`, `path`, `params` e `body` opzionali) |

@@ -354,7 +354,7 @@ return result if internal_request_error?(result)
 |---|---|
 | `register_resource` | нужен MCP resource |
 | `register_prompt` | нужен MCP prompt |
-| `register_capability` | нужно добавить capability в `redmine_get_server_info` |
+| `register_capability` | нужно добавить capability в `redmine_get_mcp_info` |
 | `extend_tool` | нужно расширить существующий tool, а не создавать новый |
 | `on` | нужен lifecycle hook |
 | `internal_request` | нужно вызвать REST endpoint Redmine или плагина in-process от имени пользователя (`method`, `path`, опционально `params` и `body`) |

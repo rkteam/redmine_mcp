@@ -1723,10 +1723,12 @@ postępuj:
 
 1. dodaj nową nazwę;
 2. tymczasowo zachowaj stary alias;
-3. oznacz stare narzędzie jako deprecated w opisie;
-4. zbieraj metryki wywołań starej nazwy;
-5. usuń alias po uzgodnionym okresie;
+3. oznacz stare narzędzie jako deprecated w opisie **lub nie publikuj go w `tools/list`**, jeśli alias jest potrzebny tylko dla `tools/call`;
+4. zbieraj metryki wywołań starej nazwy (wystarczy istniejący audit log po nazwie wywołanego narzędzia);
+5. usuń alias po uzgodnionym okresie (nie wcześniej niż następna wersja major, chyba że okres ustalono osobno);
 6. wyślij `notifications/tools/list_changed`, jeśli serwer deklaruje `listChanged`.
+
+Aktualne przykłady (patrz [03-core-tools.md](03-core-tools.md)): `redmine_list_all_users` → `redmine_admin_list_users`; `redmine_list_files` → `redmine_list_project_files`; `redmine_delete_file` → `redmine_delete_attachment`; `redmine_get_server_info` → `redmine_get_mcp_info`. Alias jest akceptowany w `tools/call` i nie jest publikowany w `tools/list`.
 
 ### 15.3. Zmiana opisów
 
@@ -1734,7 +1736,7 @@ Opis wpływa na wybór narzędzia przez model i jest traktowany jako zmiana beha
 
 ### 15.4. Wersja serwera
 
-Wersja serwera MCP zwracana jest przez osobne narzędzie tylko do odczytu lub metadane serwera. Nie dodawaj `v1`, `v2` do każdej nazwy bez realnej potrzeby obsługi równoległych niekompatybilnych kontraktów.
+Wersja wtyczki MCP jest zwracana przez `redmine_get_mcp_info` (lub metadane serwera). Nie dodawaj `v1`, `v2` do każdej nazwy bez realnej potrzeby wspierania równoległych niezgodnych kontraktów.
 
 ---
 
@@ -1790,7 +1792,7 @@ Pełna bieżąca lista narzędzi nie jest duplikowana w tym dokumencie — szybk
 | Wpisy czasu | list, create, update, import, activities | `redmine_` |
 | Wiki | list, get, create, update, rename, delete | `redmine_` |
 | Pliki i załączniki | list, upload, delete, download | `redmine_` |
-| Admin | users, roles, server info | `redmine_admin_` lub `redmine_get_server_info` |
+| Admin | users, roles, informacje o sesji MCP | `redmine_admin_` lub `redmine_get_mcp_info` |
 | Encje wtyczek | checklists, search itd. | `redmine_` + `plugin_id`, np. `redmine_advanced_search_` |
 
 Przed dodaniem nowego narzędzia POWINNO sprawdzić odpowiedź MCP `tools/list` i odpowiednią grupę: nie duplikuj istniejącego narzędzia i nie mieszaj różnych intencji w jednej nazwie.

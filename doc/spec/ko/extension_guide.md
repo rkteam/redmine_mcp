@@ -354,7 +354,7 @@ REST와 MCP에 대해 동일한 비즈니스 로직을 별도로 구현하지 �
 |---|---|
 | `register_resource` | MCP resource가 필요한 경우 |
 | `register_prompt` | MCP prompt가 필요한 경우 |
-| `register_capability` | `redmine_get_server_info`에 capability를 추가해야 하는 경우 |
+| `register_capability` | `redmine_get_mcp_info`에 capability를 추가해야 하는 경우 |
 | `extend_tool` | 새 tool을 만드는 대신 기존 tool을 확장해야 하는 경우 |
 | `on` | lifecycle hook이 필요한 경우 |
 | `internal_request` | 현재 사용자로 Redmine 또는 플러그인 REST endpoint를 in-process로 호출해야 하는 경우(`method`, `path`, 선택적 `params` 및 `body`) |

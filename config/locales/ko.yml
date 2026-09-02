@@ -2,18 +2,19 @@ ko:
   label_redmine_mcp: Redmine MCP
   text_redmine_mcp_server_instructions: |
     Redmine MCP 라우팅 규칙:
-    - 세션 시작 시 redmine_get_server_info를 호출하고 보고된 capabilities로 선택적 도구를 고릅니다.
+    - 세션 시작 시 redmine_get_mcp_info를 호출하고 보고된 capabilities로 선택적 도구를 고릅니다.
     - 일감 ID를 모를 때는 redmine_get_issue 전에 capabilities.issue_search로 검색합니다.
-    - 의미·개념·유사 검색에는 available이면 redmine_get_server_info의 semantic capability를 쓰고 use_when / avoid_when을 따릅니다.
+    - 의미·개념·유사 검색에는 available이면 redmine_get_mcp_info의 semantic capability를 쓰고 use_when / avoid_when을 따릅니다.
     - 키워드, 식별자, 필드, 정확 텍스트 검색에는 redmine_search_issues를 사용합니다.
     - 의미 검색이 필요하지만 capabilities.issue_search.semantic.available이 false이면 redmine_search_issues로 돌아가고 어휘 검색임을 밝힙니다.
     - capabilities.issue_search.cross_resource가 있으면 위키를 포함한 여러 자원 탐색에 redmine_search_all을 사용합니다.
     - project를 모르면 먼저 redmine_list_projects를 호출합니다. project는 "1" 또는 "ecookbook" 같은 문자열이며 JSON 숫자가 아닙니다.
     - redmine_create_issue 또는 redmine_update_issue 전에 트래커, 상태, 담당자, 사용자 정의 필드 ID를 모르면 redmine_get_issue_form_options를 호출합니다. 선택적 dry-run: redmine_validate_issue_create / redmine_validate_issue_update.
     - 일감 필드를 바꾸지 않고 댓글만 추가하려면 redmine_add_issue_note를 사용합니다. 지켜보는 사람은 redmine_add_issue_watcher 또는 redmine_remove_issue_watcher입니다.
-    - 프로젝트 사용자 조회에는 redmine_list_users를, 관리자 전역 디렉터리에는 redmine_list_all_users만 사용합니다.
+    - 프로젝트 사용자 조회에는 redmine_list_users를, 관리자 전역 디렉터리에는 redmine_admin_list_users만 사용합니다.
     - 저널이나 비공개 메모가 명시적으로 필요할 때만 redmine_get_private_notes 또는 include_journals를 요청합니다.
     - redmine_delete_issue 같은 파괴적 도구는 확인이 필요할 수 있습니다. INVALID_STATE이면 요청된 confirm_*로 다시 호출합니다.
+    - 사용자에게 일감을 인용할 때는 tool 결과의 url 필드를 복사하세요. hostname을 지어내지 마세요.
     - redmine_* 핵심 도구 외에 설치된 플러그인 도구가 자체 접두사로 나타날 수 있습니다.
   text_redmine_mcp_server_instructions_read_only: MCP 읽기 전용 모드가 켜져 있어 쓰기 작업이 현재 차단되어 있습니다.
   label_redmine_mcp_enabled: MCP 사용

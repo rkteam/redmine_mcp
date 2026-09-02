@@ -91,7 +91,7 @@ Przez Extension API wtyczka rozszerzająca może:
 - zarejestrować narzędzie jednorazowo (bez duplikacji przy przeładowaniu);
 - zarejestrować narzędzie w zakresie zgłoszenia ze standardowymi kontrolami uprawnień i wyszukiwaniem zgłoszenia; jeśli zgłoszenie zniknęło przed uruchomieniem handlera, odpowiedź to „not found”, a nie błąd wewnętrzny;
 - rozszerzyć istniejące narzędzie rdzeniowe parametrami i handlerami before/after;
-- zarejestrować tryby capability dla `redmine_get_server_info` (na przykład `issue_search.semantic`);
+- zarejestrować tryby capability dla `redmine_get_mcp_info` (na przykład `issue_search.semantic`);
 - wywołać REST API Redmine lub wtyczki w procesie w imieniu bieżącego użytkownika przez `internal_request` (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`; docelowy punkt końcowy musi akceptować auth API); błędy REST są mapowane na kanoniczne kody MCP bez wewnętrznego statusu HTTP żądania;
 - opublikować `outputSchema` w formacie koperty `{ ok, data | error }`.
 

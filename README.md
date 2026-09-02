@@ -192,10 +192,10 @@ With a process-local cache, rate limiting and idempotency guarantees apply only 
 | `list_projects` | List projects |
 | `get_project` | Project details |
 | `list_project_issue_custom_fields` | Project issue custom fields |
-| `summarize_project_status` | Project activity and metrics summary for N days |
-| `list_project_activities` | Project activity feed |
-| `list_versions` | Project versions |
-| `get_version` | Version details with aggregates |
+| `summarize_project_status` | Server-built project metrics summary for N days |
+| `list_project_activities` | Project activity feed (events, not time-entry types) |
+| `list_versions` | Roadmap versions (milestones) |
+| `get_version` | Roadmap version details with aggregates |
 | `create_version` | Create a version |
 | `update_version` | Update a version |
 | `delete_version` | Delete a version |
@@ -251,7 +251,7 @@ With a process-local cache, rate limiting and idempotency guarantees apply only 
 | `list_time_entries` | List time entries |
 | `create_time_entry` | Create a time entry |
 | `update_time_entry` | Update a time entry |
-| `list_time_entry_activities` | Activity types (global or per project) |
+| `list_time_entry_activities` | Time-logging activity types (not the project event feed) |
 | `import_time_entries` | Bulk import of time entries |
 
 ### Reference data
@@ -262,7 +262,7 @@ With a process-local cache, rate limiting and idempotency guarantees apply only 
 | `list_project_trackers` | Project trackers |
 | `list_issue_statuses` | Issue statuses |
 | `list_issue_priorities` | Issue priorities |
-| `list_all_users` | Users with filters (admin only) |
+| `admin_list_users` | Users with filters (admin only) |
 | `get_current_user` | Current user |
 | `list_queries` | Saved queries (metadata; execution is `run_issue_query`) |
 
@@ -290,9 +290,9 @@ With a process-local cache, rate limiting and idempotency guarantees apply only 
 
 | Tool | Description |
 |------|-------------|
-| `list_files` | Project files |
+| `list_project_files` | Project files |
 | `upload_file` | Upload a file |
-| `delete_file` | Delete a file or attachment |
+| `delete_attachment` | Delete an attachment |
 | `get_attachment` | Attachment metadata and `content_url` |
 | `download_attachment` | Attachment content (`content_base64`, up to 10 MiB) |
 
@@ -300,7 +300,7 @@ With a process-local cache, rate limiting and idempotency guarantees apply only 
 
 | Tool | Description |
 |------|-------------|
-| `get_server_info` | Server version, read-only mode, current user, and available capabilities |
+| `get_mcp_info` | MCP plugin version, read-only mode, current user, and available capabilities |
 
 ### Access and responses
 

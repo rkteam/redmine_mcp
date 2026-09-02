@@ -22,6 +22,7 @@ require File.expand_path('../test_helper', __dir__)
 class McpControllerTest < Redmine::IntegrationTest
   MCP_PROTOCOL_VERSION = '2025-11-25'
   TOOLS_CALL_METHOD = 'tools/call'
+  TOOLS_LIST_METHOD = 'tools/list'
 
   fixtures :users, :roles, :members, :member_roles, :projects
 
@@ -71,17 +72,93 @@ class McpControllerTest < Redmine::IntegrationTest
   end
 
   test 'tools list succeeds for user with use_mcp' do
-    post_mcp(User.find(1), 'tools/list', params: {})
+    post_mcp(User.find(1), TOOLS_LIST_METHOD, params: {})
 
     assert_response :success
     tools = response_json.dig('result', 'tools')
 
     assert_kind_of Array, tools, "unexpected body: #{response.body.to_s[0, 800]}"
-    assert(tools.any? { |tool| tool['name'] == 'redmine_get_server_info' })
+    assert(tools.any? { |tool| tool['name'] == 'redmine_get_mcp_info' })
+  end
+
+  test 'admin_list_users is listed and list_all_users alias is callable but hidden' do
+    assert_canonical_tool_listed_alias_hidden(
+      canonical: 'redmine_admin_list_users',
+      alias_name: 'redmine_list_all_users'
+    )
+
+    post_mcp(
+      User.find(1),
+      TOOLS_CALL_METHOD,
+      params: {name: 'redmine_list_all_users', arguments: {}}
+    )
+
+    assert_response :success
+    result = response_json['result']
+
+    assert result.dig('structuredContent', 'ok'), "unexpected body: #{response.body.to_s[0, 800]}"
+    assert_kind_of Array, result.dig('structuredContent', 'data', 'items')
+  end
+
+  test 'list_project_files is listed and list_files alias is callable but hidden' do
+    assert_canonical_tool_listed_alias_hidden(
+      canonical: 'redmine_list_project_files',
+      alias_name: 'redmine_list_files'
+    )
+
+    post_mcp(
+      User.find(1),
+      TOOLS_CALL_METHOD,
+      params: {name: 'redmine_list_files', arguments: {project: 'ecookbook'}}
+    )
+
+    assert_response :success
+    result = response_json['result']
+
+    assert result.dig('structuredContent', 'ok'), "unexpected body: #{response.body.to_s[0, 800]}"
+    assert_kind_of Array, result.dig('structuredContent', 'data', 'items')
+  end
+
+  test 'delete_attachment is listed and delete_file alias is callable but hidden' do
+    assert_canonical_tool_listed_alias_hidden(
+      canonical: 'redmine_delete_attachment',
+      alias_name: 'redmine_delete_file'
+    )
+
+    post_mcp(
+      User.find(1),
+      TOOLS_CALL_METHOD,
+      params: {name: 'redmine_delete_file', arguments: {file_id: 999_999}}
+    )
+
+    assert_response :success
+    result = response_json['result']
+
+    assert_equal false, result.dig('structuredContent', 'ok')
+    assert result.dig('structuredContent', 'error')
+  end
+
+  test 'get_mcp_info is listed and get_server_info alias is callable but hidden' do
+    assert_canonical_tool_listed_alias_hidden(
+      canonical: 'redmine_get_mcp_info',
+      alias_name: 'redmine_get_server_info'
+    )
+
+    post_mcp(
+      User.find(1),
+      TOOLS_CALL_METHOD,
+      params: {name: 'redmine_get_server_info', arguments: {}}
+    )
+
+    assert_response :success
+    result = response_json['result']
+
+    assert result.dig('structuredContent', 'ok'), "unexpected body: #{response.body.to_s[0, 800]}"
+    assert result.dig('structuredContent', 'data', 'server_version').present?
   end
 
   test 'tools call returns structuredContent' do
-    post_mcp(User.find(1), TOOLS_CALL_METHOD, params: {name: 'redmine_get_server_info', arguments: {}})
+    post_mcp(User.find(1), TOOLS_CALL_METHOD, params: {name: 'redmine_get_mcp_info', arguments: {}})
 
     assert_response :success
     result = response_json['result']
@@ -274,6 +351,16 @@ private
     JSON.parse(response.body)
   rescue JSON::ParserError
     flunk("expected JSON body, got: #{response.body.to_s[0, 500]}")
+  end
+
+  def assert_canonical_tool_listed_alias_hidden(canonical:, alias_name:)
+    post_mcp(User.find(1), TOOLS_LIST_METHOD, params: {})
+
+    assert_response(:success)
+    names = response_json.dig('result', 'tools').map { |tool| tool['name'] }
+
+    assert_includes(names, canonical)
+    assert_not_includes(names, alias_name)
   end
 
   def register_review_resource!(uri)

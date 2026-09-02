@@ -105,6 +105,8 @@ Redmine MCP プラグインは、Redmine のプロジェクト、課題、時間
 | `list_time_entry_activities` | R | `log_time` |
 | `import_time_entries` | W | `log_time` |
 
+`list_time_entry_activities` — 時間記録用の作業活動タイプのカタログであり、プロジェクトイベントフィード（`list_project_activities`）ではありません。
+
 ### 探索 / 列挙
 
 | Tool | R/W | 権限 |
@@ -113,7 +115,7 @@ Redmine MCP プラグインは、Redmine のプロジェクト、課題、時間
 | `list_project_trackers` | R | `view_issues` |
 | `list_issue_statuses` | R | `view_issues` |
 | `list_issue_priorities` | R | `view_issues` |
-| `list_all_users` | R | admin |
+| `admin_list_users` | R | admin |
 | `get_current_user` | R | `use_mcp` |
 | `list_queries` | R | `view_issues` |
 
@@ -141,9 +143,9 @@ Redmine MCP プラグインは、Redmine のプロジェクト、課題、時間
 
 | Tool | R/W | 権限 |
 |------|-----|------------|
-| `list_files` | R | `view_files` |
+| `list_project_files` | R | `view_files` |
 | `upload_file` | W | `manage_files` |
-| `delete_file` | W | `manage_files`（またはコンテナ権限） |
+| `delete_attachment` | W | `manage_files`（またはコンテナ権限） |
 | `get_attachment` | R | 添付ファイルコンテナの権限 |
 | `download_attachment` | R | 添付ファイルコンテナの権限 |
 
@@ -151,9 +153,11 @@ Redmine MCP プラグインは、Redmine のプロジェクト、課題、時間
 
 | Tool | R/W | 権限 |
 |------|-----|------------|
-| `get_server_info` | R | `use_mcp` |
+| `get_mcp_info` | R | `use_mcp` |
 
-`get_server_info` は `server_version`、`read_only_mode`、`auth_mode`、現在のユーザーの簡易データ、`capabilities.issue_search` を返します。サードパーティプラグインのインストールはレスポンスに含まれません: その MCP ツールは `tools/list` および拡張が自身で登録する `capabilities` を通じて表示されます。
+`get_mcp_info` は、Redmine アプリケーションのバージョンや設定ではなく、現在のセッションの MCP プラグインのメタデータを返します: `server_version`（MCP プラグインバージョン）、`read_only_mode`、`auth_mode`、現在のユーザーの簡易データ、`capabilities.issue_search`。サードパーティプラグインのインストールはレスポンスに含まれません: その MCP ツールは `tools/list` および拡張が自身で登録する `capabilities` を通じて表示されます。
+
+正規の完全名 — `redmine_get_mcp_info`。旧名称 `get_server_info`（`redmine_get_server_info`）は、次のメジャーバージョンまで少なくとも callable alias として残ります: 同じ権限、入力、出力、動作; 旧名称での `tools/call` は同じ操作を実行; alias は `tools/list` に公開されない; alias 呼び出しは監査ログで呼び出されたツール名により区別可能。他ツールからのリンクは正規名を使用。
 
 `capabilities.issue_search` には検索モードが含まれます:
 
@@ -176,9 +180,10 @@ Redmine MCP プラグインは、Redmine のプロジェクト、課題、時間
 - `create_issue_relation` は許可された関連属性のみを適用し、変更を課題ジャーナルに記録します。`delete_issue_relation` は、現在のユーザーが関連を削除できる場合のみ許可されます（両方の課題が表示され、少なくとも片方で関連管理権限がある）; 削除もジャーナルに記録されます。
 - `add_project_member` / `update_project_member` は、現在のユーザーがプロジェクトで管理できるロールのみを受け付けます。そのセット外のロールは拒否されます; ロールは部分的に割り当てられません。
 - `create_issue_category` / `update_issue_category`: `assigned_to_id` はプリンシパル ID（ユーザーまたはグループ）であり、ユーザーのみではありません。
-- 課題添付ファイルの `delete_file` は「この課題の添付ファイルを削除できるか」のルールに従います（自分の課題とトラッカー権限を含む）、グローバル `edit_issues` のみではありません。`tools/list` では、ユーザーが少なくとも 1 つの添付ファイル（プロジェクトファイル、課題、Wiki）を削除できる場合にツールが表示され、グローバル `manage_files` のみではありません。
+- 課題添付ファイルの `delete_attachment` は「この課題の添付ファイルを削除できるか」のルールに従います（自分の課題とトラッカー権限を含む）、グローバル `edit_issues` のみではありません。`tools/list` では、ユーザーが少なくとも 1 つの添付ファイル（プロジェクトファイル、課題、Wiki）を削除できる場合にツールが表示され、グローバル `manage_files` のみではありません。
 - `get_wiki_page`: `attachments` はレスポンスに常に含まれます; デフォルトは `[]` と `attachments_pagination: null`; `include_attachments=true` の場合 — `attachment_limit`/`attachment_offset`（デフォルトおよび最大 100）によるページネーション付き添付ファイルリスト。履歴 `version` には Wiki 編集の表示権限が必要です。保護されたページの変更、名前変更、削除には Wiki ページ保護権限が必要です。
 - `list_issues`、`search_issues`、`list_subtasks`、`run_issue_query`: デフォルトは要約フィールド; 完全な説明は `fields` または `get_issue` 経由。
+- `get_issue`、`list_issues`、`search_issues`、`list_subtasks`、`run_issue_query`、`create_issue`、`update_issue`、`copy_issue` の課題オブジェクトには `url` が含まれます。Web UI への絶対リンクです。ホストはメールと同じく Redmine の「ホスト名とパス」とプロトコル設定から取ります。「ホスト名とパス」が空の場合、`url` は壊れたリンクではなく `null` です。list/search の要約には `url` がデフォルトで入ります。`search_all` の `type` が `issues` の項目と `get_issue` の入れ子 `children` にも `url` があります。ユーザーに課題を示すときは、ツール結果の `url` をコピーします。
 - `create_issue` と `update_issue` は明示的な課題**属性**（`subject`、`description`、`tracker_id`、`status_id`、`custom_fields` など）を受け付けます。明示的に渡されたすべての属性（作成時の `subject` と `description` を含む）は、Redmine Web フォームと同じ書き込みルールを通過します。作成/更新の前に、許可されたフィールド値が不明な場合、エージェントは `get_issue_form_options` を呼び出すべき（SHOULD）です。Redmine が適用しなかった明示的に渡された値は、部分的成功ではなくエラーになります。
 - クライアントが `create_issue` / `validate_issue_create` で `start_date` を**渡さなかった**場合、Redmine で「開始日 = 作成日」が有効（`default_issue_start_date_to_creation_date`）であれば、MCP は `start_date` をユーザーの今日に設定します — 新規課題フォームと同様です。明示的な `start_date`（`null` を含む）はこの置換を無効にします。`copy_issue` と `update_issue` は日付を自身で置換しません。
 - `update_issue` は `notes`、`private_notes`、`watcher_user_ids` を受け付けません。コメント — `add_issue_note`; ウォッチャー — `add_issue_watcher` / `remove_issue_watcher`。
@@ -188,18 +193,18 @@ Redmine MCP プラグインは、Redmine のプロジェクト、課題、時間
 - `update_issue` は `uploads[*].content_base64` と `uploads[*].filename` を受け付けます。アップロード成功後、レスポンスには `added_attachments` が含まれます — この呼び出しのファイルのみであり、課題の添付ファイルリスト全体ではありません。破損した Base64 はパラメータエラーです。
 - `update_issue` は `status_name` を受け付け、`status_id` に解決します。
 - `upload_file` は `content_base64`（最大 20 MiB）を受け付けます; `project`、`filename`、`content_base64` は必須です。
-- `get_attachment` は `attachment_id`、`filename`、`content_type`、`size`（添付ファイルのファイルサイズ）、`content_url`（ファイルバイトなし）を返します。
-- `download_attachment` は、現在のユーザーに表示される単一の添付ファイルについて `attachment_id`、`filename`、`content_type`、`size`（実際のコンテンツサイズ（バイト））、`content_base64` を返します。MIME が不明な場合 — `application/octet-stream`。`downloads` カウンターはインクリメントしません。サイズ制限は 10 MiB（読み取り前にディスク上の `File.size` と読み取り後の `bytesize` をチェック）; 超過時 — `FILE_TOO_LARGE`。サーバーファイルシステムパスはレスポンスに返されません。`attachment_id` は `redmine_get_issue` / `redmine_get_wiki_page` で `include_attachments=true`、`redmine_list_files`、または `redmine_get_attachment` から取得します。添付ファイルをファイルとして読み取り、解析、処理するには、ローカルで `content_base64` をデコードします。存在しない添付ファイルとアクセスできない添付ファイルは同じ「見つかりません」レスポンスを返します。
+- `get_attachment` は `attachment_id`、`filename`、`content_type`、`size`（添付ファイルのファイルサイズ）、`content_url`（ファイルバイトなし）を返します。「ホスト名とパス」が空の場合、`content_url` は `null` です。
+- `download_attachment` は、現在のユーザーに表示される単一の添付ファイルについて `attachment_id`、`filename`、`content_type`、`size`（実際のコンテンツサイズ（バイト））、`content_base64` を返します。MIME が不明な場合 — `application/octet-stream`。`downloads` カウンターはインクリメントしません。サイズ制限は 10 MiB（読み取り前にディスク上の `File.size` と読み取り後の `bytesize` をチェック）; 超過時 — `FILE_TOO_LARGE`。サーバーファイルシステムパスはレスポンスに返されません。`attachment_id` は `redmine_get_issue` / `redmine_get_wiki_page` で `include_attachments=true`、`redmine_list_project_files`、または `redmine_get_attachment` から取得します。添付ファイルをファイルとして読み取り、解析、処理するには、ローカルで `content_base64` をデコードします。存在しない添付ファイルとアクセスできない添付ファイルは同じ「見つかりません」レスポンスを返します。
 - `create_time_entry` と `import_time_entries.entries` の各項目には `hours` と `project` または `issue_id` のいずれかが必要です。`hours` は 0 でもよい; ゼロの妥当性と 1 日の最大値は Redmine がチェックします（`timelog_accept_0_hours`、`timelog_max_hours_per_day`）。
-- 課題作成/更新の `assigned_to_id` はプリンシパル ID（`get_issue_form_options.assignees` のユーザーまたはグループ）; `null` は担当者をクリアします。`add_issue_watcher` / `remove_issue_watcher` の `user_id` はプリンシパル ID（ユーザーまたはグループ）です。他のツールでは、`user_id` はユーザー ID です。現在のユーザーには `assignee_ref` または `user_ref` で値 `me` を使用します。
+- 課題作成/更新の `assigned_to_id` はプリンシパル ID（`get_issue_form_options.assignees` のユーザーまたはグループ）; `null` は担当者をクリアします。`add_issue_watcher` / `remove_issue_watcher` の正規入力は `principal_id`（ユーザーまたはグループ）です。旧 `user_id` は同じ ID の alias として受け付けられます; 両方を同時に渡すことはできません。レスポンスには `principal_id` と同じ値の重複 `user_id` が含まれます。他のツールでは、`user_id` はユーザー ID です。現在のユーザーには `assignee_ref` または `user_ref` で値 `me` を使用します。
 - 機密な更新/削除の `expected_updated_at`（オプション）: `updated_on` と一致しない場合、`CONFLICT` を返します。
 - `create_issue`、`copy_issue`、`update_issue`、`add_issue_note`、`create_time_entry`、`import_time_entries`、`upload_file` の `idempotency_key`（オプション）: 同じキーと**同じ引数セット**（キー自体を除く）でのリトライは、キャッシュされた成功結果を返します（TTL 24 時間）。同じキーで異なるペイロード — `CONFLICT`、重複書き込みなし。最初のリクエストがまだ実行中の場合、同じキーでのリトライは別の書き込みを行いません（「実行中」マーカーは成功結果と同じ 24 時間存続します）。フィンガープリントのないキャッシュエントリ（このバージョン以前のキャッシュ）は、TTL 期限まで以前と同様に同じキーで返されます。サーバータイムアウト 60 秒は**読み取り**に適用されます。書き込み操作はサーバータイムアウトで中断されないため、保存成功後にべき等性結果を記録できます; クライアントは接続を失った場合、同じキーでリトライできます。`import_time_entries` の予期しない例外は、その呼び出しで既に挿入されたエントリをロールバックします; 個別行の通常の検証エラーは、成功したものをロールバックせずに収集されます。
-- デフォルトの `delete_file` はプロジェクト/バージョンファイルのみを削除します; 課題/Wiki 添付ファイルには `confirm_delete_any_attachment=true` が必要です。
+- `delete_attachment` はデフォルトでプロジェクト/バージョンファイルのみを削除します; 課題/Wiki 添付ファイルには `confirm_delete_any_attachment=true` が必要です。正規の完全名 — `redmine_delete_attachment`。旧名称 `delete_file`（`redmine_delete_file`）は、次のメジャーバージョンまで少なくとも callable alias として残ります: 同じ権限、入力、出力、動作; 旧名称での `tools/call` は同じ操作を実行; alias は `tools/list` に公開されない; alias 呼び出しは監査ログで呼び出されたツール名により区別可能。他ツールからのリンクは正規名を使用。
 - リスト/検索は `limit`/`offset` を使用します。DB クエリでは、既に読み込まれた完全なリストをトリミングするのではなく、クエリレベルでページが限定されます。ページネーション付き MCP コレクションには明示的な安定した順序があり、最後の基準は常に `id` なので、ページが項目をスキップしたり重複したりしません。
 - 部分文字列検索（`query`、`login`、`name`、テキスト `search_issues`）は文字をリテラルに一致させます: `%` と `_` は SQL ワイルドカードではありません。
 - MCP 制限: 読み取りツールのタイムアウト 60 秒、ユーザーあたりのレート制限 120 リクエスト/分、MCP リクエスト HTTP ボディ 36 MiB、最大 JSON ツール引数サイズ 32 MiB、アップロード base64 最大 20 MiB、ダウンロード base64 最大 10 MiB。任意の `content_base64` の破損した Base64 はツール実行前のパラメータエラーです。
 - アクセス拒否を含むすべてのツール呼び出しは、構造化監査ログ（ツール、ユーザー、ターゲット ID、結果、所要時間、correlation_id）に記録され、レート制限にカウントされます; base64 コンテンツと非公開ノートはログに記録されません。ターゲット ID には `board_id`、`message_id`、`query_id`、`user_id`、`group_id` などが含まれます。
-- 各コアツールの `outputSchema` は `data` のトップレベル（リストの場合 — `items` 要素フィールド）を記述し、任意のオブジェクトではありません。スキーマのフィールドセットは実際のレスポンスと一致します: `created_on` なしの `list_users`、`created_on` ありの `list_all_users`; `get_attachment` には `size` と `content_url` が含まれます。実際のレスポンスで空になりうるフィールドは `null` を許可します（`time_entry.issue`、include なしの `*_pagination`、`estimation_accuracy`、添付ファイルの `content_type` を含む）。カスタムフィールド値と `possible_values` はオブジェクトに限定されません。`attachments_not_saved` はファイル名の配列です。
+- 各コアツールの `outputSchema` は `data` のトップレベル（リストの場合 — `items` 要素フィールド）を記述し、任意のオブジェクトではありません。スキーマのフィールドセットは実際のレスポンスと一致します: `created_on` なしの `list_users`、`created_on` ありの `admin_list_users`; `get_attachment` には `size` と `content_url` が含まれます。実際のレスポンスで空になりうるフィールドは `null` を許可します（`time_entry.issue`、include なしの `*_pagination`、`estimation_accuracy`、添付ファイルの `content_type` を含む）。カスタムフィールド値と `possible_values` はオブジェクトに限定されません。`attachments_not_saved` はファイル名の配列です。
 - スキーマ内の `summarize_project_status.days`: デフォルト 30、最小 1、最大 365。
 - `search_all.resources`: 最大 2 つの一意の値。
 - `version_id`、`file_id`、`tracker_id` は 1 以上の整数です。
@@ -284,6 +289,7 @@ Redmine MCP プラグインは、Redmine のプロジェクト、課題、時間
 
 ### `list_project_activities`
 
+- これはプロジェクトイベントフィード（「何が起きたか」）であり、時間記録用の作業活動タイプのカタログではありません。作業活動タイプ — `list_time_entry_activities`。
 - 入力: `project`（必須）; オプションで `from`、`to`（日付 `YYYY-MM-DD`）、`author_id`、`event_types`（文字列の配列）、`limit`/`offset`。
 - デフォルトウィンドウ — 直近 7 日（`to` = 今日、`from` = 今日の 6 日前）。最大ウィンドウ長 — 90 日; 超過時 — パラメータエラー。
 - プロジェクトアクティビティフィードのイベント: タイプ、時刻、作成者（`id`/`name`）、`title`、`description`、`url`。順序 — 新しいイベントが先; 同じ時刻の場合 — 大きい `id` が先。
@@ -292,6 +298,8 @@ Redmine MCP プラグインは、Redmine のプロジェクト、課題、時間
 - 存在しない `author_id` — 空リスト、エラーではありません。
 
 ### `summarize_project_status`
+
+これは Redmine オブジェクトではなく、表示可能なプロジェクト課題と時間記録に対するサーバー側集計です。
 
 既存フィールドは保持されます: `project_id`、`project_name`、`analysis_period_days`、`recent_activity`（`created_count`、`updated_count`）、`totals`（`issues_count`、`open_count`、`closed_count`）、`status_breakdown`、`priority_breakdown`、`assignee_breakdown`。
 
@@ -310,6 +318,10 @@ Redmine MCP プラグインは、Redmine のプロジェクト、課題、時間
 - `reopened_count` — `days` ウィンドウ内でジャーナルステータスがクローズからオープンに変更された表示可能な課題の数。各課題は最大 1 回カウントされます。
 
 このツールはテキストの「プロジェクト健全性分析」ではなく、事実を返します。
+
+### `list_versions` / `get_version`
+
+これらのツールにおける `Version` は Redmine エンティティ（roadmap 段階 / milestone）であり、ソフトウェア製品のバージョンではありません。`list_versions` は共有バージョンを含むプロジェクト roadmap バージョンを返します。
 
 ### `get_version`
 
@@ -331,9 +343,26 @@ Redmine MCP プラグインは、Redmine のプロジェクト、課題、時間
 ### `list_users`
 
 - `project` あり: アクティブな**ユーザー**プロジェクトメンバー（権限 `view_members`）。プロジェクトのグループメンバーシップはグループとして表示されません; グループのユーザーは自身がメンバーの場合のみ。`project` なし — 管理者のみ。
-- 要素: `id`、`login`、`firstname`、`lastname`、`mail`。`created_on` は含まれません（そのフィールドは `list_all_users` にあります）。
+- 要素: `id`、`login`、`firstname`、`lastname`、`mail`。`created_on` は含まれません（そのフィールドは `admin_list_users` にあります）。
 - オプション `query`: `login`、`firstname`、`lastname` の大文字小文字を区別しない部分文字列。
 - 互換性のためオプション `login` は保持されます（login の部分文字列のみ）。`query` と `login` の両方が設定されている場合、両方の条件が適用されます（AND）。
+
+### `admin_list_users`
+
+- インストールのアクティブユーザーのグローバルカタログ。管理者のみ。プロジェクトメンバーとプロジェクトへの割り当てには `project` 付き `list_users` を使用。
+- 入力: オプションで `name`（login、firstname、lastname、email の大文字小文字を区別しない部分文字列）、`group_id`、ページネーション。
+- 要素: `id`、`login`、`firstname`、`lastname`、`mail`、`created_on`。
+- 正規の完全名 — `redmine_admin_list_users`。
+- 旧名称 `list_all_users`（`redmine_list_all_users`）は、次のメジャーバージョンまで少なくとも callable alias として残ります: 同じ権限、入力、出力、動作; 旧名称での `tools/call` は同じ操作を実行; alias は `tools/list` に公開されない; alias 呼び出しは監査ログで呼び出されたツール名により区別可能。
+- サーバー instructions と他ツールからのリンクは正規名を使用。
+
+### `list_project_files`
+
+- プロジェクト「ファイル」セクションのファイルとそのバージョンの添付ファイルのページネーションリスト。課題または Wiki 添付ファイルは含まれません — `include_attachments` 付き `get_issue` / `get_wiki_page` で読み取り。
+- 入力: `project`（必須）、ページネーション。権限 `view_files`。
+- 正規の完全名 — `redmine_list_project_files`。
+- 旧名称 `list_files`（`redmine_list_files`）は、次のメジャーバージョンまで少なくとも callable alias として残ります: 同じ権限、入力、出力、動作; 旧名称での `tools/call` は同じ操作を実行; alias は `tools/list` に公開されない; alias 呼び出しは監査ログで呼び出されたツール名により区別可能。
+- 他ツールからのリンクは正規名を使用。
 
 ### `list_groups`
 
@@ -389,7 +418,7 @@ Redmine MCP プラグインは、Redmine のプロジェクト、課題、時間
 5. `confirm_delete` なしの `delete_issue` は `INVALID_STATE` と impact を返します; 確認ありで削除します。
 6. `create_time_entry` には `hours` と `project` または `issue_id` が必要です; `import_time_entries` はバッチを受け付けます。
 7. Wiki モジュール有効時、`list_wiki_pages` / `get_wiki_page` / `create_wiki_page` が動作します。
-8. `upload_file` には `filename` と `content_base64` が必要です; 課題添付ファイルの `delete_file` には確認が必要です。
+8. `upload_file` には `filename` と `content_base64` が必要です; 課題添付ファイルの `delete_attachment` には確認が必要です。
 9. `use_mcp` のないユーザーは MCP 認証を通過しません; ツール権限のないユーザーは `tools/list` に表示されません。
 10. 同じ `idempotency_key` と同じ引数での `create_issue` リトライは重複を作成しません; 同じキーで異なる subject — `CONFLICT`。
 11. 表示可能な課題添付ファイルの `download_attachment` は実際のコンテンツ `size` 付き `content_base64` を返します; ディスク上で 10 MiB 超のファイル（メタデータが小さくても）— `FILE_TOO_LARGE`; 存在しない添付ファイルとアクセスできない添付ファイルは区別できません。
@@ -435,8 +464,8 @@ Redmine MCP プラグインは、Redmine のプロジェクト、課題、時間
 51. `view_wiki_edits` なしの履歴 wiki ページバージョンはアクセス不可; 保護ページは Wiki 保護権限なしでは変更できません。
 52. ウォッチャー追加権限なしの `copy_issue` はウォッチャーをコピーしません; `link_copied_issue` / `copy_attachments_on_issue_copy` = `no` はリンクと添付ファイルを禁止します; 同一プロジェクト内の親は保持されます。
 53. Read-only mode の拡張書き込みツールはハンドラを呼び出しません。
-54. `delete_file` は `manage_files` なしで、課題添付ファイルを削除できるユーザー向けに `tools/list` に表示されます。
-55. `add_issue_watcher` / `remove_issue_watcher` はグループプリンシパルを受け付けます。
+54. `delete_attachment` は `manage_files` なしで、課題添付ファイルを削除できるユーザー向けに `tools/list` に表示されます。
+55. `add_issue_watcher` / `remove_issue_watcher` は `principal_id` または非推奨の `user_id` でグループ principal を受け付けます。
 56. `project` 付き `get_version` は、そのプロジェクトの `list_versions` が返した共有バージョンを返します。
 57. `get_issue` / `get_wiki_page` / `get_board_message` は `limit`/`offset` でネストリストを限定し、`*_pagination` を返します; include なしではページネーションは `null` です。
 58. nullable フィールドを含む実際のツールレスポンスは、公開された `outputSchema` と一致します。
@@ -447,3 +476,8 @@ Redmine MCP プラグインは、Redmine のプロジェクト、課題、時間
 63. ジャーナル `attr`、`cf`、`relation` を同時に持つ `get_issue` は失敗せず、表示可能なエントリのみを返します。
 64. 非表示カスタムフィールド詳細とスペース、タブ、改行のみのノートを持つジャーナルは `get_issue` に含まれません。
 65. `get_private_notes` はスペース、タブ、改行のみのコメントを返しません。
+66. 管理者が `admin_list_users` を呼び出すとグローバルカタログを取得; 非管理者は `tools/list` にツールが表示されず、呼び出し時に拒否される。
+67. alias `list_all_users` の呼び出しは `admin_list_users` と同じ結果; `redmine_list_all_users` は `tools/list` に存在しない。
+68. alias `list_files` の呼び出しは `list_project_files` と同じ結果; `redmine_list_files` は `tools/list` に存在しない。
+69. alias `delete_file` の呼び出しは `delete_attachment` と同じ結果; `redmine_delete_file` は `tools/list` に存在しない。
+70. alias `get_server_info` の呼び出しは `get_mcp_info` と同じ結果; `redmine_get_server_info` は `tools/list` に存在しない。

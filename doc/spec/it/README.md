@@ -8,9 +8,9 @@ Un server MCP (Model Context Protocol) all'interno di Redmine. Consente ai clien
 
 ## Requisiti
 
-| Componente | Versione supportata |
+| Componente | Versione |
 |---|---|
-| Redmine | 6.0–6.1 |
+| Redmine | Redmine 6.0+ (testato: 6.0–6.1) |
 | MCP protocol | 2025-11-25 |
 | Ruby MCP SDK (`mcp`) | 0.23.x |
 
@@ -192,10 +192,10 @@ Con una cache locale al processo, le garanzie di rate limiting e idempotenza si 
 | `list_projects` | Elenco progetti |
 | `get_project` | Dettagli progetto |
 | `list_project_issue_custom_fields` | Campi personalizzati issue del progetto |
-| `summarize_project_status` | Riepilogo attività e metriche del progetto per N giorni |
-| `list_project_activities` | Feed attività del progetto |
-| `list_versions` | Versioni del progetto |
-| `get_version` | Dettagli versione con aggregati |
+| `summarize_project_status` | Riepilogo metriche del progetto generato dal server per N giorni |
+| `list_project_activities` | Feed attività del progetto (eventi, non tipi di attività di registrazione tempo) |
+| `list_versions` | Versioni della roadmap (milestone) |
+| `get_version` | Dettagli versione roadmap con aggregati |
 | `create_version` | Creare una versione |
 | `update_version` | Aggiornare una versione |
 | `delete_version` | Eliminare una versione |
@@ -251,7 +251,7 @@ Con una cache locale al processo, le garanzie di rate limiting e idempotenza si 
 | `list_time_entries` | Elenco voci di tempo |
 | `create_time_entry` | Creare una voce di tempo |
 | `update_time_entry` | Aggiornare una voce di tempo |
-| `list_time_entry_activities` | Tipi di attività (globali o per progetto) |
+| `list_time_entry_activities` | Tipi di attività per la registrazione del tempo (non il feed eventi del progetto) |
 | `import_time_entries` | Importazione massiva di voci di tempo |
 
 ### Dati di riferimento
@@ -262,7 +262,7 @@ Con una cache locale al processo, le garanzie di rate limiting e idempotenza si 
 | `list_project_trackers` | Tracker del progetto |
 | `list_issue_statuses` | Stati delle issue |
 | `list_issue_priorities` | Priorità delle issue |
-| `list_all_users` | Utenti con filtri (solo amministratore) |
+| `admin_list_users` | Utenti con filtri (solo amministratore) |
 | `get_current_user` | Utente corrente |
 | `list_queries` | Query salvate (metadati; l'esecuzione è `run_issue_query`) |
 
@@ -290,9 +290,9 @@ Con una cache locale al processo, le garanzie di rate limiting e idempotenza si 
 
 | Strumento | Descrizione |
 |------|-------------|
-| `list_files` | File del progetto |
+| `list_project_files` | File del progetto |
 | `upload_file` | Caricare un file |
-| `delete_file` | Eliminare un file o un allegato |
+| `delete_attachment` | Eliminare un allegato |
 | `get_attachment` | Metadati dell'allegato e `content_url` |
 | `download_attachment` | Contenuto dell'allegato (`content_base64`, fino a 10 MiB) |
 
@@ -300,7 +300,7 @@ Con una cache locale al processo, le garanzie di rate limiting e idempotenza si 
 
 | Strumento | Descrizione |
 |------|-------------|
-| `get_server_info` | Versione del server, modalità read-only, utente corrente e capabilities disponibili |
+| `get_mcp_info` | Versione del plugin MCP, modalità read-only, utente corrente e capabilities disponibili |
 
 ### Accesso e risposte
 

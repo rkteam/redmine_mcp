@@ -105,6 +105,8 @@ Offrir aux clients IA les opérations de gestion de projet, opérations sur les 
 | `list_time_entry_activities` | R | `log_time` |
 | `import_time_entries` | W | `log_time` |
 
+`list_time_entry_activities` — catalogue des types d'activité de travail pour la saisie du temps, pas le flux d'événements du projet (`list_project_activities`).
+
 ### Découverte / énumération
 
 | Outil | R/W | Permission |
@@ -113,7 +115,7 @@ Offrir aux clients IA les opérations de gestion de projet, opérations sur les 
 | `list_project_trackers` | R | `view_issues` |
 | `list_issue_statuses` | R | `view_issues` |
 | `list_issue_priorities` | R | `view_issues` |
-| `list_all_users` | R | admin |
+| `admin_list_users` | R | admin |
 | `get_current_user` | R | `use_mcp` |
 | `list_queries` | R | `view_issues` |
 
@@ -141,9 +143,9 @@ Offrir aux clients IA les opérations de gestion de projet, opérations sur les 
 
 | Outil | R/W | Permission |
 |------|-----|------------|
-| `list_files` | R | `view_files` |
+| `list_project_files` | R | `view_files` |
 | `upload_file` | W | `manage_files` |
-| `delete_file` | W | `manage_files` (ou permissions du conteneur) |
+| `delete_attachment` | W | `manage_files` (ou permissions du conteneur) |
 | `get_attachment` | R | permissions sur le conteneur de la pièce jointe |
 | `download_attachment` | R | permissions sur le conteneur de la pièce jointe |
 
@@ -151,9 +153,11 @@ Offrir aux clients IA les opérations de gestion de projet, opérations sur les 
 
 | Outil | R/W | Permission |
 |------|-----|------------|
-| `get_server_info` | R | `use_mcp` |
+| `get_mcp_info` | R | `use_mcp` |
 
-`get_server_info` retourne `server_version`, `read_only_mode`, `auth_mode`, des données brèves sur l'utilisateur actuel et `capabilities.issue_search`. L'installation de plugins tiers n'est pas listée dans la réponse : leurs outils MCP sont visibles via `tools/list` et via les `capabilities` que les extensions enregistrent elles-mêmes.
+`get_mcp_info` retourne les métadonnées du plugin MCP de la session actuelle, pas la version ni les paramètres de l'application Redmine : `server_version` (version du plugin MCP), `read_only_mode`, `auth_mode`, des données brèves sur l'utilisateur actuel et `capabilities.issue_search`. L'installation de plugins tiers n'est pas listée dans la réponse : leurs outils MCP sont visibles via `tools/list` et via les `capabilities` que les extensions enregistrent elles-mêmes.
+
+Nom complet canonique — `redmine_get_mcp_info`. L'ancien nom `get_server_info` (`redmine_get_server_info`) reste un alias appelable au moins jusqu'à la prochaine version majeure : mêmes permissions, entrée, sortie et comportement ; `tools/call` avec l'ancien nom exécute la même opération ; l'alias n'est pas publié dans `tools/list` ; les appels alias sont distinguables dans l'audit log par le nom de l'outil invoqué. Les liens depuis d'autres outils utilisent le nom canonique.
 
 `capabilities.issue_search` contient les modes de recherche :
 
@@ -176,9 +180,10 @@ Lorsque `semantic.available: true`, la capacité DOIT inclure `tool`, `provider`
 - `create_issue_relation` applique uniquement les attributs de relation autorisés et écrit le changement dans le journal du ticket. `delete_issue_relation` est autorisé uniquement si la relation peut être supprimée par l'utilisateur actuel (les deux tickets sont visibles et l'utilisateur a la permission de gérer les relations sur au moins un côté) ; la suppression est également écrite dans le journal.
 - `add_project_member` / `update_project_member` acceptent uniquement les rôles que l'utilisateur actuel peut gérer dans le projet. Un rôle hors de cet ensemble est rejeté ; les rôles ne sont pas assignés partiellement.
 - `create_issue_category` / `update_issue_category` : `assigned_to_id` est un ID de principal (utilisateur ou groupe), pas seulement un utilisateur.
-- `delete_file` pour une pièce jointe de ticket suit la règle « peut-on supprimer les pièces jointes sur ce ticket » (y compris propres tickets et permissions de tracker), pas seulement `edit_issues` global. Dans `tools/list`, l'outil est visible si l'utilisateur peut supprimer au moins une pièce jointe (fichiers de projet, tickets ou wiki), pas seulement avec `manage_files` global.
+- `delete_attachment` pour une pièce jointe de ticket suit la règle « peut-on supprimer les pièces jointes sur ce ticket » (y compris propres tickets et permissions de tracker), pas seulement `edit_issues` global. Dans `tools/list`, l'outil est visible si l'utilisateur peut supprimer au moins une pièce jointe (fichiers de projet, tickets ou wiki), pas seulement avec `manage_files` global.
 - `get_wiki_page` : `attachments` est toujours dans la réponse ; par défaut `[]` et `attachments_pagination: null` ; avec `include_attachments=true` — liste paginée de pièces jointes avec `attachment_limit`/`attachment_offset` (défaut et maximum 100). `version` historique exige la permission de voir les modifications wiki. Modifier, renommer ou supprimer une page protégée exige la permission de protéger les pages wiki.
 - `list_issues`, `search_issues`, `list_subtasks`, `run_issue_query` : champs résumé par défaut ; description complète via `fields` ou `get_issue`.
+- Les objets demande de `get_issue`, `list_issues`, `search_issues`, `list_subtasks`, `run_issue_query`, `create_issue`, `update_issue` et `copy_issue` incluent `url` — un lien absolu vers l'UI web. L'hôte provient des paramètres Redmine « Nom d'hôte et chemin » et du protocole, comme dans les e-mails. Si « Nom d'hôte et chemin » est vide, `url` vaut `null` au lieu d'un lien incorrect. Le résumé list/search inclut `url` par défaut. Les éléments `search_all` de `type` `issues` et les `children` imbriqués de `get_issue` incluent aussi `url`. Pour citer une demande à l'utilisateur, le client copie `url` depuis le résultat du tool.
 - `create_issue` et `update_issue` acceptent des **attributs** de ticket explicites (`subject`, `description`, `tracker_id`, `status_id`, `custom_fields`, etc.). Tous les attributs explicitement passés, y compris `subject` et `description` à la création, passent par les mêmes règles d'écriture que le formulaire web Redmine. Avant create/update, l'agent DEVRAIT appeler `get_issue_form_options` lorsque les valeurs de champs autorisées sont inconnues. Une valeur explicitement passée que Redmine n'a pas appliquée entraîne une erreur, pas un succès partiel.
 - Si le client **n'a pas passé** `start_date` dans `create_issue` / `validate_issue_create`, et que Redmine a « date de début = date de création » activée (`default_issue_start_date_to_creation_date`), MCP définit `start_date` à aujourd'hui pour l'utilisateur — comme le formulaire de nouveau ticket. Un `start_date` explicite (y compris `null`) désactive cette substitution. `copy_issue` et `update_issue` ne substituent pas la date eux-mêmes.
 - `update_issue` n'accepte pas `notes`, `private_notes` ou `watcher_user_ids`. Commentaires — `add_issue_note` ; observateurs — `add_issue_watcher` / `remove_issue_watcher`.
@@ -188,18 +193,18 @@ Lorsque `semantic.available: true`, la capacité DOIT inclure `tool`, `provider`
 - `update_issue` accepte `uploads[*].content_base64` et `uploads[*].filename`. Après un upload réussi, la réponse contient `added_attachments` — uniquement les fichiers de cet appel, pas la liste complète des pièces jointes du ticket. Base64 corrompu est une erreur de paramètre.
 - `update_issue` accepte `status_name` et le résout vers `status_id`.
 - `upload_file` accepte `content_base64` (jusqu'à 20 MiB) ; `project`, `filename` et `content_base64` sont requis.
-- `get_attachment` retourne `attachment_id`, `filename`, `content_type`, `size` (filesize de la pièce jointe) et `content_url` (sans octets du fichier).
-- `download_attachment` retourne `attachment_id`, `filename`, `content_type`, `size` (taille réelle du contenu en octets) et `content_base64` pour une pièce jointe visible par l'utilisateur actuel. Si MIME inconnu — `application/octet-stream`. Ne incrémente pas le compteur `downloads`. La limite de taille est 10 MiB (vérifie `File.size` sur disque avant lecture et `bytesize` après lecture) ; si dépassée — `FILE_TOO_LARGE`. Les chemins filesystem serveur ne sont pas retournés dans la réponse. `attachment_id` vient de `redmine_get_issue` / `redmine_get_wiki_page` avec `include_attachments=true`, `redmine_list_files` ou `redmine_get_attachment`. Pour lire, parser ou traiter une pièce jointe comme fichier, décoder `content_base64` localement. Pièces jointes inexistantes et inaccessibles retournent la même réponse « not found ».
+- `get_attachment` retourne `attachment_id`, `filename`, `content_type`, `size` (filesize de la pièce jointe) et `content_url` (sans octets du fichier). Si « Nom d'hôte et chemin » est vide, `content_url` vaut `null`.
+- `download_attachment` retourne `attachment_id`, `filename`, `content_type`, `size` (taille réelle du contenu en octets) et `content_base64` pour une pièce jointe visible par l'utilisateur actuel. Si MIME inconnu — `application/octet-stream`. Ne incrémente pas le compteur `downloads`. La limite de taille est 10 MiB (vérifie `File.size` sur disque avant lecture et `bytesize` après lecture) ; si dépassée — `FILE_TOO_LARGE`. Les chemins filesystem serveur ne sont pas retournés dans la réponse. `attachment_id` vient de `redmine_get_issue` / `redmine_get_wiki_page` avec `include_attachments=true`, `redmine_list_project_files` ou `redmine_get_attachment`. Pour lire, parser ou traiter une pièce jointe comme fichier, décoder `content_base64` localement. Pièces jointes inexistantes et inaccessibles retournent la même réponse « not found ».
 - `create_time_entry` et les éléments de `import_time_entries.entries` exigent `hours` et soit `project` soit `issue_id`. `hours` peut être 0 ; la validité de zéro et le maximum quotidien sont vérifiés par Redmine (`timelog_accept_0_hours`, `timelog_max_hours_per_day`).
-- `assigned_to_id` à la création/modification de ticket est un ID de principal (utilisateur ou groupe depuis `get_issue_form_options.assignees`) ; `null` efface l'assigné. `user_id` sur `add_issue_watcher` / `remove_issue_watcher` est un ID de principal (utilisateur ou groupe). Dans d'autres outils, `user_id` est un ID utilisateur. Pour l'utilisateur actuel, utiliser `assignee_ref` ou `user_ref` avec valeur `me`.
+- `assigned_to_id` à la création/modification de ticket est un ID de principal (utilisateur ou groupe depuis `get_issue_form_options.assignees`) ; `null` efface l'assigné. Pour `add_issue_watcher` / `remove_issue_watcher`, l'entrée canonique est `principal_id` (utilisateur ou groupe). L'ancien `user_id` est accepté comme alias du même ID ; les deux ne peuvent pas être passés en même temps. La réponse inclut `principal_id` et un doublon `user_id` avec la même valeur. Dans les autres outils, `user_id` est un ID utilisateur. Pour l'utilisateur actuel, utiliser `assignee_ref` ou `user_ref` avec valeur `me`.
 - `expected_updated_at` (optionnel) sur update/delete sensible : s'il ne correspond pas à `updated_on`, retourne `CONFLICT`.
 - `idempotency_key` (optionnel) sur `create_issue`, `copy_issue`, `update_issue`, `add_issue_note`, `create_time_entry`, `import_time_entries`, `upload_file` : une relance avec la même clé et **le même ensemble d'arguments** (sauf la clé elle-même) retourne le résultat réussi en cache (TTL 24 h). La même clé avec un payload différent — `CONFLICT`, pas d'écriture en double. Pendant que la première requête est encore en cours, une relance avec la même clé ne effectue pas une autre écriture (le marqueur « en cours » vit les mêmes 24 h qu'un résultat réussi). Une entrée en cache sans empreinte (cache d'avant cette version) avec la même clé est retournée comme avant jusqu'à expiration du TTL. Le timeout serveur de 60 s s'applique aux **lectures**. Les opérations d'écriture ne sont pas interrompues par le timeout serveur afin qu'après une sauvegarde réussie le résultat d'idempotence puisse être enregistré ; le client peut relancer avec la même clé s'il a perdu la connexion. Une exception inattendue dans `import_time_entries` annule les entrées déjà insérées dans cet appel ; les erreurs de validation normales pour des lignes individuelles sont encore collectées sans annuler les réussites.
-- `delete_file` par défaut supprime uniquement les fichiers projet/version ; pour les pièces jointes ticket/wiki, `confirm_delete_any_attachment=true` est requis.
+- `delete_attachment` par défaut supprime uniquement les fichiers projet/version ; pour les pièces jointes ticket/wiki, `confirm_delete_any_attachment=true` est requis. Nom complet canonique — `redmine_delete_attachment`. L'ancien nom `delete_file` (`redmine_delete_file`) reste un alias appelable au moins jusqu'à la prochaine version majeure : mêmes permissions, entrée, sortie et comportement ; `tools/call` avec l'ancien nom exécute la même opération ; l'alias n'est pas publié dans `tools/list` ; les appels alias sont distinguables dans l'audit log par le nom de l'outil invoqué. Les liens depuis d'autres outils utilisent le nom canonique.
 - List/search utilisent `limit`/`offset`. Pour les requêtes DB, la page est limitée au niveau requête, pas par troncature d'une liste complète déjà chargée. Toute collection MCP paginée a un ordre stable explicite ; le dernier critère est toujours `id` pour que les pages ne sautent ni dupliquent pas des éléments.
 - La recherche par sous-chaîne (`query`, `login`, `name`, et texte `search_issues`) correspond aux caractères littéralement : `%` et `_` ne sont pas des wildcards SQL.
 - Limites MCP : timeout 60 s sur outils de lecture, rate limit 120 requêtes/min par utilisateur, corps HTTP requête MCP 36 MiB, taille max arguments JSON outil 32 MiB, upload base64 jusqu'à 20 MiB, download base64 jusqu'à 10 MiB. Base64 corrompu dans n'importe quel `content_base64` est une erreur de paramètre avant exécution de l'outil.
 - Chaque appel d'outil, y compris refus d'accès, est écrit dans un journal d'audit structuré (outil, utilisateur, IDs cibles, résultat, durée, correlation_id) et compté dans le rate limit ; contenu base64 et notes privées ne sont pas journalisés. Les IDs cibles incluent `board_id`, `message_id`, `query_id`, `user_id`, `group_id`, entre autres.
-- Chaque `outputSchema` d'outil de base décrit le niveau supérieur de `data` (pour les listes — champs des éléments `items`), pas un objet arbitraire ouvert. L'ensemble des champs du schéma correspond à la réponse réelle : `list_users` sans `created_on`, `list_all_users` avec `created_on` ; `get_attachment` inclut `size` et `content_url`. Les champs pouvant être vides dans la réponse réelle permettent `null` (y compris `time_entry.issue`, `*_pagination` sans include, `estimation_accuracy`, `content_type` de pièce jointe). Les valeurs de champs personnalisés et `possible_values` ne sont pas limitées aux objets. `attachments_not_saved` est un tableau de noms de fichiers.
+- Chaque `outputSchema` d'outil de base décrit le niveau supérieur de `data` (pour les listes — champs des éléments `items`), pas un objet arbitraire ouvert. L'ensemble des champs du schéma correspond à la réponse réelle : `list_users` sans `created_on`, `admin_list_users` avec `created_on` ; `get_attachment` inclut `size` et `content_url`. Les champs pouvant être vides dans la réponse réelle permettent `null` (y compris `time_entry.issue`, `*_pagination` sans include, `estimation_accuracy`, `content_type` de pièce jointe). Les valeurs de champs personnalisés et `possible_values` ne sont pas limitées aux objets. `attachments_not_saved` est un tableau de noms de fichiers.
 - `summarize_project_status.days` dans le schéma : défaut 30, minimum 1, maximum 365.
 - `search_all.resources` : au maximum deux valeurs uniques.
 - `version_id`, `file_id`, `tracker_id` sont des entiers pas inférieurs à 1.
@@ -284,6 +289,7 @@ Lorsque `semantic.available: true`, la capacité DOIT inclure `tool`, `provider`
 
 ### `list_project_activities`
 
+- Il s'agit du flux d'événements du projet (« ce qui s'est passé »), pas du catalogue des types d'activité de travail pour la saisie du temps. Les types d'activité de travail — `list_time_entry_activities`.
 - Entrée : `project` (requis) ; optionnellement `from`, `to` (dates `YYYY-MM-DD`), `author_id`, `event_types` (tableau de chaînes), `limit`/`offset`.
 - Fenêtre par défaut — derniers 7 jours (`to` = aujourd'hui, `from` = aujourd'hui moins 6 jours). Longueur maximale de fenêtre — 90 jours ; si dépassée — erreur de paramètre.
 - Événements du flux d'activité du projet : type, heure, auteur (`id`/`name`), `title`, `description`, `url`. Ordre — événements plus récents en premier ; pour temps égal — `id` plus élevé en premier.
@@ -292,6 +298,8 @@ Lorsque `semantic.available: true`, la capacité DOIT inclure `tool`, `provider`
 - `author_id` inexistant — liste vide, pas une erreur.
 
 ### `summarize_project_status`
+
+Ce n'est pas un objet Redmine, mais une agrégation côté serveur sur les tickets et entrées de temps visibles du projet.
 
 Champs existants conservés : `project_id`, `project_name`, `analysis_period_days`, `recent_activity` (`created_count`, `updated_count`), `totals` (`issues_count`, `open_count`, `closed_count`), `status_breakdown`, `priority_breakdown`, `assignee_breakdown`.
 
@@ -310,6 +318,10 @@ Champs supplémentaires :
 - `reopened_count` — nombre de tickets visibles dont le statut dans le journal a changé de fermé à ouvert dans la fenêtre `days`. Chaque ticket est compté au maximum une fois.
 
 L'outil retourne des faits, pas une « analyse de santé du projet » textuelle.
+
+### `list_versions` / `get_version`
+
+`Version` dans ces outils est une entité Redmine (étape du roadmap / jalon), pas une version de produit logiciel. `list_versions` retourne les versions roadmap du projet, y compris les partagées.
 
 ### `get_version`
 
@@ -331,9 +343,26 @@ L'outil retourne des faits, pas une « analyse de santé du projet » textuelle.
 ### `list_users`
 
 - Avec `project` : membres **utilisateurs** actifs du projet (permission `view_members`). L'appartenance à un groupe dans le projet n'apparaît pas comme groupe ; utilisateurs d'un groupe uniquement s'ils sont membres eux-mêmes. Sans `project` — administrateur uniquement.
-- Élément : `id`, `login`, `firstname`, `lastname`, `mail`. N'inclut pas `created_on` (ce champ est sur `list_all_users`).
+- Élément : `id`, `login`, `firstname`, `lastname`, `mail`. N'inclut pas `created_on` (ce champ est sur `admin_list_users`).
 - `query` optionnel : sous-chaîne insensible à la casse sur `login`, `firstname` et `lastname`.
 - `login` optionnel est conservé (sous-chaîne login uniquement) pour compatibilité. Si `query` et `login` sont définis, les deux conditions s'appliquent (AND).
+
+### `admin_list_users`
+
+- Catalogue global des utilisateurs actifs de l'installation. Administrateur uniquement. Pour les membres de projet et l'affectation projet, utilisez `list_users` avec `project`.
+- Entrée : optionnellement `name` (substring insensible à la casse sur login, firstname, lastname ou email), `group_id`, pagination.
+- Élément : `id`, `login`, `firstname`, `lastname`, `mail`, `created_on`.
+- Nom complet canonique — `redmine_admin_list_users`.
+- L'ancien nom `list_all_users` (`redmine_list_all_users`) reste un alias appelable au moins jusqu'à la prochaine version majeure : mêmes permissions, entrée, sortie et comportement ; `tools/call` avec l'ancien nom exécute la même opération ; l'alias n'est pas publié dans `tools/list` ; les appels alias sont distinguables dans l'audit log par le nom de l'outil invoqué.
+- Les instructions serveur et les liens depuis d'autres outils utilisent le nom canonique.
+
+### `list_project_files`
+
+- Liste paginée des fichiers de la section Fichiers du projet et des pièces jointes de ses versions. N'inclut pas les pièces jointes de tickets ni Wiki — lisez-les via `get_issue` / `get_wiki_page` avec `include_attachments`.
+- Entrée : `project` (obligatoire), pagination. Permission `view_files`.
+- Nom complet canonique — `redmine_list_project_files`.
+- L'ancien nom `list_files` (`redmine_list_files`) reste un alias appelable au moins jusqu'à la prochaine version majeure : mêmes permissions, entrée, sortie et comportement ; `tools/call` avec l'ancien nom exécute la même opération ; l'alias n'est pas publié dans `tools/list` ; les appels alias sont distinguables dans l'audit log par le nom de l'outil invoqué.
+- Les liens depuis d'autres outils utilisent le nom canonique.
 
 ### `list_groups`
 
@@ -389,7 +418,7 @@ L'outil retourne des faits, pas une « analyse de santé du projet » textuelle.
 5. `delete_issue` sans `confirm_delete` retourne `INVALID_STATE` et impact ; avec confirmation supprime.
 6. `create_time_entry` exige `hours` et `project` ou `issue_id` ; `import_time_entries` accepte un lot.
 7. `list_wiki_pages` / `get_wiki_page` / `create_wiki_page` fonctionnent avec module Wiki activé.
-8. `upload_file` exige `filename` et `content_base64` ; `delete_file` pour pièce jointe de ticket exige confirm.
+8. `upload_file` exige `filename` et `content_base64` ; `delete_attachment` pour pièce jointe de ticket exige confirm.
 9. Utilisateur sans `use_mcp` ne passe pas l'authentification MCP ; sans permission d'outil ne le voit pas dans `tools/list`.
 10. Relance `create_issue` avec le même `idempotency_key` et mêmes arguments ne crée pas un doublon ; même clé avec sujet différent — `CONFLICT`.
 11. `download_attachment` pour pièce jointe de ticket visible retourne `content_base64` avec `size` du contenu réel ; pour fichier > 10 MiB sur disque (même avec métadonnées petites) — `FILE_TOO_LARGE` ; pièce jointe inexistante et inaccessible sont indiscernables.
@@ -435,8 +464,8 @@ L'outil retourne des faits, pas une « analyse de santé du projet » textuelle.
 51. Version historique de page wiki sans `view_wiki_edits` est inaccessible ; page protégée ne peut pas être modifiée sans permission de protéger le wiki.
 52. `copy_issue` sans permission d'ajouter des observateurs ne copie pas les observateurs ; `link_copied_issue` / `copy_attachments_on_issue_copy` = `no` interdisent lien et pièces jointes ; parent dans le même projet est conservé.
 53. Outil d'écriture d'extension en mode lecture seule n'invoke pas le handler.
-54. `delete_file` visible dans `tools/list` pour utilisateur qui peut supprimer des pièces jointes de ticket, sans `manage_files`.
-55. `add_issue_watcher` / `remove_issue_watcher` acceptent un principal de groupe.
+54. `delete_attachment` visible dans `tools/list` pour utilisateur qui peut supprimer des pièces jointes de ticket, sans `manage_files`.
+55. `add_issue_watcher` / `remove_issue_watcher` acceptent le principal de groupe via `principal_id` ou l'ancien `user_id`.
 56. `get_version` avec `project` retourne une version partagée que `list_versions` pour ce projet a retournée.
 57. `get_issue` / `get_wiki_page` / `get_board_message` limitent les listes imbriquées avec `limit`/`offset` et retournent `*_pagination` ; sans include la pagination est `null`.
 58. Les réponses réelles d'outils, y compris champs nullable, correspondent au `outputSchema` publié.
@@ -447,3 +476,8 @@ L'outil retourne des faits, pas une « analyse de santé du projet » textuelle.
 63. `get_issue` avec journaux `attr`, `cf` et `relation` simultanément ne échoue pas et retourne uniquement les entrées visibles.
 64. Journal avec détail de champ personnalisé masqué et notes d'espaces, tabulations ou sauts de ligne n'est pas inclus dans `get_issue`.
 65. `get_private_notes` ne retourne pas un commentaire composé uniquement d'espaces, tabulations ou sauts de ligne.
+66. L'administrateur appelle `admin_list_users` et obtient le catalogue global ; le non-administrateur ne voit pas l'outil dans `tools/list` et reçoit un refus à l'appel.
+67. Appeler l'alias `list_all_users` retourne le même résultat que `admin_list_users` ; `redmine_list_all_users` est absent de `tools/list`.
+68. Appeler l'alias `list_files` retourne le même résultat que `list_project_files` ; `redmine_list_files` est absent de `tools/list`.
+69. Appeler l'alias `delete_file` retourne le même résultat que `delete_attachment` ; `redmine_delete_file` est absent de `tools/list`.
+70. Appeler l'alias `get_server_info` retourne le même résultat que `get_mcp_info` ; `redmine_get_server_info` est absent de `tools/list`.

@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.1] - 2026-09-01
+
+### Added
+- Issue and attachment tools expose canonical web UI links (`url`, `content_url`); `null` when Redmine "Host name and path" is blank;
+
+### Improved
+- Core tool renames and watcher `principal_id` (previous names remain callable); permission denials in `add_issue_watcher`, `remove_issue_watcher`, and `remove_project_member` return `FORBIDDEN` instead of a generic parameter error;
+
 ## [1.0.0] - 2026-08-25
 
 ### Added

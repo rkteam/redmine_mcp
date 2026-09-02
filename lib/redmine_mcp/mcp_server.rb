@@ -19,12 +19,24 @@
 
 module RedmineMcp
   class McpServer < MCP::Server
-    def initialize(**kwargs)
-      super
+    def initialize(listed_tool_names: nil, **)
+      super(**)
+      @listed_tool_names = listed_tool_names
       skip_sdk_required_argument_check
     end
 
   private
+
+    def list_tools(request)
+      items = if @listed_tool_names
+                @listed_tool_names.filter_map { |name| @tools[name] }
+              else
+                @tools.values
+              end
+      page = paginate(items, cursor: cursor_from(request), page_size: @page_size, request: request, &:to_h)
+
+      {tools: page[:items], nextCursor: page[:next_cursor]}.compact
+    end
 
     def error_tool_response(*)
       ToolResponse.to_mcp_hash(

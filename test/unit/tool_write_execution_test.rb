@@ -130,6 +130,7 @@ class RedmineMcpToolWriteExecutionTest < RedmineMcpTestCase
     assert_mcp_ok(payload)
     assert_equal before + 1, Issue.count
     assert_equal 'MCP write create issue', payload.dig(:data, :subject)
+    assert_equal "#{Setting.protocol}://#{Setting.host_name}/issues/#{payload.dig(:data, :id)}", payload.dig(:data, :url)
   end
 
   test 'update_issue updates subject' do
@@ -520,10 +521,12 @@ class RedmineMcpToolWriteExecutionTest < RedmineMcpTestCase
     added = invoke_mcp_tool(
       'add_issue_watcher',
       user: @admin,
-      args: {issue_id: 1, user_id: 3}
+      args: {issue_id: 1, principal_id: 3}
     )
 
     assert_mcp_ok(added)
+    assert_equal 3, added.dig(:data, :principal_id)
+    assert_equal 3, added.dig(:data, :user_id)
 
     removed = invoke_mcp_tool(
       'remove_issue_watcher',
@@ -538,23 +541,42 @@ class RedmineMcpToolWriteExecutionTest < RedmineMcpTestCase
     Member.create!(project: Project.find(1), principal: Group.find(10), role_ids: [1]) unless
       Member.exists?(project_id: 1, user_id: 10)
 
+    issue = Issue.find(1)
+    issue.watchers.where(user_id: 10).delete_all
+
     added = invoke_mcp_tool(
       'add_issue_watcher',
       user: @admin,
-      args: {issue_id: 1, user_id: 10}
+      args: {issue_id: issue.id, principal_id: 10}
     )
 
     assert_mcp_ok(added)
+    assert_equal 10, added.dig(:data, :principal_id)
     assert_equal 10, added.dig(:data, :user_id)
-    assert_includes Issue.find(1).watcher_users.map(&:id), 10
+    issue.reload
+
+    assert issue.watchers.exists?(user_id: 10)
 
     removed = invoke_mcp_tool(
       'remove_issue_watcher',
       user: @admin,
-      args: {issue_id: 1, user_id: 10}
+      args: {issue_id: issue.id, principal_id: 10}
     )
 
     assert_mcp_ok(removed)
+    issue.reload
+
+    assert_not issue.watchers.exists?(user_id: 10)
+  end
+
+  test 'add_issue_watcher rejects principal_id together with user_id' do
+    payload = invoke_mcp_tool(
+      'add_issue_watcher',
+      user: @admin,
+      args: {issue_id: 1, principal_id: 3, user_id: 3}
+    )
+
+    assert_equal false, payload[:ok]
   end
 
   test 'update_issue_note and set_issue_note_private' do
@@ -780,7 +802,7 @@ class RedmineMcpToolWriteExecutionTest < RedmineMcpTestCase
     assert_mcp_ok(deleted)
   end
 
-  test 'upload_file and delete_file' do
+  test 'upload_file and delete_attachment' do
     uploaded = invoke_mcp_tool(
       'upload_file',
       user: @admin,
@@ -797,7 +819,7 @@ class RedmineMcpToolWriteExecutionTest < RedmineMcpTestCase
     assert file_id
 
     deleted = invoke_mcp_tool(
-      'delete_file',
+      'delete_attachment',
       user: @admin,
       args: {file_id: file_id}
     )

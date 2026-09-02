@@ -91,7 +91,7 @@ Redmine MCP 提供扩展机制，让其他已安装的 Redmine 插件注册自�
 - 注册工具一次（重载时不重复）；
 - 注册议题范围工具，带标准权限检查和议题查找；若处理程序运行前议题已消失，响应为 "not found"，而非内部错误；
 - 用参数和 before/after 处理程序扩展现有核心工具；
-- 为 `redmine_get_server_info` 注册能力模式（例如 `issue_search.semantic`）；
+- 为 `redmine_get_mcp_info` 注册能力模式（例如 `issue_search.semantic`）；
 - 通过 `internal_request` 以当前用户身份在进程内调用 Redmine 或插件 REST API（`GET`、`POST`、`PUT`、`PATCH`、`DELETE`；目标端点必须接受 API 认证）；REST 错误映射为规范 MCP 代码，不含内部请求 HTTP 状态；
 - 以 `{ ok, data | error }` 封装格式发布 `outputSchema`。
 

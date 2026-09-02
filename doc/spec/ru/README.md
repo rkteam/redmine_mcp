@@ -8,9 +8,9 @@ MCP-сервер (Model Context Protocol) внутри Redmine. Позволяе
 
 ## Требования
 
-| Компонент | Поддерживаемая версия |
+| Компонент | Версия |
 |---|---|
-| Redmine | 6.0–6.1 |
+| Redmine | Redmine 6.0+ (протестировано: 6.0–6.1) |
 | MCP protocol | 2025-11-25 |
 | Ruby MCP SDK (`mcp`) | 0.23.x |
 
@@ -192,10 +192,10 @@ redmine.example.com
 | `list_projects` | Список проектов |
 | `get_project` | Детали проекта |
 | `list_project_issue_custom_fields` | Настраиваемые поля задач проекта |
-| `summarize_project_status` | Сводка активности и метрик проекта за N дней |
-| `list_project_activities` | Лента активности проекта |
-| `list_versions` | Версии проекта |
-| `get_version` | Детали версии с агрегатами |
+| `summarize_project_status` | Сводка метрик проекта, формируемая сервером, за N дней |
+| `list_project_activities` | Лента активности проекта (события, не типы учёта времени) |
+| `list_versions` | Версии roadmap (этапы) |
+| `get_version` | Детали версии roadmap с агрегатами |
 | `create_version` | Создание версии |
 | `update_version` | Изменение версии |
 | `delete_version` | Удаление версии |
@@ -251,7 +251,7 @@ redmine.example.com
 | `list_time_entries` | Список записей учёта времени |
 | `create_time_entry` | Создание записи учёта времени |
 | `update_time_entry` | Изменение записи учёта времени |
-| `list_time_entry_activities` | Типы активностей (глобальные или по проекту) |
+| `list_time_entry_activities` | Типы активностей для учёта времени (не лента событий проекта) |
 | `import_time_entries` | Массовый импорт записей учёта времени |
 
 ### Справочники
@@ -262,7 +262,7 @@ redmine.example.com
 | `list_project_trackers` | Трекеры проекта |
 | `list_issue_statuses` | Статусы задач |
 | `list_issue_priorities` | Приоритеты задач |
-| `list_all_users` | Пользователи с фильтрами (только администратор) |
+| `admin_list_users` | Пользователи с фильтрами (только администратор) |
 | `get_current_user` | Текущий пользователь |
 | `list_queries` | Сохранённые запросы (метаданные; выполнение — `run_issue_query`) |
 
@@ -290,9 +290,9 @@ redmine.example.com
 
 | Инструмент | Описание |
 |------------|----------|
-| `list_files` | Файлы проекта |
+| `list_project_files` | Файлы проекта |
 | `upload_file` | Загрузка файла |
-| `delete_file` | Удаление файла или вложения |
+| `delete_attachment` | Удаление вложения |
 | `get_attachment` | Метаданные и `content_url` вложения |
 | `download_attachment` | Содержимое вложения (`content_base64`, до 10 MiB) |
 
@@ -300,7 +300,7 @@ redmine.example.com
 
 | Инструмент | Описание |
 |------------|----------|
-| `get_server_info` | Версия сервера, режим read-only, текущий пользователь и доступные capabilities |
+| `get_mcp_info` | Версия MCP-плагина, режим read-only, текущий пользователь и доступные capabilities |
 
 ### Доступ и ответы
 
