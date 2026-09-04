@@ -44,21 +44,52 @@ module RedmineMcp
       end
 
       def load_plugin_extension(plugin)
-        path = extension_path(plugin)
-        return false unless path
+        plugin_path = plugin_extension_path(plugin)
+        builtin_path = builtin_extension_path(plugin)
 
-        require path
-        Logger.info("loaded extension from #{plugin.id}")
-        true
-      rescue SyntaxError, LoadError, StandardError => e
-        Logger.error("failed to load extension from #{plugin.id}: #{e.class}: #{e.message}")
+        if plugin_path
+          return true if load_extension_file(plugin, plugin_path, 'plugin')
+
+          return load_extension_file(plugin, builtin_path, 'builtin') if builtin_path
+
+          return false
+        end
+
+        return load_extension_file(plugin, builtin_path, 'builtin') if builtin_path
+
         false
       end
 
     private
 
+      def load_extension_file(plugin, path, source)
+        require path
+        Logger.info("loaded #{source} extension from #{plugin.id}")
+        true
+      rescue SyntaxError, LoadError, StandardError => e
+        Logger.error("failed to load #{source} extension from #{plugin.id}: #{e.class}: #{e.message}")
+        false
+      end
+
       def extension_path(plugin)
+        plugin_extension_path(plugin) || builtin_extension_path(plugin)
+      end
+
+      def extension_source(plugin)
+        plugin_extension_path(plugin) ? 'plugin' : 'builtin'
+      end
+
+      def plugin_extension_path(plugin)
         candidates_for(plugin).find { |path| File.file?(path) }
+      end
+
+      def builtin_extension_path(plugin)
+        path = File.join(extensions_directory, "#{plugin.id}.rb")
+        path if File.file?(path)
+      end
+
+      def extensions_directory
+        File.join(__dir__, 'extensions')
       end
 
       def candidates_for(plugin)

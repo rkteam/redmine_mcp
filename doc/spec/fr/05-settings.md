@@ -33,7 +33,7 @@ Les paramètres sont disponibles dans **Administration → Plugins → Redmine M
 - Un champ texte pour une liste d'identifiants (« Disabled extensions ») et une liste de référence de tous les plugins installés ne sont pas utilisés.
 - Une case à cocher séparée de chargement automatique des extensions n'est pas utilisée.
 - Au lieu de cela, la page des paramètres affiche une liste des plugins installés qui ont une intégration MCP.
-- Un plugin est considéré comme ayant une intégration MCP s'il possède un fichier d'extension selon la même convention que le chargement automatique (voir [04-extensions.md](04-extensions.md)).
+- Un plugin est considéré comme ayant une intégration MCP si une source d'extension est trouvée selon la convention de chargement automatique : `mcp.rb` dans le plugin ou le fichier intégré `lib/redmine_mcp/extensions/<plugin.id>.rb` dans `redmine_mcp` (voir [04-extensions.md](04-extensions.md)).
 - Le plugin `redmine_mcp` n'est pas affiché dans cette liste.
 - Chaque élément a une case à cocher et le nom du plugin.
 - La légende de la liste a un toggle Tout cocher / Tout décocher, comme les projets et les trackers sur un formulaire de champ personnalisé.
@@ -68,7 +68,7 @@ Les paramètres sont disponibles dans **Administration → Plugins → Redmine M
 ## Cas limites
 
 - Si toutes les cases des extensions MCP sont activées (ou aucun plugin a une intégration), toutes les extensions trouvées se chargent lorsque MCP est activé.
-- Un plugin sans fichier d'extension MCP n'est pas affiché dans la liste et n'est pas désactivé par ces paramètres.
+- Un plugin sans extension MCP (ni `mcp.rb` ni intégration intégrée) n'est pas affiché dans la liste et n'est pas désactivé par ces paramètres.
 - Si un plugin obtient ultérieurement une intégration MCP, sa case est activée par défaut sauf si le plugin avait été précédemment désactivé.
 - Les identifiants de plugins inconnus ou supprimés dans les listes désactivées sauvegardées sont ignorés.
 - Un flag de chargement automatique d'extensions précédemment sauvegardé est ignoré : le chargement des extensions suit Activer MCP.

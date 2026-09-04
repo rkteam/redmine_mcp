@@ -2,15 +2,15 @@
 
 [网站](https://redmine-kanban.com/)
 
-[Deutsch](../de/README.md) | [English](../en/README.md) | [Español](../es/README.md) | [Français](../fr/README.md) | [Italiano](../it/README.md) | [日本語](../ja/README.md) | [한국어](../ko/README.md) | [Polski](../pl/README.md) | [Português (Brasil)](../pt-BR/README.md) | [Русский](../ru/README.md) | 中文
+[Deutsch](../de/README.md) | [English](../../../README.md) | [Español](../es/README.md) | [Français](../fr/README.md) | [Italiano](../it/README.md) | [日本語](../ja/README.md) | [한국어](../ko/README.md) | [Polski](../pl/README.md) | [Português (Brasil)](../pt-BR/README.md) | [Русский](../ru/README.md) | 中文
 
-Redmine 内的 MCP 服务器（Model Context Protocol）。让 AI 客户端通过标准 Redmine 权限处理议题、项目和用户。其他插件可在不修改本插件的情况下添加自己的 tools、resources、prompts 和 capabilities。
+Redmine 内的 MCP 服务器（Model Context Protocol）。让 AI 客户端通过标准 Redmine 权限处理议题、项目和用户。其他插件可在不修改本插件的情况下添加自己的 tools、resources、prompts 和 capabilities。对于无法修改的第三方插件，`redmine_mcp` 可在 `lib/redmine_mcp/extensions/` 中提供内置 MCP 集成。
 
 ## 要求
 
 | 组件 | 版本 |
 |---|---|
-| Redmine | Redmine 6.0+（已测试：6.0–6.1） |
+| Redmine | Redmine 6.0–7.0 |
 | MCP protocol | 2025-11-25 |
 | Ruby MCP SDK (`mcp`) | 0.23.x |
 
@@ -316,9 +316,13 @@ Write 操作被 **只读模式** 设置阻止。
 
 任何已安装的 Redmine 插件都可以添加自己的 MCP tools，并在需要时注册 resources、prompts 和 capabilities。
 
+对于无法修改的插件，内置集成位于 `redmine_mcp/lib/redmine_mcp/extensions/`，并通过相同的 Extension API 注册。
+
 详细指南：[extension_guide.md](extension_guide.md)。
 
 在 Cursor 或类似 agent 中进行 AI 辅助开发时，将捆绑的 skill 目录 [`redmine-mcp-plugin-integration`](../../skills/redmine-mcp-plugin-integration/) 复制到 agent 的 skills 文件夹，或将其作为自定义 skill 的基础。
+
+启动 skill 时，可在 prompt 中指定通过目标插件（`mcp.rb`）还是 `redmine_mcp` 内置集成（`lib/redmine_mcp/extensions/`）进行集成。如未指定，agent 将自行选择路径。
 
 ## 日志
 
@@ -339,7 +343,7 @@ Write 操作被 **只读模式** 设置阻止。
 | HTTP 403（`Host`/`Origin`） | **主机名称** 与 Redmine 公开 URL 不一致；reverse proxy 未转发原始 `Host`；客户端中的 MCP URL 不匹配 — transport 拒绝未知 host（DNS rebinding 防护） |
 | `tools/list` 中看不到 tool | 缺少所需权限；提供该 tool 的扩展已禁用 |
 | MCP reload 后新 tools 未出现 | 在 Cursor 及类似客户端中，reload 服务器可能不会刷新 tool 列表 — 请完全重启应用 |
-| 扩展未加载 | 缺少 `lib/.../mcp.rb`；模块未 `extend RedmineMcp::ExtensionApi`；确认 **MCP 扩展** 中已启用扩展复选框；若文件有错误，请查看日志 |
+| 扩展未加载 | 缺少 `lib/.../mcp.rb` 或 `lib/redmine_mcp/extensions/<plugin.id>.rb`；module 未 `extend RedmineMcp::ExtensionApi`；确认 **MCP 扩展** 中已启用扩展复选框；若文件有错误，请查看日志 |
 | `Issue not found` / `Project not found` | 根据 Redmine 可见性规则，议题或项目对当前用户不可见 |
 
 ## 许可证

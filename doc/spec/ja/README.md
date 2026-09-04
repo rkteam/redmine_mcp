@@ -2,15 +2,15 @@
 
 [ウェブサイト](https://redmine-kanban.com/)
 
-[Deutsch](../de/README.md) | [English](../en/README.md) | [Español](../es/README.md) | [Français](../fr/README.md) | [Italiano](../it/README.md) | 日本語 | [한국어](../ko/README.md) | [Polski](../pl/README.md) | [Português (Brasil)](../pt-BR/README.md) | [Русский](../ru/README.md) | [中文](../zh/README.md)
+[Deutsch](../de/README.md) | [English](../../../README.md) | [Español](../es/README.md) | [Français](../fr/README.md) | [Italiano](../it/README.md) | 日本語 | [한국어](../ko/README.md) | [Polski](../pl/README.md) | [Português (Brasil)](../pt-BR/README.md) | [Русский](../ru/README.md) | [中文](../zh/README.md)
 
-Redmine 内の MCP サーバー（Model Context Protocol）。AI クライアントが標準の Redmine 権限を通じて課題、プロジェクト、ユーザーと連携できるようにします。他のプラグインは、このプラグインを変更せずに独自の tools、resources、prompts、capabilities を追加できます。
+Redmine 内の MCP サーバー（Model Context Protocol）。AI クライアントが標準の Redmine 権限を通じて課題、プロジェクト、ユーザーと連携できるようにします。他のプラグインは、このプラグインを変更せずに独自の tools、resources、prompts、capabilities を追加できます。変更できないサードパーティプラグイン向けに、`redmine_mcp` は `lib/redmine_mcp/extensions/` 内蔵 MCP 統合を提供できます。
 
 ## 要件
 
 | コンポーネント | バージョン |
 |---|---|
-| Redmine | Redmine 6.0+（テスト済み: 6.0–6.1） |
+| Redmine | Redmine 6.0–7.0 |
 | MCP protocol | 2025-11-25 |
 | Ruby MCP SDK (`mcp`) | 0.23.x |
 
@@ -316,9 +316,13 @@ Write 操作は **読み取り専用モード** 設定でブロックされま�
 
 インストール済みの Redmine プラグインは、必要に応じて独自の MCP tools を追加し、resources、prompts、capabilities を登録できます。
 
+変更できないプラグイン向けの内蔵統合は `redmine_mcp/lib/redmine_mcp/extensions/` にあり、同じ Extension API で登録されます。
+
 詳細ガイド: [extension_guide.md](extension_guide.md)。
 
 Cursor や類似エージェントでの AI 支援開発には、同梱の skill ディレクトリ [`redmine-mcp-plugin-integration`](../../skills/redmine-mcp-plugin-integration/) を AI エージェントの skills フォルダにコピーするか、独自 skill の基礎として使用してください。
+
+skill を起動する際、プロンプトでターゲットプラグイン（`mcp.rb`）経由か、`redmine_mcp` 内の組み込み統合（`lib/redmine_mcp/extensions/`）かを指定できます。指定しない場合、エージェントがパスを選びます。
 
 ## ログ
 
@@ -339,7 +343,7 @@ Cursor や類似エージェントでの AI 支援開発には、同梱の skill
 | HTTP 403（`Host`/`Origin`） | **ホスト名とパス** が Redmine の公開 URL と一致しない; reverse proxy が元の `Host` を転送しない; クライアントの MCP URL が一致しない — transport が未知の host を拒否（DNS rebinding 対策） |
 | `tools/list` に tool が表示されない | 必要な権限がない; tool を提供する拡張が無効 |
 | MCP reload 後に新しい tools が表示されない | Cursor などのクライアントではサーバーの reload では tool リストが更新されない場合がある — アプリケーションを完全に再起動する |
-| 拡張が読み込まれない | `lib/.../mcp.rb` がない; モジュールが `extend RedmineMcp::ExtensionApi` していない; **MCP 拡張** で拡張チェックボックスが有効か確認; ファイルにエラーがある場合はログを確認 |
+| 拡張が読み込まれない | `lib/.../mcp.rb` または `lib/redmine_mcp/extensions/<plugin.id>.rb` がない; モジュールが `extend RedmineMcp::ExtensionApi` していない; **MCP 拡張** で拡張チェックボックスが有効か確認; ファイルにエラーがある場合はログを確認 |
 | `Issue not found` / `Project not found` | Redmine の可視性ルールにより、課題またはプロジェクトが現在のユーザーに表示されない |
 
 ## ライセンス

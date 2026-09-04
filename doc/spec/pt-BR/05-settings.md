@@ -33,7 +33,7 @@ As configurações estão disponíveis em **Administração → Plugins → Redm
 - Um campo de texto para lista de identificadores ("Disabled extensions") e uma lista de referência de todos os plugins instalados não são usados.
 - Uma checkbox separada de auto-carga de extensões não é usada.
 - Em vez disso, a página de configurações mostra uma lista de plugins instalados que têm integração MCP.
-- Um plugin é considerado com integração MCP se tem um arquivo de extensão usando a mesma convenção que a auto-carga (ver [04-extensions.md](04-extensions.md)).
+- Um plugin é considerado com integração MCP se uma fonte de extensão for encontrada pela convenção de auto-carga: `mcp.rb` no plugin ou o arquivo integrado `lib/redmine_mcp/extensions/<plugin.id>.rb` em `redmine_mcp` (ver [04-extensions.md](04-extensions.md)).
 - O plugin `redmine_mcp` não é mostrado nesta lista.
 - Cada item tem uma checkbox e o nome do plugin.
 - A legenda da lista tem um toggle Marcar todos / Desmarcar todos, como projetos e trackers em um formulário de campo customizado.
@@ -68,7 +68,7 @@ As configurações estão disponíveis em **Administração → Plugins → Redm
 ## Casos extremos
 
 - Se todas as checkboxes de extensões MCP estão habilitadas (ou nenhum plugin tem integração), todas as extensões encontradas carregam quando o MCP está habilitado.
-- Um plugin sem arquivo de extensão MCP não é mostrado na lista e não é desabilitado por essas configurações.
+- Um plugin sem extensão MCP (nem `mcp.rb` nem integração integrada) não é mostrado na lista e não é desabilitado por essas configurações.
 - Se um plugin posteriormente ganha integração MCP, sua checkbox é habilitada por padrão a menos que o plugin foi desabilitado anteriormente.
 - Identificadores de plugins desconhecidos ou removidos em listas desabilitadas salvas são ignorados.
 - Uma flag de auto-carga de extensões salva anteriormente é ignorada: a carga de extensões segue Habilitar MCP.

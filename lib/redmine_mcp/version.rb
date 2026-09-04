@@ -18,7 +18,7 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 module RedmineMcp
-  VERSION = '1.0.1'
+  VERSION = '1.1.0'
 
   module Version
   end

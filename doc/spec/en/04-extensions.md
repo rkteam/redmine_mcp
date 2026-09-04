@@ -21,10 +21,14 @@ Provide a single approach to integrating Redmine plugins with AI without duplica
 ### Automatic discovery
 
 - On Redmine startup (when MCP is enabled), the system checks all installed plugins.
-- A plugin is considered to have an MCP extension if it contains an `mcp.rb` file at one of these paths:
-  - `lib/<plugin.id>/mcp.rb`;
-  - `lib/<plugin directory basename>/mcp.rb`;
-  - `lib/<plugin.id without redmine_ prefix>/mcp.rb` if the identifier starts with `redmine_` (typical scheme like `redmine_advanced_checklists` → `lib/advanced_checklists/mcp.rb`).
+- A plugin is considered to have an MCP extension if one of these sources is found:
+  - **extension in the plugin itself** — an `mcp.rb` file at one of these paths:
+    - `lib/<plugin.id>/mcp.rb`;
+    - `lib/<plugin directory basename>/mcp.rb`;
+    - `lib/<plugin.id without redmine_ prefix>/mcp.rb` if the identifier starts with `redmine_` (typical scheme like `redmine_advanced_checklists` → `lib/advanced_checklists/mcp.rb`);
+  - **built-in integration in `redmine_mcp`** — file `lib/redmine_mcp/extensions/<plugin.id>.rb` inside the `redmine_mcp` plugin when the target plugin is installed.
+- If both sources exist for one plugin, the plugin's own extension is loaded first. The built-in integration is used only as a fallback when loading that `mcp.rb` fails. When `mcp.rb` loads successfully, the built-in integration is not loaded and does not register tools/resources/prompts again.
+- A built-in integration uses the same Extension API as a third-party `mcp.rb`; there is no separate registration mechanism.
 - The `redmine_mcp` plugin does not load itself as an extension.
 - Plugins whose MCP extension checkbox is unchecked in settings are skipped.
 - A failure in one plugin's extension does not block loading others, including a syntax error in the extension file.
@@ -99,7 +103,7 @@ The Ruby API method list and code examples are in the plugin README and in [mcp_
 
 ## Edge cases
 
-- A plugin without an extension file is ignored.
+- A plugin without an extension file and without a built-in integration is ignored.
 - If an extension file exists but `require` fails — log entry, extension is not considered loaded; tool registration is a side effect of a successful `require`.
 - Attempting to extend a non-existent tool — error during extension registration.
 - A plugin with the MCP extension checkbox unchecked in settings is not loaded even if the extension file exists.
@@ -117,6 +121,8 @@ The Ruby API method list and code examples are in the plugin README and in [mcp_
 8. Resource and prompt discovery with empty arguments remains available if permission exists in at least one project.
 9. A plugin with `plugin.id` like `redmine_*` and file `lib/<id without redmine_ prefix>/mcp.rb` is considered to have MCP integration and appears in MCP extension settings.
 10. An issue-scoped tool with a module requirement is not in `tools/list` for a user without any visible project with that module, even if they have the permission on another project.
+11. A plugin without its own `mcp.rb`, but with the target plugin installed and file `lib/redmine_mcp/extensions/<plugin.id>.rb` in `redmine_mcp`, is considered to have MCP integration and appears in MCP extension settings.
+12. If a plugin has both its own `mcp.rb` and a built-in integration in `redmine_mcp`, tools/resources/prompts from the plugin's own `mcp.rb` are available when it loads successfully; if loading `mcp.rb` fails, the loader attempts the built-in integration.
 
 ## Extension examples
 

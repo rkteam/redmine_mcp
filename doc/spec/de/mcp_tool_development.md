@@ -1822,7 +1822,9 @@ Wenn das Modell die Absicht mit einem separaten Tool erfüllen kann, ohne die `a
 
 ### 18.2. Anmeldung
 
-- Die Erweiterungsdatei wird beim Start von Redmine geladen: `lib/<plugin_id>/mcp.rb` (siehe `ExtensionLoader`).
+- Die Erweiterungsdatei wird beim Start von Redmine geladen (siehe `ExtensionLoader`):
+  - im Drittanbieter-Plugin — `lib/<plugin_id>/mcp.rb` (und andere unterstützte Pfade, siehe [04-extensions.md](04-extensions.md));
+  - in einer eingebauten `redmine_mcp`-Integration — `lib/redmine_mcp/extensions/<plugin.id>.rb`, wenn das Ziel-Plugin kein eigenes `mcp.rb` hat, oder als Fallback, wenn das Laden seines `mcp.rb` fehlschlägt.
 - Modul in `mcp.rb` MUSS `PluginName::Mcp` sein (`extend RedmineMcp::ExtensionApi`): Zeitwerk leitet Namen aus Datei ab.
 - SOLLTE vor der Registrierung `mcp_extension_enabled?` überprüft werden – eine starke Abhängigkeit von `redmine_mcp` in gemspec ist nicht erforderlich.
 - Verwenden Sie `register_tool_once` für die Registrierung, damit beim erneuten Laden kein Duplikat des Tools entsteht.

@@ -33,7 +33,7 @@ Settings are available in **Administration → Plugins → Redmine MCP → Confi
 - A text field for a list of identifiers ("Disabled extensions") and a reference list of all installed plugins are not used.
 - A separate auto-load extensions checkbox is not used.
 - Instead, the settings page shows a list of installed plugins that have MCP integration.
-- A plugin is considered to have MCP integration if it has an extension file using the same convention as auto-load (see [04-extensions.md](04-extensions.md)).
+- A plugin is considered to have MCP integration if an extension source is found using the auto-load convention: `mcp.rb` in the plugin or the built-in file `lib/redmine_mcp/extensions/<plugin.id>.rb` in `redmine_mcp` (see [04-extensions.md](04-extensions.md)).
 - The `redmine_mcp` plugin is not shown in this list.
 - Each item has a checkbox and the plugin name.
 - The list legend has a Check all / Uncheck all toggle, like projects and trackers on a custom field form.
@@ -68,7 +68,7 @@ Settings are available in **Administration → Plugins → Redmine MCP → Confi
 ## Edge cases
 
 - If all MCP extension checkboxes are enabled (or no plugin has integration), all found extensions load when MCP is enabled.
-- A plugin without an MCP extension file is not shown in the list and is not disabled by these settings.
+- A plugin without an MCP extension (neither `mcp.rb` nor a built-in integration) is not shown in the list and is not disabled by these settings.
 - If a plugin later gains MCP integration, its checkbox is enabled by default unless the plugin was previously disabled.
 - Unknown or removed plugin identifiers in saved disabled lists are ignored.
 - A previously saved extension auto-load flag is ignored: extension loading follows Enable MCP.

@@ -2,15 +2,15 @@
 
 [Сайт](https://redmine-kanban.com/)
 
-[Deutsch](../de/README.md) | [English](../en/README.md) | [Español](../es/README.md) | [Français](../fr/README.md) | [Italiano](../it/README.md) | [日本語](../ja/README.md) | [한국어](../ko/README.md) | [Polski](../pl/README.md) | [Português (Brasil)](../pt-BR/README.md) | Русский | [中文](../zh/README.md)
+[Deutsch](../de/README.md) | [English](../../../README.md) | [Español](../es/README.md) | [Français](../fr/README.md) | [Italiano](../it/README.md) | [日本語](../ja/README.md) | [한국어](../ko/README.md) | [Polski](../pl/README.md) | [Português (Brasil)](../pt-BR/README.md) | Русский | [中文](../zh/README.md)
 
-MCP-сервер (Model Context Protocol) внутри Redmine. Позволяет AI-клиентам работать с задачами, проектами и пользователями через стандартные права Redmine. Другие плагины могут добавлять собственные tools, resources, prompts и capabilities без изменения этого плагина.
+MCP-сервер (Model Context Protocol) внутри Redmine. Позволяет AI-клиентам работать с задачами, проектами и пользователями через стандартные права Redmine. Другие плагины могут добавлять собственные tools, resources, prompts и capabilities без изменения этого плагина. Для сторонних плагинов, которые нельзя изменять, `redmine_mcp` может поставлять встроенные MCP-интеграции в `lib/redmine_mcp/extensions/`.
 
 ## Требования
 
 | Компонент | Версия |
 |---|---|
-| Redmine | Redmine 6.0+ (протестировано: 6.0–6.1) |
+| Redmine | Redmine 6.0–7.0 |
 | MCP protocol | 2025-11-25 |
 | Ruby MCP SDK (`mcp`) | 0.23.x |
 
@@ -316,9 +316,13 @@ Write-операции блокируются настройкой **Режим 
 
 Любой установленный плагин Redmine может добавлять собственные MCP tools и при необходимости регистрировать resources, prompts и capabilities.
 
+Для плагинов, которые нельзя изменять, встроенные интеграции находятся в `redmine_mcp/lib/redmine_mcp/extensions/` и регистрируются через тот же Extension API.
+
 Подробная инструкция: [extension_guide.md](extension_guide.md).
 
 Для разработки с помощью AI в Cursor или похожих агентах скопируйте каталог skill [`redmine-mcp-plugin-integration`](../../skills/redmine-mcp-plugin-integration/) в директорию skills вашего AI-агента или используйте его как основу для собственного skill.
+
+При запуске skill в запросе можно указать способ интеграции: через сторонний плагин (`mcp.rb`) или как встроенную интеграцию в `redmine_mcp` (`lib/redmine_mcp/extensions/`). Если не указать, агент выберет путь сам.
 
 ## Логирование
 
@@ -339,7 +343,7 @@ Write-операции блокируются настройкой **Режим 
 | HTTP 403 (`Host`/`Origin`) | «Имя хоста и путь» не соответствует публичному адресу Redmine; reverse proxy не передаёт исходный `Host`; в клиенте указан другой URL MCP — transport отклоняет неизвестные `Host`/`Origin` (DNS rebinding) |
 | Tool не виден в `tools/list` | Нет необходимых прав; расширение, предоставляющее tool, отключено |
 | Новые tools не появились после reload MCP | В Cursor и похожих клиентах reload сервера может не обновить список tools — полностью перезапустите приложение |
-| Расширение не загружается | Нет файла `lib/.../mcp.rb`; модуль не `extend RedmineMcp::ExtensionApi`; убедитесь, что флажок расширения установлен в **MCP-расширения**; ошибка в файле — смотрите лог |
+| Расширение не загружается | Нет `lib/.../mcp.rb` или `lib/redmine_mcp/extensions/<plugin.id>.rb`; модуль не `extend RedmineMcp::ExtensionApi`; убедитесь, что флажок расширения установлен в **MCP-расширения**; ошибка в файле — смотрите лог |
 | `Issue not found` / `Project not found` | Задача или проект недоступны текущему пользователю по правилам видимости Redmine |
 
 ## Лицензия

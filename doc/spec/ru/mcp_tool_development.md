@@ -1822,7 +1822,9 @@ Description влияет на выбор инструмента моделью �
 
 ### 18.2. Регистрация
 
-- Файл расширения загружается при старте Redmine: `lib/<plugin_id>/mcp.rb` (см. `ExtensionLoader`).
+- Файл расширения загружается при старте Redmine (см. `ExtensionLoader`):
+  - в стороннем плагине — `lib/<plugin_id>/mcp.rb` (и другие поддерживаемые пути, см. [04-extensions.md](04-extensions.md));
+  - во встроенной интеграции `redmine_mcp` — `lib/redmine_mcp/extensions/<plugin.id>.rb`, если у целевого плагина нет собственного `mcp.rb`, либо как fallback, если загрузка его `mcp.rb` завершилась ошибкой.
 - Модуль в `mcp.rb` ОБЯЗАН быть `PluginName::Mcp` (`extend RedmineMcp::ExtensionApi`): так Zeitwerk выводит имя из файла.
 - Перед регистрацией СЛЕДУЕТ проверять `mcp_extension_enabled?` — жёсткая зависимость от `redmine_mcp` в gemspec не обязательна.
 - Для регистрации использовать `register_tool_once`, чтобы повторная загрузка не дублировала tool.

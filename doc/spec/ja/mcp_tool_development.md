@@ -1822,7 +1822,9 @@ Extension API 経由でツールを追加する Redmine プラグイン作者向
 
 ### 18.2. 登録
 
-- 拡張ファイルは Redmine 起動時にロード: `lib/<plugin_id>/mcp.rb`（`ExtensionLoader` 参照）。
+- 拡張ファイルは Redmine 起動時にロードされる（`ExtensionLoader` 参照）:
+  - サードパーティプラグイン — `lib/<plugin_id>/mcp.rb`（および他のサポートされるパス、[04-extensions.md](04-extensions.md) 参照）;
+  - `redmine_mcp` 内蔵統合 — 対象プラグインに独自の `mcp.rb` がない場合、またはその `mcp.rb` の読み込みが失敗した場合の fallback として `lib/redmine_mcp/extensions/<plugin.id>.rb`。
 - `mcp.rb` のモジュールは `PluginName::Mcp`（`extend RedmineMcp::ExtensionApi`）でなければならない（MUST）: Zeitwerk がファイルから名前を導出。
 - 登録前に `mcp_extension_enabled?` を確認すべき（SHOULD） — gemspec での `redmine_mcp` へのハード依存は不要。
 - リロードでツールを重複させないよう `register_tool_once` を使用。

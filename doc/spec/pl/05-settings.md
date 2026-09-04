@@ -33,7 +33,7 @@ Ustawienia są dostępne w **Administration → Plugins → Redmine MCP → Conf
 - Pole tekstowe na listę identyfikatorów („Disabled extensions”) i referencyjna lista wszystkich zainstalowanych wtyczek nie są używane.
 - Osobny checkbox auto-load rozszerzeń nie jest używany.
 - Zamiast tego strona ustawień pokazuje listę zainstalowanych wtyczek posiadających integrację MCP.
-- Wtyczka uznawana jest za posiadającą integrację MCP, jeśli ma plik rozszerzenia według tej samej konwencji co auto-load (zob. [04-extensions.md](04-extensions.md)).
+- Wtyczka uznawana jest za posiadającą integrację MCP, jeśli znaleziono źródło rozszerzenia według konwencji auto-load: `mcp.rb` we wtyczce lub wbudowany plik `lib/redmine_mcp/extensions/<plugin.id>.rb` w `redmine_mcp` (zob. [04-extensions.md](04-extensions.md)).
 - Wtyczka `redmine_mcp` nie jest pokazywana na tej liście.
 - Każdy element ma checkbox i nazwę wtyczki.
 - Legenda listy ma przełącznik Check all / Uncheck all, jak projekty i trackery w formularzu pola niestandardowego.
@@ -68,7 +68,7 @@ Ustawienia są dostępne w **Administration → Plugins → Redmine MCP → Conf
 ## Przypadki brzegowe
 
 - Jeśli wszystkie checkboxy rozszerzeń MCP są włączone (lub żadna wtyczka nie ma integracji), wszystkie znalezione rozszerzenia ładują się, gdy MCP jest włączone.
-- Wtyczka bez pliku rozszerzenia MCP nie jest pokazywana na liście i nie jest wyłączana przez te ustawienia.
+- Wtyczka bez rozszerzenia MCP (ani `mcp.rb`, ani wbudowanej integracji) nie jest pokazywana na liście i nie jest wyłączana przez te ustawienia.
 - Jeśli wtyczka później zyska integrację MCP, jej checkbox jest domyślnie włączony, chyba że wtyczka była wcześniej wyłączona.
 - Nieznane lub usunięte identyfikatory wtyczek w zapisanych listach wyłączonych są ignorowane.
 - Wcześniej zapisana flaga auto-load rozszerzeń jest ignorowana: ładowanie rozszerzeń zależy od Enable MCP.

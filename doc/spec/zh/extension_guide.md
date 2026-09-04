@@ -387,7 +387,39 @@ extend_tool(
 
 `redmine_mcp` 在 Redmine 启动时会自动在支持的路径中查找扩展文件。
 
-仅在 `mcp.rb` 入口点（通常为 `lib/<plugin>.rb` 或插件加载器的 `after_initialize`）检查 `redmine_mcp`。仅从 `mcp.rb` 加载的文件（`mcp_tools.rb`、`mcp_tools/*.rb` 等）不应重复相同检查。
+两种集成方式：
+
+1. **第三方插件中的扩展** — 目标插件目录中的 `lib/<...>/mcp.rb`（见「快速入门」）。
+2. **`redmine_mcp` 内置集成** — 当无法修改第三方插件时使用 `lib/redmine_mcp/extensions/<plugin.id>.rb`。文件通过相同的 `RedmineMcp::ExtensionApi` 注册 tools/resources/prompts。若目标插件已有自身 `mcp.rb`，仅当加载该文件失败时才使用内置集成。
+
+内置集成示例：
+
+```ruby
+module RedmineMcp
+  module Extensions
+    module AdvancedSearch
+      extend RedmineMcp::ExtensionApi
+
+      plugin_id :advanced_search
+
+      if mcp_extension_enabled?
+        register_tool_once(
+          name: 'semantic_search_issues',
+          description: 'Semantic search for issues.',
+          input_schema: {type: 'object', properties: {}},
+          output_schema: RedmineMcp::SchemaNormalizer.envelope_output(type: 'object', properties: {}),
+          permission: :view_issues,
+          handler: ->(_args, _context) { {} }
+        )
+      end
+    end
+  end
+end
+```
+
+集成的辅助代码可放在 `lib/redmine_mcp/extensions/<plugin_id>/` 中，并从主文件通过显式 `require` 引入。
+
+仅在 `mcp.rb` 入口点（通常为 `lib/<plugin>.rb` 或插件加载器的 `after_initialize`）检查 `redmine_mcp`。仅从 `mcp.rb` 加载的文件（`mcp_tools.rb`、`mcp_tools/*.rb` 等）不应重复相同检查。对于 `redmine_mcp` 中的内置集成，入口点无需单独检查：文件仅由 `ExtensionLoader` 加载。
 
 不要从第三方插件手动调用 `ExtensionLoader.load_plugin_extension`：`ExtensionLoader` 是 `redmine_mcp` 的内部机制。有条件地 `require` 你的 `mcp.rb` 即可；若插件加载顺序导致该 `require` 未执行，标准的 `redmine_mcp` `ExtensionLoader` 会作为后备。
 
@@ -404,8 +436,8 @@ end
 扩展仅在以下条件下注册：
 
 - 在 `redmine_mcp` 设置中启用了 MCP；
-- 找到了 `mcp.rb` 文件；
-- `mcp.rb` 中的 `<PluginName>::Mcp` 模块加载正确；
+- 找到扩展文件（插件中的 `mcp.rb` 或 `redmine_mcp` 中的 `lib/redmine_mcp/extensions/<plugin.id>.rb`，优先使用插件自身的 `mcp.rb`）；
+- 扩展 module 加载正确；
 - 扩展未在「MCP extensions」列表中禁用。
 
 安装新扩展或修改 `mcp.rb` 后，通常需要重启 Redmine。之后 MCP 客户端可能需要重新连接。在某些应用（如 Cursor）中，仅重新加载 MCP 服务器不足以获取新工具：若工具未出现，请完全重启应用。
@@ -458,7 +490,7 @@ end
 
 | 问题 | 检查项 |
 |---|---|
-| 扩展未加载 | `mcp.rb` 路径、模块名 `Mcp`、MCP 是否启用、Rails 日志 |
+| 扩展未加载 | `mcp.rb` 或 `lib/redmine_mcp/extensions/<plugin.id>.rb` 路径、module 名称、MCP 是否启用、设置中扩展是否启用、Rails 日志中的错误 |
 | 工具/资源/提示未出现 | 是否设置了 `plugin_id`、扩展是否被禁用、名称或 URI 冲突、用户是否拥有所需权限 |
 | 修改后变更未生效 | 重启 Redmine；在 Cursor 等客户端中，重新加载 MCP 服务器可能无法获取新工具——请完全重启应用 |
 | `extend_tool` 不工作 | 基础工具是否已注册、`extra_params` 是否与现有 schema 冲突 |

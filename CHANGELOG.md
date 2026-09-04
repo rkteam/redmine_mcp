@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.0] - 2026-09-04
+
+### Added
+- Built-in MCP extensions via `lib/redmine_mcp/extensions/<plugin.id>.rb` for third-party plugins that cannot be modified
+- Compatibility with Redmine 7.0;
+
 ## [1.0.1] - 2026-09-01
 
 ### Added

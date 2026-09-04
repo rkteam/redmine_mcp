@@ -2,15 +2,15 @@
 
 [웹사이트](https://redmine-kanban.com/)
 
-[Deutsch](../de/README.md) | [English](../en/README.md) | [Español](../es/README.md) | [Français](../fr/README.md) | [Italiano](../it/README.md) | [日本語](../ja/README.md) | 한국어 | [Polski](../pl/README.md) | [Português (Brasil)](../pt-BR/README.md) | [Русский](../ru/README.md) | [中文](../zh/README.md)
+[Deutsch](../de/README.md) | [English](../../../README.md) | [Español](../es/README.md) | [Français](../fr/README.md) | [Italiano](../it/README.md) | [日本語](../ja/README.md) | 한국어 | [Polski](../pl/README.md) | [Português (Brasil)](../pt-BR/README.md) | [Русский](../ru/README.md) | [中文](../zh/README.md)
 
-Redmine 내부의 MCP 서버(Model Context Protocol). AI 클라이언트가 표준 Redmine 권한을 통해 이슈, 프로젝트, 사용자와 작업할 수 있게 합니다. 다른 플러그인은 이 플러그인을 변경하지 않고 자체 tools, resources, prompts, capabilities를 추가할 수 있습니다.
+Redmine 내부의 MCP 서버(Model Context Protocol). AI 클라이언트가 표준 Redmine 권한을 통해 이슈, 프로젝트, 사용자와 작업할 수 있게 합니다. 다른 플러그인은 이 플러그인을 변경하지 않고 자체 tools, resources, prompts, capabilities를 추가할 수 있습니다. 수정할 수 없는 서드파티 플러그인을 위해 `redmine_mcp`는 `lib/redmine_mcp/extensions/`에 내장 MCP 통합을 제공할 수 있습니다.
 
 ## 요구 사항
 
 | 구성 요소 | 버전 |
 |---|---|
-| Redmine | Redmine 6.0+ (테스트: 6.0–6.1) |
+| Redmine | Redmine 6.0–7.0 |
 | MCP protocol | 2025-11-25 |
 | Ruby MCP SDK (`mcp`) | 0.23.x |
 
@@ -316,9 +316,13 @@ Write 작업은 **읽기 전용 모드** 설정으로 차단됩니다.
 
 설치된 Redmine 플러그인은 필요한 경우 자체 MCP tools를 추가하고 resources, prompts, capabilities를 등록할 수 있습니다.
 
+수정할 수 없는 플러그인을 위한 내장 통합은 `redmine_mcp/lib/redmine_mcp/extensions/`에 있으며 동일한 Extension API로 등록됩니다.
+
 자세한 가이드: [extension_guide.md](extension_guide.md).
 
 Cursor 또는 유사 에이전트에서 AI 지원 개발을 위해 번들 skill 디렉터리 [`redmine-mcp-plugin-integration`](../../skills/redmine-mcp-plugin-integration/)를 AI 에이전트의 skills 폴더에 복사하거나 자체 skill의 기반으로 사용하세요.
+
+skill 실행 시 프롬프트에서 대상 플러그인(`mcp.rb`) 통합 또는 `redmine_mcp`(`lib/redmine_mcp/extensions/`) 내장 통합 여부를 지정할 수 있습니다. 지정하지 않으면 에이전트가 경로를 선택합니다.
 
 ## 로깅
 
@@ -339,7 +343,7 @@ Cursor 또는 유사 에이전트에서 AI 지원 개발을 위해 번들 skill 
 | HTTP 403(`Host`/`Origin`) | **호스트 이름과 경로**가 Redmine 공개 URL과 일치하지 않음; reverse proxy가 원본 `Host`를 전달하지 않음; 클라이언트의 MCP URL이 일치하지 않음 — transport가 알 수 없는 host를 거부(DNS rebinding 방지) |
 | `tools/list`에 tool이 보이지 않음 | 필요한 권한이 없음; tool을 제공하는 확장이 비활성화됨 |
 | MCP reload 후 새 tools가 나타나지 않음 | Cursor 및 유사 클라이언트에서 서버 reload가 tool 목록을 새로 고치지 않을 수 있음 — 애플리케이션을 완전히 재시작 |
-| 확장이 로드되지 않음 | `lib/.../mcp.rb` 없음; 모듈이 `extend RedmineMcp::ExtensionApi`하지 않음; **MCP 확장**에서 확장 체크박스가 활성화되었는지 확인; 파일에 오류가 있으면 로그 확인 |
+| 확장이 로드되지 않음 | `lib/.../mcp.rb` 또는 `lib/redmine_mcp/extensions/<plugin.id>.rb` 없음; 모듈이 `extend RedmineMcp::ExtensionApi`하지 않음; **MCP 확장**에서 확장 체크박스가 활성화되었는지 확인; 파일에 오류가 있으면 로그 확인 |
 | `Issue not found` / `Project not found` | Redmine 가시성 규칙에 따라 이슈 또는 프로젝트가 현재 사용자에게 보이지 않음 |
 
 ## 라이선스

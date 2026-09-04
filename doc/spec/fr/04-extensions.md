@@ -21,10 +21,14 @@ Fournir une approche unique pour intégrer les plugins Redmine avec l'IA sans du
 ### Découverte automatique
 
 - Au démarrage de Redmine (lorsque MCP est activé), le système vérifie tous les plugins installés.
-- Un plugin est considéré comme ayant une extension MCP s'il contient un fichier `mcp.rb` à l'un de ces chemins :
-  - `lib/<plugin.id>/mcp.rb` ;
-  - `lib/<plugin directory basename>/mcp.rb` ;
-  - `lib/<plugin.id without redmine_ prefix>/mcp.rb` si l'identifiant commence par `redmine_` (schéma typique comme `redmine_advanced_checklists` → `lib/advanced_checklists/mcp.rb`).
+- Un plugin est considéré comme ayant une extension MCP si l'une de ces sources est trouvée :
+  - **extension dans le plugin lui-même** — fichier `mcp.rb` à l'un de ces chemins :
+    - `lib/<plugin.id>/mcp.rb` ;
+    - `lib/<plugin directory basename>/mcp.rb` ;
+    - `lib/<plugin.id without redmine_ prefix>/mcp.rb` si l'identifiant commence par `redmine_` (schéma typique comme `redmine_advanced_checklists` → `lib/advanced_checklists/mcp.rb`) ;
+  - **intégration intégrée dans `redmine_mcp`** — fichier `lib/redmine_mcp/extensions/<plugin.id>.rb` dans le plugin `redmine_mcp` lorsque le plugin cible est installé.
+- Si les deux sources existent pour un plugin, l'extension du plugin lui-même est chargée en premier. L'intégration intégrée sert uniquement de fallback si le chargement de son `mcp.rb` échoue. Si `mcp.rb` se charge correctement, l'intégration intégrée n'est pas chargée et n'enregistre pas à nouveau tools/resources/prompts.
+- Une intégration intégrée utilise la même Extension API qu'un `mcp.rb` tiers ; il n'existe pas de mécanisme d'enregistrement séparé.
 - Le plugin `redmine_mcp` ne se charge pas lui-même comme extension.
 - Les plugins dont la case d'extension MCP est décochée dans les paramètres sont ignorés.
 - Un échec dans l'extension d'un plugin ne bloque pas le chargement des autres, y compris une erreur de syntaxe dans le fichier d'extension.
@@ -99,7 +103,7 @@ La liste des méthodes de l'API Ruby et les exemples de code sont dans le README
 
 ## Cas limites
 
-- Un plugin sans fichier d'extension est ignoré.
+- Un plugin sans fichier d'extension et sans intégration intégrée est ignoré.
 - Si un fichier d'extension existe mais que `require` échoue — entrée de journal, l'extension n'est pas considérée comme chargée ; l'enregistrement d'outils est un effet secondaire d'un `require` réussi.
 - Tentative d'étendre un outil inexistant — erreur lors de l'enregistrement de l'extension.
 - Un plugin avec la case d'extension MCP décochée dans les paramètres n'est pas chargé même si le fichier d'extension existe.
@@ -117,6 +121,9 @@ La liste des méthodes de l'API Ruby et les exemples de code sont dans le README
 8. La découverte de ressources et prompts avec arguments vides reste disponible si la permission existe dans au moins un projet.
 9. Un plugin avec `plugin.id` comme `redmine_*` et fichier `lib/<id without redmine_ prefix>/mcp.rb` est considéré comme ayant une intégration MCP et apparaît dans les paramètres d'extension MCP.
 10. Un outil lié à un ticket avec exigence de module n'est pas dans `tools/list` pour un utilisateur sans aucun projet visible avec ce module, même s'il a la permission sur un autre projet.
+
+11. Un plugin sans son propre `mcp.rb`, mais avec le plugin cible installé et le fichier `lib/redmine_mcp/extensions/<plugin.id>.rb` dans `redmine_mcp`, est considéré comme ayant une intégration MCP et apparaît dans les paramètres d'extensions MCP.
+12. Si un plugin a à la fois son propre `mcp.rb` et une intégration intégrée dans `redmine_mcp`, les tools/resources/prompts du `mcp.rb` du plugin sont disponibles dans MCP lorsqu'il se charge correctement ; si le chargement de `mcp.rb` échoue, le chargeur tente l'intégration intégrée.
 
 ## Exemples d'extensions
 

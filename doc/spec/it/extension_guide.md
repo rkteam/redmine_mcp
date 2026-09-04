@@ -387,7 +387,39 @@ Se l'estensione viene richiesta dall'`after_initialize` di un plugin prima che `
 
 `redmine_mcp` cerca automaticamente il file di estensione nei percorsi supportati all'avvio di Redmine.
 
-Verificare `redmine_mcp` solo nel punto di ingresso `mcp.rb` (di solito `lib/<plugin>.rb` o l'`after_initialize` del loader del plugin). I file caricati solo da `mcp.rb` (`mcp_tools.rb`, `mcp_tools/*.rb` e così via) non devono ripetere gli stessi controlli.
+Due varianti di integrazione:
+
+1. **Estensione in un plugin di terze parti** — `lib/<...>/mcp.rb` nella directory del plugin di destinazione (vedi «Avvio rapido»).
+2. **Integrazione integrata in `redmine_mcp`** — `lib/redmine_mcp/extensions/<plugin.id>.rb` per i casi in cui il plugin di terze parti non può essere modificato. Il file registra tools/resources/prompts tramite lo stesso `RedmineMcp::ExtensionApi`. Se il plugin di destinazione ha già il proprio `mcp.rb`, l'integrazione integrata viene usata solo se il caricamento di quel file fallisce.
+
+Esempio di integrazione integrata:
+
+```ruby
+module RedmineMcp
+  module Extensions
+    module AdvancedSearch
+      extend RedmineMcp::ExtensionApi
+
+      plugin_id :advanced_search
+
+      if mcp_extension_enabled?
+        register_tool_once(
+          name: 'semantic_search_issues',
+          description: 'Semantic search for issues.',
+          input_schema: {type: 'object', properties: {}},
+          output_schema: RedmineMcp::SchemaNormalizer.envelope_output(type: 'object', properties: {}),
+          permission: :view_issues,
+          handler: ->(_args, _context) { {} }
+        )
+      end
+    end
+  end
+end
+```
+
+Il codice ausiliario dell'integrazione può essere collocato in `lib/redmine_mcp/extensions/<plugin_id>/` e importato con `require` esplicito dal file principale.
+
+Verificare `redmine_mcp` solo nel punto di ingresso `mcp.rb` (di solito `lib/<plugin>.rb` o l'`after_initialize` del loader del plugin). I file caricati solo da `mcp.rb` (`mcp_tools.rb`, `mcp_tools/*.rb` e così via) non devono ripetere gli stessi controlli. Per le integrazioni integrate in `redmine_mcp` non serve un controllo separato al punto di ingresso: il file viene caricato solo da `ExtensionLoader`.
 
 Non chiamare `ExtensionLoader.load_plugin_extension` manualmente da un plugin di terze parti: `ExtensionLoader` è un meccanismo interno di `redmine_mcp`. Un `require` condizionale del proprio `mcp.rb` è sufficiente; se l'ordine di caricamento dei plugin impedisce quel `require`, lo standard `ExtensionLoader` di `redmine_mcp` funge da fallback.
 
@@ -404,8 +436,8 @@ end
 L'estensione viene registrata solo se:
 
 - MCP è abilitato nelle impostazioni di `redmine_mcp`;
-- il file `mcp.rb` è trovato;
-- il modulo `<PluginName>::Mcp` in `mcp.rb` viene caricato correttamente;
+- viene trovato il file di estensione (`mcp.rb` nel plugin o `lib/redmine_mcp/extensions/<plugin.id>.rb` in `redmine_mcp`, con priorità al `mcp.rb` del plugin);
+- il modulo di estensione viene caricato correttamente;
 - l'estensione non è disabilitata nell'elenco `MCP extensions`.
 
 Dopo l'installazione di una nuova estensione o la modifica di `mcp.rb`, Redmine di solito richiede un riavvio. Il client MCP potrebbe poi dover riconnettersi. In alcune applicazioni, come Cursor, ricaricare il server MCP non basta per rilevare nuovi strumenti: se non compaiono, riavviare completamente l'applicazione.
@@ -458,7 +490,7 @@ Test automatizzati minimi per uno strumento di estensione read-only:
 
 | Problema | Cosa verificare |
 |---|---|
-| L'estensione non è stata caricata | percorso di `mcp.rb`, nome del modulo `Mcp`, se MCP è abilitato, log di Rails |
+| L'estensione non è stata caricata | percorso di `mcp.rb` o `lib/redmine_mcp/extensions/<plugin.id>.rb`, nome del modulo, se MCP è abilitato, se l'estensione è abilitata nelle impostazioni, errori nel log di Rails |
 | Strumento/risorsa/prompt non è apparso | se `plugin_id` è impostato, se l'estensione è disabilitata, collisioni di nome o URI, se l'utente ha i permessi richiesti |
 | Le modifiche non sono visibili dopo gli edit | riavviare Redmine; in Cursor e client simili, ricaricare il server MCP potrebbe non rilevare nuovi strumenti — riavviare completamente l'applicazione |
 | `extend_tool` non funziona | se lo strumento base è registrato, se `extra_params` entrano in conflitto con lo schema esistente |

@@ -387,7 +387,39 @@ extend_tool(
 
 `redmine_mcp` は Redmine 起動時にサポートされるパスで拡張ファイルを自動検索します。
 
-`redmine_mcp` の存在確認は `mcp.rb` エントリポイント（通常 `lib/<plugin>.rb` またはプラグインローダーの `after_initialize`）でのみ行ってください。`mcp.rb` からのみ読み込まれるファイル（`mcp_tools.rb`、`mcp_tools/*.rb` など）では同じチェックを繰り返す必要はありません。
+2 つの統合バリアント:
+
+1. **サードパーティプラグイン内の拡張** — 対象プラグインディレクトリ内の `lib/<...>/mcp.rb`（「クイックスタート」参照）。
+2. **`redmine_mcp` 内蔵統合** — サードパーティプラグインを変更できない場合の `lib/redmine_mcp/extensions/<plugin.id>.rb`。ファイルは同じ `RedmineMcp::ExtensionApi` で tools/resources/prompts を登録する。対象プラグインに既に独自の `mcp.rb` がある場合、内蔵統合は、そのファイルの読み込みが失敗した場合のみ使用される。
+
+内蔵統合の例:
+
+```ruby
+module RedmineMcp
+  module Extensions
+    module AdvancedSearch
+      extend RedmineMcp::ExtensionApi
+
+      plugin_id :advanced_search
+
+      if mcp_extension_enabled?
+        register_tool_once(
+          name: 'semantic_search_issues',
+          description: 'Semantic search for issues.',
+          input_schema: {type: 'object', properties: {}},
+          output_schema: RedmineMcp::SchemaNormalizer.envelope_output(type: 'object', properties: {}),
+          permission: :view_issues,
+          handler: ->(_args, _context) { {} }
+        )
+      end
+    end
+  end
+end
+```
+
+統合用のヘルパーコードは `lib/redmine_mcp/extensions/<plugin_id>/` に置き、メインファイルから明示的な `require` で読み込めます。
+
+`redmine_mcp` の存在確認は `mcp.rb` エントリポイント（通常 `lib/<plugin>.rb` またはプラグインローダーの `after_initialize`）でのみ行ってください。`mcp.rb` からのみ読み込まれるファイル（`mcp_tools.rb`、`mcp_tools/*.rb` など）では同じチェックを繰り返す必要はありません。`redmine_mcp` 内蔵統合ではエントリポイントでの別チェックは不要: ファイルは `ExtensionLoader` のみが読み込む。
 
 サードパーティプラグインから `ExtensionLoader.load_plugin_extension` を手動で呼び出さないでください: `ExtensionLoader` は `redmine_mcp` の内部メカニズムです。条件付き `require` で自分の `mcp.rb` を読み込めば十分です。プラグイン読み込み順序でその `require` が実行されなかった場合、標準 `redmine_mcp` の `ExtensionLoader` がフォールバックとして動作します。
 
@@ -404,8 +436,8 @@ end
 拡張は次の場合のみ登録されます:
 
 - `redmine_mcp` 設定で MCP が有効;
-- `mcp.rb` ファイルが見つかる;
-- `mcp.rb` 内の `<PluginName>::Mcp` モジュールが正しく読み込まれる;
+- 拡張ファイルが見つかる（プラグイン内の `mcp.rb` または `redmine_mcp` 内の `lib/redmine_mcp/extensions/<plugin.id>.rb`、プラグイン自身の `mcp.rb` を優先）;
+- 拡張モジュールが正しく読み込まれる;
 - `MCP extensions` リストで拡張が無効化されていない。
 
 新しい拡張のインストールまたは `mcp.rb` 変更後、通常 Redmine の再起動が必要です。その後 MCP クライアントは再接続が必要な場合があります。Cursor などのアプリケーションでは、MCP サーバーのリロードだけでは新しいツールを取得できない場合があります: 表示されない場合はアプリケーションを完全に再起動してください。
@@ -458,7 +490,7 @@ end
 
 | 問題 | 確認事項 |
 |---|---|
-| 拡張が読み込まれない | `mcp.rb` パス、モジュール名 `Mcp`、MCP が有効か、Rails ログ |
+| 拡張が読み込まれない | `mcp.rb` または `lib/redmine_mcp/extensions/<plugin.id>.rb` パス、モジュール名、MCP が有効か、設定で拡張が有効か、Rails ログのエラー |
 | ツール/リソース/プロンプトが表示されない | `plugin_id` が設定されているか、拡張が無効化されていないか、名前または URI の衝突、ユーザーが必要権限を持つか |
 | 編集後に変更が反映されない | Redmine 再起動; Cursor などでは MCP サーバーリロードでは新ツールを取得できない場合がある — アプリケーションを完全再起動 |
 | `extend_tool` が動作しない | ベースツールが登録されているか、`extra_params` が既存スキーマと競合していないか |
