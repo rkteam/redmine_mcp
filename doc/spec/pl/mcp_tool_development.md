@@ -1822,7 +1822,9 @@ Jeśli model może zrealizować intencję osobnym narzędziem bez zgadywania `ac
 
 ### 18.2. Rejestracja
 
-- Plik rozszerzenia ładuje się przy starcie Redmine: `lib/<plugin_id>/mcp.rb` (patrz `ExtensionLoader`).
+- Plik rozszerzenia ładuje się przy starcie Redmine (patrz `ExtensionLoader`):
+  - we wtyczce zewnętrznej — `lib/<plugin_id>/mcp.rb` (i inne obsługiwane ścieżki, patrz [04-extensions.md](04-extensions.md));
+  - we wbudowanej integracji `redmine_mcp` — `lib/redmine_mcp/extensions/<plugin.id>.rb`, jeśli wtyczka docelowa nie ma własnego `mcp.rb`, albo jako fallback, gdy ładowanie jej `mcp.rb` się nie powiedzie.
 - Moduł w `mcp.rb` MUSI być `PluginName::Mcp` (`extend RedmineMcp::ExtensionApi`): Zeitwerk wyprowadza nazwę z pliku.
 - Przed rejestracją POWINNO sprawdzić `mcp_extension_enabled?` — twarda zależność od `redmine_mcp` w gemspec nie jest wymagana.
 - Użyj `register_tool_once` do rejestracji, aby reload nie duplikował narzędzia.

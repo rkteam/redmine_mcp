@@ -1822,7 +1822,9 @@ MCP 服务器版本由单独 read-only 工具或服务器 metadata 返回。无�
 
 ### 18.2. 注册
 
-- 扩展文件在 Redmine 启动时加载：`lib/<plugin_id>/mcp.rb`（见 `ExtensionLoader`）。
+- 扩展文件在 Redmine 启动时加载（见 `ExtensionLoader`）：
+  - 在第三方插件中 — `lib/<plugin_id>/mcp.rb`（及其他支持的路径，见 [04-extensions.md](04-extensions.md)）；
+  - 在 `redmine_mcp` 内置集成中 — 若目标插件没有自身 `mcp.rb`，或其 `mcp.rb` 加载失败时作为 fallback，使用 `lib/redmine_mcp/extensions/<plugin.id>.rb`。
 - `mcp.rb` 中的 module MUST 为 `PluginName::Mcp`（`extend RedmineMcp::ExtensionApi`）：Zeitwerk 从文件推导名称。
 - 注册前 SHOULD 检查 `mcp_extension_enabled?` — gemspec 中不必硬依赖 `redmine_mcp`。
 - 注册使用 `register_tool_once`，以免 reload 重复 tool。

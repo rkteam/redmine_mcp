@@ -387,7 +387,39 @@ extend_tool(
 
 `redmine_mcp` автоматически ищет extension-файл в поддерживаемых путях при старте Redmine.
 
-Проверку наличия `redmine_mcp` выполняйте в точке подключения `mcp.rb` (обычно `lib/<plugin>.rb` или `after_initialize` загрузчика плагина). Файлы, которые загружаются только из `mcp.rb` (`mcp_tools.rb`, `mcp_tools/*.rb` и т.п.), повторно проверять не нужно.
+Два варианта интеграции:
+
+1. **Расширение в стороннем плагине** — `lib/<...>/mcp.rb` в каталоге целевого плагина (см. «Быстрый старт»).
+2. **Встроенная интеграция в `redmine_mcp`** — `lib/redmine_mcp/extensions/<plugin.id>.rb` для случаев, когда сторонний плагин изменять нельзя. Файл регистрирует tools/resources/prompts через тот же `RedmineMcp::ExtensionApi`. Если у целевого плагина уже есть собственный `mcp.rb`, встроенная интеграция используется только если загрузка этого файла завершилась ошибкой.
+
+Пример встроенной интеграции:
+
+```ruby
+module RedmineMcp
+  module Extensions
+    module AdvancedSearch
+      extend RedmineMcp::ExtensionApi
+
+      plugin_id :advanced_search
+
+      if mcp_extension_enabled?
+        register_tool_once(
+          name: 'semantic_search_issues',
+          description: 'Semantic search for issues.',
+          input_schema: {type: 'object', properties: {}},
+          output_schema: RedmineMcp::SchemaNormalizer.envelope_output(type: 'object', properties: {}),
+          permission: :view_issues,
+          handler: ->(_args, _context) { {} }
+        )
+      end
+    end
+  end
+end
+```
+
+Вспомогательный код для интеграции можно выносить в `lib/redmine_mcp/extensions/<plugin_id>/` и подключать явным `require` из основного файла.
+
+Проверку наличия `redmine_mcp` выполняйте в точке подключения `mcp.rb` (обычно `lib/<plugin>.rb` или `after_initialize` загрузчика плагина). Файлы, которые загружаются только из `mcp.rb` (`mcp_tools.rb`, `mcp_tools/*.rb` и т.п.), повторно проверять не нужно. Для встроенных интеграций в `redmine_mcp` отдельная проверка в точке входа не нужна: файл загружается только `ExtensionLoader`.
 
 Не вызывайте `ExtensionLoader.load_plugin_extension` вручную из стороннего плагина: `ExtensionLoader` — внутренний механизм `redmine_mcp`. Достаточно условного `require` своего `mcp.rb`; если порядок загрузки плагинов не позволил выполнить этот `require`, сработает стандартный `ExtensionLoader` самого `redmine_mcp`.
 
@@ -404,8 +436,8 @@ end
 Расширение будет зарегистрировано, только если:
 
 - MCP включён в настройках `redmine_mcp`;
-- файл `mcp.rb` найден;
-- модуль `<PluginName>::Mcp` в `mcp.rb` корректно загружается;
+- найден файл расширения (`mcp.rb` в плагине или `lib/redmine_mcp/extensions/<plugin.id>.rb` в `redmine_mcp`, с приоритетом собственного `mcp.rb`);
+- модуль расширения корректно загружается;
 - расширение не отключено в списке `MCP extensions`.
 
 После установки нового расширения или изменения `mcp.rb` обычно нужен перезапуск Redmine. MCP-клиенту после этого может потребоваться переподключение. В некоторых приложениях, например Cursor, reload MCP-сервера недостаточно, чтобы подхватить новые tools: если они не появились, полностью перезапустите приложение.
@@ -458,7 +490,7 @@ end
 
 | Проблема | Что проверить |
 |---|---|
-| Extension не загрузился | путь `mcp.rb`, имя модуля `Mcp`, включён ли MCP, ошибки в Rails log |
+| Extension не загрузился | путь `mcp.rb` или `lib/redmine_mcp/extensions/<plugin.id>.rb`, имя модуля, включён ли MCP, включено ли расширение в настройках, ошибки в Rails log |
 | Tool/resource/prompt не появился | задан ли `plugin_id`, не отключено ли расширение, нет ли коллизии имени или URI, есть ли у пользователя необходимые права |
 | Изменения не появились после правок | перезапуск Redmine; в Cursor и похожих клиентах reload MCP-сервера может не подхватить новые tools — полностью перезапустите приложение |
 | `extend_tool` не работает | зарегистрирован ли базовый tool, не конфликтуют ли `extra_params` с существующей schema |

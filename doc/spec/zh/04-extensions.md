@@ -21,10 +21,14 @@ Redmine MCP 提供扩展机制，让其他已安装的 Redmine 插件注册自�
 ### 自动发现
 
 - Redmine 启动时（MCP 已启用），系统检查所有已安装插件。
-- 若插件在以下路径之一包含 `mcp.rb` 文件，则视为具备 MCP 扩展：
-  - `lib/<plugin.id>/mcp.rb`；
-  - `lib/<插件目录 basename>/mcp.rb`；
-  - 若标识符以 `redmine_` 开头，则为 `lib/<去掉 redmine_ 前缀的 plugin.id>/mcp.rb`（典型方案如 `redmine_advanced_checklists` → `lib/advanced_checklists/mcp.rb`）。
+- 若找到以下任一来源，则插件视为具备 MCP 扩展：
+  - **插件自身扩展** — 以下路径之一的 `mcp.rb` 文件：
+    - `lib/<plugin.id>/mcp.rb`；
+    - `lib/<插件目录 basename>/mcp.rb`；
+    - 若标识符以 `redmine_` 开头，则为 `lib/<去掉 redmine_ 前缀的 plugin.id>/mcp.rb`（典型方案如 `redmine_advanced_checklists` → `lib/advanced_checklists/mcp.rb`）；
+  - **`redmine_mcp` 内置集成** — 当目标插件已安装时，`redmine_mcp` 插件内的 `lib/redmine_mcp/extensions/<plugin.id>.rb` 文件。
+- 若同一插件两种来源都存在，先加载插件自身的扩展。仅当 `require` 自身 `mcp.rb` 失败时，内置集成才作为 fallback 使用。`mcp.rb` 成功加载时，内置集成不会加载，也不会重复注册 tools/resources/prompts。
+- 内置集成使用与第三方 `mcp.rb` 相同的 Extension API；没有单独的注册机制。
 - `redmine_mcp` 插件不会将自身作为扩展加载。
 - 设置中未勾选 MCP 扩展复选框的插件会被跳过。
 - 某个插件扩展失败不会阻止加载其他插件，包括扩展文件中的语法错误。
@@ -99,7 +103,7 @@ Ruby API 方法列表和代码示例在插件 README 和 [mcp_tool_development.m
 
 ## 边界情况
 
-- 无扩展文件的插件会被忽略。
+- 无扩展文件且无内置集成的插件会被忽略。
 - 若扩展文件存在但 `require` 失败 — 记录日志，扩展视为未加载；工具注册是成功 `require` 的副作用。
 - 尝试扩展不存在的工具 — 扩展注册期间出错。
 - 设置中未勾选 MCP 扩展复选框的插件即使扩展文件存在也不会加载。
@@ -117,6 +121,8 @@ Ruby API 方法列表和代码示例在插件 README 和 [mcp_tool_development.m
 8. 空参数时，若在至少一个项目中拥有权限，资源和提示发现仍可用。
 9. `plugin.id` 形如 `redmine_*` 且文件为 `lib/<去掉 redmine_ 前缀的 id>/mcp.rb` 的插件视为具备 MCP 集成，并出现在 MCP 扩展设置中。
 10. 需要模块的议题范围工具：用户在其他项目有权限但没有任何启用该模块的可见项目时，不在 `tools/list` 中。
+11. 没有自身 `mcp.rb`、但目标插件已安装且 `redmine_mcp` 中存在 `lib/redmine_mcp/extensions/<plugin.id>.rb` 文件的插件，视为具备 MCP 集成并出现在 MCP 扩展设置中。
+12. 若插件同时有自身 `mcp.rb` 和 `redmine_mcp` 中的内置集成，在 `mcp.rb` 成功加载时 MCP 中可用其 tools/resources/prompts；若 `require` `mcp.rb` 失败，加载器会尝试内置集成。
 
 ## 扩展示例
 

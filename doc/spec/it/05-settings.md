@@ -33,7 +33,7 @@ Le impostazioni sono disponibili in **Amministrazione → Plugin → Redmine MCP
 - Non viene usato un campo di testo per un elenco di identificatori ("Estensioni disabilitate") né un elenco di riferimento di tutti i plugin installati.
 - Non viene usata una casella di controllo separata per il caricamento automatico delle estensioni.
 - Al contrario, la pagina delle impostazioni mostra un elenco dei plugin installati che hanno integrazione MCP.
-- Un plugin è considerato dotato di integrazione MCP se ha un file di estensione che usa la stessa convenzione del caricamento automatico (vedi [04-extensions.md](04-extensions.md)).
+- Un plugin è considerato dotato di integrazione MCP se viene trovata una fonte di estensione secondo la convenzione di caricamento automatico: `mcp.rb` nel plugin o il file integrato `lib/redmine_mcp/extensions/<plugin.id>.rb` in `redmine_mcp` (vedi [04-extensions.md](04-extensions.md)).
 - Il plugin `redmine_mcp` non viene mostrato in questo elenco.
 - Ogni voce ha una casella di controllo e il nome del plugin.
 - La legenda dell'elenco ha un interruttore Seleziona tutto / Deseleziona tutto, come per progetti e tracker in un modulo di campo personalizzato.
@@ -68,7 +68,7 @@ Le impostazioni sono disponibili in **Amministrazione → Plugin → Redmine MCP
 ## Casi limite
 
 - Se tutte le caselle di controllo delle estensioni MCP sono abilitate (o nessun plugin ha integrazione), tutte le estensioni trovate vengono caricate quando MCP è abilitato.
-- Un plugin senza file di estensione MCP non viene mostrato nell'elenco e non viene disabilitato da queste impostazioni.
+- Un plugin senza estensione MCP (né `mcp.rb` né integrazione integrata) non viene mostrato nell'elenco e non viene disabilitato da queste impostazioni.
 - Se un plugin acquisisce successivamente l'integrazione MCP, la sua casella di controllo è abilitata per impostazione predefinita a meno che il plugin non fosse stato precedentemente disabilitato.
 - Identificatori di plugin sconosciuti o rimossi negli elenchi salvati di disabilitati vengono ignorati.
 - Un flag di caricamento automatico delle estensioni precedentemente salvato viene ignorato: il caricamento delle estensioni segue Abilita MCP.

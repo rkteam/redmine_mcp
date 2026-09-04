@@ -33,7 +33,7 @@ La configuración está disponible en **Administración → Plugins → Redmine 
 - No se usa un campo de texto para una lista de identificadores («Disabled extensions») ni una lista de referencia de todos los plugins instalados.
 - No se usa una casilla separada de carga automática de extensiones.
 - En su lugar, la página de configuración muestra una lista de plugins instalados que tienen integración MCP.
-- Un plugin se considera con integración MCP si tiene un archivo de extensión según la misma convención que la carga automática (véase [04-extensions.md](04-extensions.md)).
+- Un plugin se considera con integración MCP si se encuentra una fuente de extensión según la convención de carga automática: `mcp.rb` en el plugin o el archivo integrado `lib/redmine_mcp/extensions/<plugin.id>.rb` en `redmine_mcp` (véase [04-extensions.md](04-extensions.md)).
 - El plugin `redmine_mcp` no aparece en esta lista.
 - Cada elemento tiene una casilla y el nombre del plugin.
 - La leyenda de la lista tiene un conmutador Marcar todo / Desmarcar todo, como en proyectos y trackers en un formulario de campo personalizado.
@@ -68,7 +68,7 @@ La configuración está disponible en **Administración → Plugins → Redmine 
 ## Casos límite
 
 - Si todas las casillas de extensiones MCP están habilitadas (o ningún plugin tiene integración), se cargan todas las extensiones encontradas cuando MCP está habilitado.
-- Un plugin sin archivo de extensión MCP no aparece en la lista y no se deshabilita por esta configuración.
+- Un plugin sin extensión MCP (ni `mcp.rb` ni integración integrada) no aparece en la lista y no se deshabilita por esta configuración.
 - Si un plugin adquiere después integración MCP, su casilla está habilitada por defecto salvo que el plugin estuviera deshabilitado previamente.
 - Los identificadores de plugins desconocidos o eliminados en listas de deshabilitados guardadas se ignoran.
 - Se ignora una bandera de carga automática de extensiones guardada previamente: la carga de extensiones depende de Enable MCP.

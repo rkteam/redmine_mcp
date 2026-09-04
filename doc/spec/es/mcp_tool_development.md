@@ -1822,7 +1822,9 @@ Si el modelo puede cumplir la intención con herramienta separada sin adivinar `
 
 ### 18.2. Registro
 
-- El archivo de extensión se carga al inicio de Redmine: `lib/<plugin_id>/mcp.rb` (ver `ExtensionLoader`).
+- El archivo de extensión se carga al inicio de Redmine (ver `ExtensionLoader`):
+  - en un plugin de terceros — `lib/<plugin_id>/mcp.rb` (y otras rutas compatibles, ver [04-extensions.md](04-extensions.md));
+  - en una integración integrada de `redmine_mcp` — `lib/redmine_mcp/extensions/<plugin.id>.rb`, si el plugin destino no tiene su propio `mcp.rb`, o como fallback si falla la carga de su `mcp.rb`.
 - El módulo en `mcp.rb` DEBE ser `PluginName::Mcp` (`extend RedmineMcp::ExtensionApi`): Zeitwerk deriva el nombre del archivo.
 - Antes del registro DEBERÍA verificar `mcp_extension_enabled?` — dependencia dura de `redmine_mcp` en gemspec no es obligatoria.
 - Usar `register_tool_once` para el registro, así el reload no duplica la herramienta.

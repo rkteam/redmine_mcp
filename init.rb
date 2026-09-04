@@ -21,7 +21,7 @@ Redmine::Plugin.register(:redmine_mcp) do
   name 'Redmine MCP'
   author 'RK Team'
   description 'MCP server for Redmine with extensible plugin integration'
-  version '1.0.1'
+  version '1.1.0'
   url 'https://redmine-kanban.com'
   author_url 'https://redmine-kanban.com'
 

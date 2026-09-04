@@ -107,7 +107,7 @@ Ofrecer a los clientes de IA operaciones de gestión de proyectos, operaciones d
 
 `list_time_entry_activities` — catálogo de tipos de actividad de trabajo para el registro de tiempo, no el feed de eventos del proyecto (`list_project_activities`).
 
-Descubrimiento / Enumeración
+### Descubrimiento / Enumeración
 
 | Herramienta | R/W | Permiso |
 |------|-----|------------|

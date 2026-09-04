@@ -1822,7 +1822,9 @@ Se il modello può soddisfare l'intenzione con strumento separato senza indovina
 
 ### 18.2. Registrazione
 
-- Il file di estensione si carica all'avvio Redmine: `lib/<plugin_id>/mcp.rb` (vedi `ExtensionLoader`).
+- Il file di estensione si carica all'avvio Redmine (vedi `ExtensionLoader`):
+  - in un plugin di terze parti — `lib/<plugin_id>/mcp.rb` (e altri percorsi supportati, vedi [04-extensions.md](04-extensions.md));
+  - in un'integrazione integrata di `redmine_mcp` — `lib/redmine_mcp/extensions/<plugin.id>.rb`, se il plugin di destinazione non ha il proprio `mcp.rb`, o come fallback se il caricamento del suo `mcp.rb` fallisce.
 - Il modulo in `mcp.rb` DEVE essere `PluginName::Mcp` (`extend RedmineMcp::ExtensionApi`): Zeitwerk deriva il nome dal file.
 - Prima della registrazione DOVREBBE verificare `mcp_extension_enabled?` — dipendenza hard da `redmine_mcp` nel gemspec non è richiesta.
 - Usare `register_tool_once` per la registrazione affinché il reload non duplichi lo strumento.

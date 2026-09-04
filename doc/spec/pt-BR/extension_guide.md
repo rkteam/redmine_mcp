@@ -387,7 +387,39 @@ Se a extensão é requerida do `after_initialize` de um plugin antes de `redmine
 
 `redmine_mcp` busca automaticamente o arquivo de extensão nos caminhos suportados quando o Redmine inicia.
 
-Verifique `redmine_mcp` apenas no ponto de entrada `mcp.rb` (geralmente `lib/<plugin>.rb` ou `after_initialize` do loader do plugin). Arquivos carregados apenas de `mcp.rb` (`mcp_tools.rb`, `mcp_tools/*.rb`, etc.) não devem repetir as mesmas verificações.
+Duas variantes de integração:
+
+1. **Extensão em plugin de terceiros** — `lib/<...>/mcp.rb` no diretório do plugin alvo (ver «Início rápido»).
+2. **Integração integrada em `redmine_mcp`** — `lib/redmine_mcp/extensions/<plugin.id>.rb` para casos em que o plugin de terceiros não pode ser modificado. O arquivo registra tools/resources/prompts pelo mesmo `RedmineMcp::ExtensionApi`. Se o plugin alvo já tem seu próprio `mcp.rb`, a integração integrada é usada apenas quando a carga desse arquivo falha.
+
+Exemplo de integração integrada:
+
+```ruby
+module RedmineMcp
+  module Extensions
+    module AdvancedSearch
+      extend RedmineMcp::ExtensionApi
+
+      plugin_id :advanced_search
+
+      if mcp_extension_enabled?
+        register_tool_once(
+          name: 'semantic_search_issues',
+          description: 'Semantic search for issues.',
+          input_schema: {type: 'object', properties: {}},
+          output_schema: RedmineMcp::SchemaNormalizer.envelope_output(type: 'object', properties: {}),
+          permission: :view_issues,
+          handler: ->(_args, _context) { {} }
+        )
+      end
+    end
+  end
+end
+```
+
+O código auxiliar da integração pode ficar em `lib/redmine_mcp/extensions/<plugin_id>/` e ser importado com `require` explícito do arquivo principal.
+
+Verifique `redmine_mcp` apenas no ponto de entrada `mcp.rb` (geralmente `lib/<plugin>.rb` ou `after_initialize` do loader do plugin). Arquivos carregados apenas de `mcp.rb` (`mcp_tools.rb`, `mcp_tools/*.rb`, etc.) não devem repetir as mesmas verificações. Para integrações integradas em `redmine_mcp`, não é necessária verificação separada no ponto de entrada: o arquivo é carregado apenas pelo `ExtensionLoader`.
 
 Não chame `ExtensionLoader.load_plugin_extension` manualmente de um plugin de terceiros: `ExtensionLoader` é mecanismo interno de `redmine_mcp`. Um `require` condicional do seu `mcp.rb` é suficiente; se a ordem de carga de plugins impediu esse `require`, o `redmine_mcp` `ExtensionLoader` padrão age como fallback.
 
@@ -404,8 +436,8 @@ end
 A extensão é registrada apenas se:
 
 - MCP está habilitado nas configurações de `redmine_mcp`;
-- o arquivo `mcp.rb` é encontrado;
-- o módulo `<PluginName>::Mcp` em `mcp.rb` carrega corretamente;
+- o arquivo de extensão é encontrado (`mcp.rb` no plugin ou `lib/redmine_mcp/extensions/<plugin.id>.rb` em `redmine_mcp`, com prioridade do `mcp.rb` do plugin);
+- o módulo de extensão carrega corretamente;
 - a extensão não está desabilitada na lista `MCP extensions`.
 
 Após instalar nova extensão ou alterar `mcp.rb`, o Redmine geralmente precisa de reinício. O cliente MCP pode precisar reconectar. Em algumas aplicações, como Cursor, recarregar o servidor MCP não é suficiente para pegar novas ferramentas: se não aparecem, reinicie completamente a aplicação.
@@ -458,7 +490,7 @@ Testes automatizados mínimos para ferramenta de extensão somente leitura:
 
 | Problema | O que verificar |
 |---|---|
-| Extensão não carregou | caminho de `mcp.rb`, nome do módulo `Mcp`, se MCP está habilitado, log Rails |
+| Extensão não carregou | caminho de `mcp.rb` ou `lib/redmine_mcp/extensions/<plugin.id>.rb`, nome do módulo, se MCP está habilitado, se a extensão está habilitada nas configurações, erros no log Rails |
 | Ferramenta/recurso/prompt não apareceu | se `plugin_id` está definido, se extensão está desabilitada, colisões de nome ou URI, se usuário tem permissões necessárias |
 | Alterações não apareceram após edições | reinicie Redmine; em Cursor e clientes similares, recarregar servidor MCP pode não pegar novas ferramentas — reinicie completamente a aplicação |
 | `extend_tool` não funciona | se ferramenta base está registrada, se `extra_params` conflita com schema existente |

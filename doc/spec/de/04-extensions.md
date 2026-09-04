@@ -21,10 +21,14 @@ Einen einheitlichen Ansatz zur Integration von Redmine-Plugins mit AI bereitstel
 ### Automatische Erkennung
 
 - Beim Redmine-Start (wenn MCP aktiviert ist) prüft das System alle installierten Plugins.
-- Ein Plugin gilt als MCP-Erweiterung, wenn es eine `mcp.rb`-Datei an einem dieser Pfade enthält:
-  - `lib/<plugin.id>/mcp.rb`;
-  - `lib/<plugin directory basename>/mcp.rb`;
-  - `lib/<plugin.id without redmine_ prefix>/mcp.rb`, wenn der Identifikator mit `redmine_` beginnt (typisches Schema wie `redmine_advanced_checklists` → `lib/advanced_checklists/mcp.rb`).
+- Ein Plugin gilt als MCP-Erweiterung, wenn eine dieser Quellen gefunden wird:
+  - **Erweiterung im Plugin selbst** — `mcp.rb` an einem dieser Pfade:
+    - `lib/<plugin.id>/mcp.rb`;
+    - `lib/<plugin directory basename>/mcp.rb`;
+    - `lib/<plugin.id without redmine_ prefix>/mcp.rb`, wenn der Identifikator mit `redmine_` beginnt (typisches Schema wie `redmine_advanced_checklists` → `lib/advanced_checklists/mcp.rb`);
+  - **eingebaute Integration in `redmine_mcp`** — Datei `lib/redmine_mcp/extensions/<plugin.id>.rb` im Plugin `redmine_mcp`, wenn das Ziel-Plugin installiert ist.
+- Existieren beide Quellen für ein Plugin, wird zuerst die eigene Erweiterung des Plugins geladen. Die eingebaute Integration dient nur als Fallback, wenn das Laden von `mcp.rb` fehlschlägt. Bei erfolgreichem Laden von `mcp.rb` wird die eingebaute Integration nicht geladen und registriert tools/resources/prompts nicht erneut.
+- Eine eingebaute Integration nutzt dieselbe Extension API wie `mcp.rb` eines Drittanbieter-Plugins; es gibt keinen separaten Registrierungsmechanismus.
 - Das Plugin `redmine_mcp` lädt sich nicht selbst als Erweiterung.
 - Plugins mit deaktivierter MCP-Erweiterungs-Checkbox in den Einstellungen werden übersprungen.
 - Ein Fehler in der Erweiterung eines Plugins blockiert das Laden anderer nicht, einschließlich Syntaxfehler in der Erweiterungsdatei.
@@ -99,7 +103,7 @@ Die Ruby-API-Methodenliste und Codebeispiele stehen im Plugin-README und in [mcp
 
 ## Randfälle
 
-- Ein Plugin ohne Erweiterungsdatei wird ignoriert.
+- Ein Plugin ohne Erweiterungsdatei und ohne eingebaute Integration wird ignoriert.
 - Existiert eine Erweiterungsdatei, schlägt aber `require` fehl — Log-Eintrag, Erweiterung gilt nicht als geladen; Tool-Registrierung ist Nebeneffekt eines erfolgreichen `require`.
 - Versuch, ein nicht existierendes Tool zu erweitern — Fehler bei der Erweiterungsregistrierung.
 - Ein Plugin mit deaktivierter MCP-Erweiterungs-Checkbox in den Einstellungen wird nicht geladen, auch wenn die Erweiterungsdatei existiert.
@@ -117,6 +121,8 @@ Die Ruby-API-Methodenliste und Codebeispiele stehen im Plugin-README und in [mcp
 8. Resource- und Prompt-Discovery mit leeren Argumenten bleibt verfügbar, wenn die Berechtigung in mindestens einem Projekt existiert.
 9. Ein Plugin mit `plugin.id` wie `redmine_*` und Datei `lib/<id without redmine_ prefix>/mcp.rb` gilt als MCP-integriert und erscheint in den MCP-Erweiterungseinstellungen.
 10. Ein vorgangsbezogenes Tool mit Modulanforderung ist nicht in `tools/list` für einen Benutzer ohne sichtbares Projekt mit diesem Modul, auch wenn er die Berechtigung in einem anderen Projekt hat.
+11. Ein Plugin ohne eigenes `mcp.rb`, aber mit installiertem Ziel-Plugin und Datei `lib/redmine_mcp/extensions/<plugin.id>.rb` in `redmine_mcp`, gilt als MCP-integriert und erscheint in den MCP-Erweiterungseinstellungen.
+12. Hat ein Plugin sowohl ein eigenes `mcp.rb` als auch eine eingebaute Integration in `redmine_mcp`, sind bei erfolgreichem Laden von `mcp.rb` nur dessen tools/resources/prompts verfügbar; schlägt das Laden von `mcp.rb` fehl, versucht der Loader die eingebaute Integration.
 
 ## Erweiterungsbeispiele
 

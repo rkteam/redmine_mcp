@@ -2,15 +2,15 @@
 
 [Site web](https://redmine-kanban.com/)
 
-[Deutsch](../de/README.md) | [English](../en/README.md) | [Español](../es/README.md) | Français | [Italiano](../it/README.md) | [日本語](../ja/README.md) | [한국어](../ko/README.md) | [Polski](../pl/README.md) | [Português (Brasil)](../pt-BR/README.md) | [Русский](../ru/README.md) | [中文](../zh/README.md)
+[Deutsch](../de/README.md) | [English](../../../README.md) | [Español](../es/README.md) | Français | [Italiano](../it/README.md) | [日本語](../ja/README.md) | [한국어](../ko/README.md) | [Polski](../pl/README.md) | [Português (Brasil)](../pt-BR/README.md) | [Русский](../ru/README.md) | [中文](../zh/README.md)
 
-Un serveur MCP (Model Context Protocol) au sein de Redmine. Il permet aux clients IA de travailler avec les tickets, les projets et les utilisateurs via les permissions Redmine standard. D'autres plugins peuvent ajouter leurs propres outils, ressources, prompts et capacités sans modifier ce plugin.
+Un serveur MCP (Model Context Protocol) au sein de Redmine. Il permet aux clients IA de travailler avec les tickets, les projets et les utilisateurs via les permissions Redmine standard. D'autres plugins peuvent ajouter leurs propres outils, ressources, prompts et capacités sans modifier ce plugin. Pour les plugins tiers qui ne peuvent pas être modifiés, `redmine_mcp` peut fournir des intégrations MCP intégrées dans `lib/redmine_mcp/extensions/`.
 
 ## Prérequis
 
 | Composant | Version |
 |---|---|
-| Redmine | Redmine 6.0+ (testé : 6.0–6.1) |
+| Redmine | Redmine 6.0–7.0 |
 | MCP protocol | 2025-11-25 |
 | Ruby MCP SDK (`mcp`) | 0.23.x |
 
@@ -316,9 +316,13 @@ L'accès aux données est appliqué via les permissions Redmine standard et les 
 
 Tout plugin Redmine installé peut ajouter ses propres outils MCP et, si nécessaire, enregistrer des ressources, des prompts et des capacités.
 
+Pour les plugins qui ne peuvent pas être modifiés, les intégrations intégrées se trouvent dans `redmine_mcp/lib/redmine_mcp/extensions/` et s'enregistrent via la même Extension API.
+
 Guide détaillé : [extension_guide.md](extension_guide.md).
 
 Pour le développement assisté par IA dans Cursor ou des agents similaires, copiez le répertoire skill fourni [`redmine-mcp-plugin-integration`](../../skills/redmine-mcp-plugin-integration/) dans le dossier skills de votre agent, ou utilisez-le comme base pour votre propre skill.
+
+Lors de l'invocation du skill, précisez dans votre prompt si l'intégration se fait via le plugin cible (`mcp.rb`) ou comme intégration intégrée dans `redmine_mcp` (`lib/redmine_mcp/extensions/`). Si vous ne précisez pas, l'agent choisira le chemin.
 
 ## Journalisation
 
@@ -339,7 +343,7 @@ Les messages sont écrits dans le journal Rails standard avec le préfixe `[redm
 | HTTP 403 (`Host`/`Origin`) | **Nom d'hôte et chemin** ne correspond pas à l'URL publique de Redmine ; le proxy inverse ne transmet pas le `Host` d'origine ; l'URL MCP dans le client ne correspond pas — le transport rejette les hôtes inconnus (protection DNS rebinding) |
 | L'outil n'est pas visible dans `tools/list` | Permissions requises manquantes ; l'extension qui fournit l'outil est désactivée |
 | Les nouveaux outils n'ont pas apparu après un rechargement MCP | Dans Cursor et clients similaires, recharger le serveur peut ne pas actualiser la liste d'outils — redémarrez complètement l'application |
-| L'extension ne se charge pas | Fichier `lib/.../mcp.rb` manquant ; le module ne fait pas `extend RedmineMcp::ExtensionApi` ; assurez-vous que la case de l'extension est activée sous **Extensions MCP** ; en cas d'erreur dans le fichier, consultez le journal |
+| L'extension ne se charge pas | Fichier `lib/.../mcp.rb` ou `lib/redmine_mcp/extensions/<plugin.id>.rb` manquant ; le module ne fait pas `extend RedmineMcp::ExtensionApi` ; assurez-vous que la case de l'extension est activée sous **Extensions MCP** ; en cas d'erreur dans le fichier, consultez le journal |
 | `Issue not found` / `Project not found` | Le ticket ou le projet n'est pas visible pour l'utilisateur actuel selon les règles de visibilité Redmine |
 
 ## Licence

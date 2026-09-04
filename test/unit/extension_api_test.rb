@@ -22,6 +22,12 @@ require 'timeout'
 require File.expand_path('../test_helper', __dir__)
 
 class RedmineMcpExtensionApiTest < RedmineMcpTestCase
+  module ExtensionLoaderMarker
+    class << self
+      attr_accessor :value
+    end
+  end
+
   MCP_FILE_NAME = 'mcp.rb'
   MCP_FILE_STUB = "# frozen_string_literal: true\n"
   TEST_OUTPUT_SCHEMA = RedmineMcp::SchemaNormalizer.envelope_output(
@@ -462,5 +468,116 @@ class RedmineMcpExtensionApiTest < RedmineMcpTestCase
   ensure
     Object.send(:remove_const, :RedmineMcpDiscFoo) if Object.const_defined?(:RedmineMcpDiscFoo)
     FileUtils.remove_entry(dir) if dir
+  end
+
+  test 'extension_available? is true when only a built-in extension file exists' do
+    plugin = plugin_struct(:redmine_mcp_loader_builtin_only)
+    with_extension_loader_extensions do |extensions_dir|
+      write_builtin_extension(extensions_dir, plugin.id, marker: :builtin_only)
+
+      assert RedmineMcp::ExtensionLoader.extension_available?(plugin)
+    end
+  ensure
+    FileUtils.remove_entry(plugin.directory) if plugin
+  end
+
+  test 'load_plugin_extension loads built-in extension when plugin mcp.rb is missing' do
+    plugin = plugin_struct(:redmine_mcp_loader_builtin_only)
+    @extension_loader_plugin_dir = plugin.directory
+    with_extension_loader_extensions do |extensions_dir|
+      write_builtin_extension(extensions_dir, plugin.id, marker: :builtin_only)
+
+      assert RedmineMcp::ExtensionLoader.load_plugin_extension(plugin)
+      assert_equal(:builtin_only, extension_loader_marker)
+    end
+  ensure
+    reset_extension_loader_marker!
+    FileUtils.remove_entry(@extension_loader_plugin_dir) if @extension_loader_plugin_dir
+    @extension_loader_plugin_dir = nil
+  end
+
+  test 'load_plugin_extension prefers plugin mcp.rb over built-in extension' do
+    plugin = plugin_struct(:redmine_mcp_loader_both)
+    @extension_loader_plugin_dir = plugin.directory
+    with_extension_loader_extensions do |extensions_dir|
+      write_plugin_extension(plugin, marker: :plugin)
+      write_builtin_extension(extensions_dir, plugin.id, marker: :builtin)
+
+      assert RedmineMcp::ExtensionLoader.load_plugin_extension(plugin)
+      assert_equal(:plugin, extension_loader_marker)
+    end
+  ensure
+    reset_extension_loader_marker!
+    FileUtils.remove_entry(@extension_loader_plugin_dir) if @extension_loader_plugin_dir
+    @extension_loader_plugin_dir = nil
+  end
+
+  test 'load_plugin_extension falls back to built-in extension when plugin mcp.rb fails' do
+    plugin = plugin_struct(:redmine_mcp_loader_fallback)
+    @extension_loader_plugin_dir = plugin.directory
+    with_extension_loader_extensions do |extensions_dir|
+      write_plugin_extension(plugin, broken: true)
+      write_builtin_extension(extensions_dir, plugin.id, marker: :builtin_fallback)
+
+      assert RedmineMcp::ExtensionLoader.load_plugin_extension(plugin)
+      assert_equal(:builtin_fallback, extension_loader_marker)
+    end
+  ensure
+    reset_extension_loader_marker!
+    FileUtils.remove_entry(@extension_loader_plugin_dir) if @extension_loader_plugin_dir
+    @extension_loader_plugin_dir = nil
+  end
+
+  test 'load_plugin_extension returns false when neither plugin mcp.rb nor built-in extension exists' do
+    dir = Dir.mktmpdir
+    plugin = plugin_struct(:redmine_mcp_loader_missing, directory: dir)
+
+    with_extension_loader_extensions do |_extensions_dir|
+      assert_equal(false, RedmineMcp::ExtensionLoader.extension_available?(plugin))
+      assert_equal(false, RedmineMcp::ExtensionLoader.load_plugin_extension(plugin))
+    end
+  ensure
+    FileUtils.remove_entry(dir) if dir
+  end
+
+  def plugin_struct(id, directory: nil)
+    directory ||= Dir.mktmpdir
+    Struct.new(:id, :directory).new(id, directory)
+  end
+
+  def with_extension_loader_extensions
+    extensions_dir = Dir.mktmpdir
+    RedmineMcp::ExtensionLoader.stubs(:extensions_directory).returns(extensions_dir)
+    yield extensions_dir
+  ensure
+    RedmineMcp::ExtensionLoader.unstub(:extensions_directory) if RedmineMcp::ExtensionLoader.respond_to?(:unstub)
+    FileUtils.remove_entry(extensions_dir) if extensions_dir && Dir.exist?(extensions_dir)
+  end
+
+  def write_builtin_extension(extensions_dir, plugin_id, marker:)
+    File.write(
+      File.join(extensions_dir, "#{plugin_id}.rb"),
+      <<~RUBY
+        RedmineMcpExtensionApiTest::ExtensionLoaderMarker.value = #{marker.inspect}
+      RUBY
+    )
+  end
+
+  def write_plugin_extension(plugin, marker: nil, broken: false)
+    FileUtils.mkdir_p(File.join(plugin.directory, 'lib', plugin.id.to_s))
+    content = if broken
+                "module Broken\n def\n"
+              else
+                "RedmineMcpExtensionApiTest::ExtensionLoaderMarker.value = #{marker.inspect}\n"
+              end
+    File.write(File.join(plugin.directory, 'lib', plugin.id.to_s, MCP_FILE_NAME), content)
+  end
+
+  def extension_loader_marker
+    ExtensionLoaderMarker.value
+  end
+
+  def reset_extension_loader_marker!
+    ExtensionLoaderMarker.value = nil
   end
 end

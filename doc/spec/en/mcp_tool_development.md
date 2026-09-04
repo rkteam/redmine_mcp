@@ -1822,7 +1822,9 @@ If the model can fulfill intent with separate tool without guessing `action` —
 
 ### 18.2. Registration
 
-- Extension file loads at Redmine start: `lib/<plugin_id>/mcp.rb` (see `ExtensionLoader`).
+- The extension file loads at Redmine start (see `ExtensionLoader`):
+  - in a third-party plugin — `lib/<plugin_id>/mcp.rb` (and other supported paths, see [04-extensions.md](04-extensions.md));
+  - in a built-in `redmine_mcp` integration — `lib/redmine_mcp/extensions/<plugin.id>.rb` when the target plugin has no own `mcp.rb`, or as a fallback when loading the plugin's `mcp.rb` fails.
 - Module in `mcp.rb` MUST be `PluginName::Mcp` (`extend RedmineMcp::ExtensionApi`): Zeitwerk derives name from file.
 - Before registration SHOULD check `mcp_extension_enabled?` — hard dependency on `redmine_mcp` in gemspec is not required.
 - Use `register_tool_once` for registration so reload does not duplicate tool.

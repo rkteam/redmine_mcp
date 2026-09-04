@@ -387,7 +387,39 @@ If the extension is required from a plugin's `after_initialize` before `redmine_
 
 `redmine_mcp` automatically looks for the extension file in the supported paths when Redmine starts.
 
-Check for `redmine_mcp` only at the `mcp.rb` entry point (usually `lib/<plugin>.rb` or the plugin loader's `after_initialize`). Files loaded only from `mcp.rb` (`mcp_tools.rb`, `mcp_tools/*.rb`, etc.) must not repeat the same checks.
+Two integration variants:
+
+1. **Extension in a third-party plugin** — `lib/<...>/mcp.rb` in the target plugin directory (see “Quick start”).
+2. **Built-in integration in `redmine_mcp`** — `lib/redmine_mcp/extensions/<plugin.id>.rb` for cases where the third-party plugin cannot be modified. The file registers tools/resources/prompts through the same `RedmineMcp::ExtensionApi`. If the target plugin already has its own `mcp.rb`, the built-in integration is used only when loading that file fails.
+
+Built-in integration example:
+
+```ruby
+module RedmineMcp
+  module Extensions
+    module AdvancedSearch
+      extend RedmineMcp::ExtensionApi
+
+      plugin_id :advanced_search
+
+      if mcp_extension_enabled?
+        register_tool_once(
+          name: 'semantic_search_issues',
+          description: 'Semantic search for issues.',
+          input_schema: {type: 'object', properties: {}},
+          output_schema: RedmineMcp::SchemaNormalizer.envelope_output(type: 'object', properties: {}),
+          permission: :view_issues,
+          handler: ->(_args, _context) { {} }
+        )
+      end
+    end
+  end
+end
+```
+
+Helper code for an integration may live in `lib/redmine_mcp/extensions/<plugin_id>/` and be loaded through an explicit `require` from the main file.
+
+Check for `redmine_mcp` only at the `mcp.rb` entry point (usually `lib/<plugin>.rb` or the plugin loader's `after_initialize`). Files loaded only from `mcp.rb` (`mcp_tools.rb`, `mcp_tools/*.rb`, etc.) must not repeat the same checks. For built-in integrations in `redmine_mcp`, no separate entry-point check is needed: the file is loaded only by `ExtensionLoader`.
 
 Do not call `ExtensionLoader.load_plugin_extension` manually from a third-party plugin: `ExtensionLoader` is an internal `redmine_mcp` mechanism. A conditional `require` of your `mcp.rb` is enough; if plugin load order prevented that `require`, the standard `redmine_mcp` `ExtensionLoader` acts as a fallback.
 
@@ -404,8 +436,8 @@ end
 The extension is registered only if:
 
 - MCP is enabled in `redmine_mcp` settings;
-- the `mcp.rb` file is found;
-- the `<PluginName>::Mcp` module in `mcp.rb` loads correctly;
+- an extension file is found (`mcp.rb` in the plugin or `lib/redmine_mcp/extensions/<plugin.id>.rb` in `redmine_mcp`, with the plugin's own `mcp.rb` taking priority);
+- the extension module loads correctly;
 - the extension is not disabled in the `MCP extensions` list.
 
 After installing a new extension or changing `mcp.rb`, Redmine usually needs a restart. The MCP client may then need to reconnect. In some applications, such as Cursor, reloading the MCP server is not enough to pick up new tools: if they do not appear, fully restart the application.
@@ -458,7 +490,7 @@ Minimum automated tests for a read-only extension tool:
 
 | Problem | What to check |
 |---|---|
-| Extension did not load | `mcp.rb` path, module name `Mcp`, whether MCP is enabled, Rails log |
+| Extension did not load | `mcp.rb` or `lib/redmine_mcp/extensions/<plugin.id>.rb` path, module name, whether MCP is enabled, whether the extension is enabled in settings, errors in the Rails log |
 | Tool/resource/prompt did not appear | whether `plugin_id` is set, whether the extension is disabled, name or URI collisions, whether the user has the required permissions |
 | Changes did not appear after edits | restart Redmine; in Cursor and similar clients, reloading the MCP server may not pick up new tools — fully restart the application |
 | `extend_tool` does not work | whether the base tool is registered, whether `extra_params` conflict with the existing schema |

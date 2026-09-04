@@ -387,7 +387,39 @@ Jeśli rozszerzenie jest require'owane z `after_initialize` wtyczki przed rejest
 
 `redmine_mcp` automatycznie szuka pliku rozszerzenia w obsługiwanych ścieżkach przy starcie Redmine.
 
-Sprawdzaj `redmine_mcp` tylko w punkcie wejścia `mcp.rb` (zwykle `lib/<plugin>.rb` lub `after_initialize` loadera wtyczki). Pliki ładowane tylko z `mcp.rb` (`mcp_tools.rb`, `mcp_tools/*.rb` itd.) nie powinny powtarzać tych samych kontroli.
+Dwa warianty integracji:
+
+1. **Rozszerzenie we wtyczce zewnętrznej** — `lib/<...>/mcp.rb` w katalogu wtyczki docelowej (zob. «Szybki start»).
+2. **Wbudowana integracja w `redmine_mcp`** — `lib/redmine_mcp/extensions/<plugin.id>.rb` dla przypadków, gdy wtyczki zewnętrznej nie można modyfikować. Plik rejestruje tools/resources/prompts przez ten sam `RedmineMcp::ExtensionApi`. Jeśli wtyczka docelowa ma już własny `mcp.rb`, wbudowana integracja jest używana tylko gdy ładowanie tego pliku się nie powiedzie.
+
+Przykład wbudowanej integracji:
+
+```ruby
+module RedmineMcp
+  module Extensions
+    module AdvancedSearch
+      extend RedmineMcp::ExtensionApi
+
+      plugin_id :advanced_search
+
+      if mcp_extension_enabled?
+        register_tool_once(
+          name: 'semantic_search_issues',
+          description: 'Semantic search for issues.',
+          input_schema: {type: 'object', properties: {}},
+          output_schema: RedmineMcp::SchemaNormalizer.envelope_output(type: 'object', properties: {}),
+          permission: :view_issues,
+          handler: ->(_args, _context) { {} }
+        )
+      end
+    end
+  end
+end
+```
+
+Kod pomocniczy integracji można umieścić w `lib/redmine_mcp/extensions/<plugin_id>/` i importować przez jawny `require` z pliku głównego.
+
+Sprawdzaj `redmine_mcp` tylko w punkcie wejścia `mcp.rb` (zwykle `lib/<plugin>.rb` lub `after_initialize` loadera wtyczki). Pliki ładowane tylko z `mcp.rb` (`mcp_tools.rb`, `mcp_tools/*.rb` itd.) nie powinny powtarzać tych samych kontroli. Dla wbudowanych integracji w `redmine_mcp` osobna kontrola w punkcie wejścia nie jest potrzebna: plik ładuje tylko `ExtensionLoader`.
 
 Nie wywołuj `ExtensionLoader.load_plugin_extension` ręcznie z wtyczki zewnętrznej: `ExtensionLoader` to wewnętrzny mechanizm `redmine_mcp`. Warunkowy `require` twojego `mcp.rb` wystarczy; jeśli kolejność ładowania wtyczek uniemożliwiła ten `require`, standardowy `redmine_mcp` `ExtensionLoader` działa jako fallback.
 
@@ -404,8 +436,8 @@ end
 Rozszerzenie jest rejestrowane tylko, jeśli:
 
 - MCP jest włączone w ustawieniach `redmine_mcp`;
-- plik `mcp.rb` został znaleziony;
-- moduł `<PluginName>::Mcp` w `mcp.rb` ładuje się poprawnie;
+- znaleziono plik rozszerzenia (`mcp.rb` we wtyczce lub `lib/redmine_mcp/extensions/<plugin.id>.rb` w `redmine_mcp`, z priorytetem własnego `mcp.rb`);
+- moduł rozszerzenia ładuje się poprawnie;
 - rozszerzenie nie jest wyłączone na liście `MCP extensions`.
 
 Po zainstalowaniu nowego rozszerzenia lub zmianie `mcp.rb` zwykle wymagany jest restart Redmine. Klient MCP może wtedy wymagać ponownego połączenia. W niektórych aplikacjach, takich jak Cursor, przeładowanie serwera MCP nie wystarczy, aby zobaczyć nowe narzędzia: jeśli się nie pojawiają, w pełni zrestartuj aplikację.
@@ -458,7 +490,7 @@ Minimalne testy automatyczne dla narzędzia rozszerzenia tylko do odczytu:
 
 | Problem | Co sprawdzić |
 |---|---|
-| Rozszerzenie się nie załadowało | ścieżka `mcp.rb`, nazwa modułu `Mcp`, czy MCP jest włączone, log Rails |
+| Rozszerzenie się nie załadowało | ścieżka `mcp.rb` lub `lib/redmine_mcp/extensions/<plugin.id>.rb`, nazwa modułu, czy MCP jest włączone, czy rozszerzenie jest włączone w ustawieniach, błędy w logu Rails |
 | Narzędzie/zasób/prompt się nie pojawił | czy ustawiono `plugin_id`, czy rozszerzenie jest wyłączone, kolizje nazw lub URI, czy użytkownik ma wymagane uprawnienia |
 | Zmiany nie pojawiły się po edycji | restart Redmine; w Cursor i podobnych klientach przeładowanie serwera MCP może nie wykryć nowych narzędzi — w pełni zrestartuj aplikację |
 | `extend_tool` nie działa | czy narzędzie bazowe jest zarejestrowane, czy `extra_params` kolidują z istniejącym schematem |

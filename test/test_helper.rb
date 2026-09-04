@@ -78,6 +78,64 @@ class RedmineMcpTestCase < ActiveSupport::TestCase
     end
   end
 
+  def invoke_registered_mcp_tool(tool_name, user:, args: {})
+    definition = mcp_registry.tool(tool_name)
+
+    assert definition, "tool not registered: #{tool_name}"
+
+    extensions = mcp_registry.tool_extensions(definition.full_name)
+    input_schema = RedmineMcp::ToolRunner.merge_schemas(definition, extensions)
+
+    limit_error = RedmineMcp::RequestLimits.check_before_call!(user: user, args: args)
+    return RedmineMcp::ToolResponse.from_handler_result(limit_error) if limit_error
+
+    unless definition.allowed_for?(user, args)
+      return RedmineMcp::ToolResponse.failure(
+        code: 'FORBIDDEN',
+        message: I18n.t(:error_mcp_permission_denied)
+      )
+    end
+
+    validation_error = RedmineMcp::InputValidator.validate(input_schema, args)
+    return validation_error if validation_error
+
+    if definition.mutating?
+      read_only_error = RedmineMcp::Core::ReadOnly.guard_write!
+      return RedmineMcp::ToolResponse.from_handler_result(read_only_error) if read_only_error
+    end
+
+    previous_user = User.current
+    User.current = user
+    begin
+      context = {user: user}
+      result = RedmineMcp::RequestLimits.call_with_timeout(enforce: definition.annotations[:read_only_hint]) do
+        RedmineMcp::ToolRunner.run(definition, extensions, args, context)
+      end
+      RedmineMcp::ToolResponse.from_handler_result(result)
+    ensure
+      User.current = previous_user
+    end
+  end
+
+  def ensure_additionals_extension_loaded!
+    return if @additionals_extension_loaded
+
+    skip('Additionals plugin is not installed') unless Redmine::Plugin.installed?(:additionals)
+
+    tool_name = 'redmine_additionals_set_issue_author'
+    unless mcp_registry.tool(tool_name)
+      plugin = Redmine::Plugin.find(:additionals)
+      RedmineMcp::ExtensionLoader.load_plugin_extension(plugin)
+    end
+
+    assert mcp_registry.tool(tool_name), "additionals extension tool not registered: #{tool_name}"
+    @additionals_extension_loaded = true
+  end
+
+  def grant_edit_issue_author!(role)
+    role.add_permission!(:edit_issue_author)
+  end
+
   def invoke_mcp_tool(tool_name, user:, args: {})
     definition = mcp_registry.tool(tool_name)
 

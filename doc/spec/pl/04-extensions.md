@@ -21,10 +21,14 @@ Zapewnić jednolite podejście do integracji wtyczek Redmine z AI bez duplikowan
 ### Automatyczne wykrywanie
 
 - Przy starcie Redmine (gdy MCP jest włączone) system sprawdza wszystkie zainstalowane wtyczki.
-- Wtyczka uznawana jest za posiadającą rozszerzenie MCP, jeśli zawiera plik `mcp.rb` w jednej z tych ścieżek:
-  - `lib/<plugin.id>/mcp.rb`;
-  - `lib/<plugin directory basename>/mcp.rb`;
-  - `lib/<plugin.id without redmine_ prefix>/mcp.rb`, jeśli identyfikator zaczyna się od `redmine_` (typowy schemat jak `redmine_advanced_checklists` → `lib/advanced_checklists/mcp.rb`).
+- Wtyczka uznawana jest za posiadającą rozszerzenie MCP, jeśli znaleziono jedno z tych źródeł:
+  - **rozszerzenie w samej wtyczce** — plik `mcp.rb` w jednej z tych ścieżek:
+    - `lib/<plugin.id>/mcp.rb`;
+    - `lib/<plugin directory basename>/mcp.rb`;
+    - `lib/<plugin.id without redmine_ prefix>/mcp.rb`, jeśli identyfikator zaczyna się od `redmine_` (typowy schemat jak `redmine_advanced_checklists` → `lib/advanced_checklists/mcp.rb`);
+  - **wbudowana integracja w `redmine_mcp`** — plik `lib/redmine_mcp/extensions/<plugin.id>.rb` we wtyczce `redmine_mcp`, gdy wtyczka docelowa jest zainstalowana.
+- Jeśli dla jednej wtyczki istnieją oba źródła, najpierw ładowane jest rozszerzenie samej wtyczki. Wbudowana integracja służy tylko jako fallback, gdy ładowanie jej `mcp.rb` się nie powiedzie. Gdy `mcp.rb` załaduje się poprawnie, wbudowana integracja nie jest ładowana i nie rejestruje ponownie tools/resources/prompts.
+- Wbudowana integracja używa tego samego Extension API co `mcp.rb` zewnętrznej wtyczki; nie ma osobnego mechanizmu rejestracji.
 - Wtyczka `redmine_mcp` nie ładuje samej siebie jako rozszerzenia.
 - Wtyczki z odznaczonym checkboxem rozszerzenia MCP w ustawieniach są pomijane.
 - Awaria rozszerzenia jednej wtyczki nie blokuje ładowania innych, w tym błędu składni w pliku rozszerzenia.
@@ -99,7 +103,7 @@ Lista metod Ruby API i przykłady kodu są w README wtyczki i w [mcp_tool_develo
 
 ## Przypadki brzegowe
 
-- Wtyczka bez pliku rozszerzenia jest ignorowana.
+- Wtyczka bez pliku rozszerzenia i bez wbudowanej integracji jest ignorowana.
 - Jeśli plik rozszerzenia istnieje, ale `require` się nie powiedzie — wpis w logu, rozszerzenie nie jest uznawane za załadowane; rejestracja narzędzi jest efektem ubocznym udanego `require`.
 - Próba rozszerzenia nieistniejącego narzędzia — błąd podczas rejestracji rozszerzenia.
 - Wtyczka z odznaczonym checkboxem rozszerzenia MCP w ustawieniach nie jest ładowana, nawet jeśli plik rozszerzenia istnieje.
@@ -117,6 +121,8 @@ Lista metod Ruby API i przykłady kodu są w README wtyczki i w [mcp_tool_develo
 8. Discovery zasobów i promptów z pustymi argumentami pozostaje dostępne, jeśli uprawnienie istnieje w co najmniej jednym projekcie.
 9. Wtyczka z `plugin.id` jak `redmine_*` i plikiem `lib/<id without redmine_ prefix>/mcp.rb` jest uznawana za posiadającą integrację MCP i pojawia się w ustawieniach rozszerzeń MCP.
 10. Narzędzie w zakresie zgłoszenia z wymaganiem modułu nie jest w `tools/list` dla użytkownika bez widocznego projektu z tym modułem, nawet jeśli ma uprawnienie w innym projekcie.
+11. Wtyczka bez własnego `mcp.rb`, ale z zainstalowaną wtyczką docelową i plikiem `lib/redmine_mcp/extensions/<plugin.id>.rb` w `redmine_mcp`, uznawana jest za posiadającą integrację MCP i pojawia się w ustawieniach rozszerzeń MCP.
+12. Jeśli wtyczka ma zarówno własny `mcp.rb`, jak i wbudowaną integrację w `redmine_mcp`, tools/resources/prompts z własnego `mcp.rb` wtyczki są dostępne w MCP po udanym załadowaniu; jeśli `require` `mcp.rb` się nie powiedzie, loader próbuje wbudowanej integracji.
 
 ## Przykłady rozszerzeń
 

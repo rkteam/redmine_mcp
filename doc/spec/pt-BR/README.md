@@ -2,15 +2,15 @@
 
 [Site](https://redmine-kanban.com/)
 
-[Deutsch](../de/README.md) | [English](../en/README.md) | [Español](../es/README.md) | [Français](../fr/README.md) | [Italiano](../it/README.md) | [日本語](../ja/README.md) | [한국어](../ko/README.md) | [Polski](../pl/README.md) | Português (Brasil) | [Русский](../ru/README.md) | [中文](../zh/README.md)
+[Deutsch](../de/README.md) | [English](../../../README.md) | [Español](../es/README.md) | [Français](../fr/README.md) | [Italiano](../it/README.md) | [日本語](../ja/README.md) | [한국어](../ko/README.md) | [Polski](../pl/README.md) | Português (Brasil) | [Русский](../ru/README.md) | [中文](../zh/README.md)
 
-Um servidor MCP (Model Context Protocol) dentro do Redmine. Permite que clientes de IA trabalhem com tarefas, projetos e usuários pelas permissões padrão do Redmine. Outros plugins podem adicionar suas próprias tools, resources, prompts e capabilities sem alterar este plugin.
+Um servidor MCP (Model Context Protocol) dentro do Redmine. Permite que clientes de IA trabalhem com tarefas, projetos e usuários pelas permissões padrão do Redmine. Outros plugins podem adicionar suas próprias tools, resources, prompts e capabilities sem alterar este plugin. Para plugins de terceiros que não podem ser modificados, `redmine_mcp` pode fornecer integrações MCP integradas em `lib/redmine_mcp/extensions/`.
 
 ## Requisitos
 
 | Componente | Versão |
 |---|---|
-| Redmine | Redmine 6.0+ (testado: 6.0–6.1) |
+| Redmine | Redmine 6.0–7.0 |
 | MCP protocol | 2025-11-25 |
 | Ruby MCP SDK (`mcp`) | 0.23.x |
 
@@ -316,9 +316,13 @@ O acesso a dados é aplicado pelas permissões padrão e regras de visibilidade 
 
 Qualquer plugin Redmine instalado pode adicionar suas próprias MCP tools e, se necessário, registrar resources, prompts e capabilities.
 
+Para plugins que não podem ser modificados, integrações integradas ficam em `redmine_mcp/lib/redmine_mcp/extensions/` e se registram pela mesma Extension API.
+
 Guia detalhado: [extension_guide.md](extension_guide.md).
 
 Para desenvolvimento assistido por IA no Cursor ou agentes similares, copie o diretório skill [`redmine-mcp-plugin-integration`](../../skills/redmine-mcp-plugin-integration/) para a pasta skills do seu agente, ou use-o como base para seu próprio skill.
+
+Ao invocar o skill, informe no prompt se a integração será via plugin alvo (`mcp.rb`) ou como integração embutida em `redmine_mcp` (`lib/redmine_mcp/extensions/`). Se não especificar, o agente escolherá o caminho.
 
 ## Logging
 
@@ -339,7 +343,7 @@ Mensagens são escritas no log Rails padrão com o prefixo `[redmine_mcp]`:
 | HTTP 403 (`Host`/`Origin`) | **Nome do host e caminho** não corresponde à URL pública do Redmine; reverse proxy não encaminha o `Host` original; URL MCP no cliente não corresponde — transport rejeita hosts desconhecidos (proteção DNS rebinding) |
 | Ferramenta não visível em `tools/list` | Permissões necessárias ausentes; extensão que fornece a ferramenta está desabilitada |
 | Novas tools não apareceram após reload do MCP | No Cursor e clientes similares, recarregar o servidor pode não atualizar a lista de ferramentas — reinicie completamente a aplicação |
-| Extensão não carrega | Falta `lib/.../mcp.rb`; módulo não faz `extend RedmineMcp::ExtensionApi`; certifique-se de que a checkbox da extensão está habilitada em **Extensões MCP**; se o arquivo tem erro, verifique o log |
+| Extensão não carrega | Falta `lib/.../mcp.rb` ou `lib/redmine_mcp/extensions/<plugin.id>.rb`; módulo não faz `extend RedmineMcp::ExtensionApi`; certifique-se de que a checkbox da extensão está habilitada em **Extensões MCP**; se o arquivo tem erro, verifique o log |
 | `Issue not found` / `Project not found` | A tarefa ou projeto não é visível ao usuário atual pelas regras de visibilidade do Redmine |
 
 ## Licença

@@ -21,10 +21,14 @@ MCP 서버를 중복하거나 Redmine MCP 코드를 변경하지 않고 Redmine 
 ### 자동 검색
 
 - Redmine 시작 시(MCP가 활성화된 경우) 시스템은 설치된 모든 플러그인을 확인합니다.
-- 다음 경로 중 하나에 `mcp.rb` 파일이 있으면 플러그인은 MCP 확장이 있는 것으로 간주됩니다.
-  - `lib/<plugin.id>/mcp.rb`;
-  - `lib/<plugin directory basename>/mcp.rb`;
-  - 식별자가 `redmine_`로 시작하는 경우 `lib/<plugin.id without redmine_ prefix>/mcp.rb`(일반적인 방식: `redmine_advanced_checklists` → `lib/advanced_checklists/mcp.rb`).
+- 다음 소스 중 하나가 발견되면 플러그인은 MCP 확장이 있는 것으로 간주됩니다:
+  - **플러그인 자체의 확장** — 다음 경로 중 하나에 있는 `mcp.rb` 파일:
+    - `lib/<plugin.id>/mcp.rb`;
+    - `lib/<plugin directory basename>/mcp.rb`;
+    - 식별자가 `redmine_`로 시작하는 경우 `lib/<plugin.id without redmine_ prefix>/mcp.rb`(일반적인 방식: `redmine_advanced_checklists` → `lib/advanced_checklists/mcp.rb`);
+  - **`redmine_mcp` 내장 통합** — 대상 플러그인이 설치된 경우 `redmine_mcp` 플러그인 내 `lib/redmine_mcp/extensions/<plugin.id>.rb` 파일.
+- 하나의 플러그인에 두 소스가 모두 있으면 플러그인 자체 확장을 먼저 로드합니다. 내장 통합은 해당 `mcp.rb`의 `require`가 실패한 경우에만 fallback으로 사용됩니다. `mcp.rb`가 성공적으로 로드되면 내장 통합은 로드되지 않으며 tools/resources/prompts를 다시 등록하지 않습니다.
+- 내장 통합은 서드파티 `mcp.rb`와 동일한 Extension API를 사용합니다. 별도의 등록 메커니즘은 없습니다.
 - `redmine_mcp` 플러그인은 확장으로 자신을 로드하지 않습니다.
 - 설정에서 MCP 확장 체크박스가 해제된 플러그인은 건너뜁니다.
 - 하나의 플러그인 확장 실패는 확장 파일의 구문 오류를 포함하여 다른 플러그인 로드를 차단하지 않습니다.
@@ -99,7 +103,7 @@ Ruby API 메서드 목록과 코드 예제는 플러그인 README 및 [mcp_tool_
 
 ## 엣지 케이스
 
-- 확장 파일이 없는 플러그인은 무시됩니다.
+- 확장 파일과 내장 통합이 모두 없는 플러그인은 무시됩니다.
 - 확장 파일이 있지만 `require`가 실패하면 — 로그 항목, 확장은 로드된 것으로 간주되지 않음; 도구 등록은 성공적인 `require`의 부수 효과.
 - 존재하지 않는 도구 확장 시도 — 확장 등록 중 오류.
 - 설정에서 MCP 확장 체크박스가 해제된 플러그인은 확장 파일이 있어도 로드되지 않습니다.
@@ -117,6 +121,8 @@ Ruby API 메서드 목록과 코드 예제는 플러그인 README 및 [mcp_tool_
 8. 빈 인수로 리소스 및 prompt discovery는 최소 하나의 프로젝트에서 권한이 있으면 계속 사용 가능.
 9. `redmine_*` 같은 `plugin.id`와 `lib/<id without redmine_ prefix>/mcp.rb` 파일이 있는 플러그인 — MCP 통합이 있는 것으로 간주되며 MCP 확장 설정에 나타남.
 10. 모듈 요구사항이 있는 이슈 범위 도구 — 다른 프로젝트에서 권한이 있어도 해당 모듈이 있는 보이는 프로젝트가 없으면 사용자의 `tools/list`에 없음.
+11. 자체 `mcp.rb`가 없지만 대상 플러그인이 설치되어 있고 `redmine_mcp`에 `lib/redmine_mcp/extensions/<plugin.id>.rb` 파일이 있는 플러그인은 MCP 통합이 있는 것으로 간주되며 MCP 확장 설정에 표시됩니다.
+12. 플러그인에 자체 `mcp.rb`와 `redmine_mcp`의 내장 통합이 모두 있으면 `mcp.rb`가 성공적으로 로드될 때 해당 tools/resources/prompts가 MCP에서 사용 가능합니다. `mcp.rb` 로드가 실패하면 로더는 내장 통합을 시도합니다.
 
 ## 확장 예제
 

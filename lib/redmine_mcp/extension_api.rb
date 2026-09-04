@@ -24,6 +24,14 @@ module RedmineMcp
     PROMPT_OPTIONS = %i[title description arguments permission meta project_resolver].freeze
     RESOURCE_OPTIONS = %i[title description mime_type permission project_resolver].freeze
     INTERNAL_REQUEST_METHODS = %w[GET POST PUT PATCH DELETE].freeze
+    ISSUE_ID_SCHEMA = RedmineMcp::Core::Helpers::ISSUE_ID_SCHEMA
+    USER_ID_SCHEMA = RedmineMcp::Core::Helpers::USER_ID_SCHEMA
+    USER_REF_SCHEMA = RedmineMcp::Core::Helpers::USER_REF_SCHEMA
+    EXPECTED_UPDATED_AT_SCHEMA = RedmineMcp::Core::Helpers::EXPECTED_UPDATED_AT_SCHEMA
+    READ_ONLY_ANNOTATIONS = RedmineMcp::Core::Helpers::READ_ONLY_ANNOTATIONS
+    CREATE_ANNOTATIONS = RedmineMcp::Core::Helpers::CREATE_ANNOTATIONS
+    UPDATE_ANNOTATIONS = RedmineMcp::Core::Helpers::UPDATE_ANNOTATIONS
+    DELETE_ANNOTATIONS = RedmineMcp::Core::Helpers::DELETE_ANNOTATIONS
 
     def self.extended(base)
       base.extend(PluginHelpers)
@@ -208,6 +216,30 @@ module RedmineMcp
 
     def internal_request_error?(result)
       InternalRequest.error_response?(result)
+    end
+
+    def envelope_output(data_schema)
+      RedmineMcp::SchemaNormalizer.envelope_output(data_schema)
+    end
+
+    def guard_write!
+      RedmineMcp::Core::ReadOnly.guard_write!
+    end
+
+    def error_result(key, **)
+      RedmineMcp::Core::Helpers.error_result(key, **)
+    end
+
+    def model_errors(record)
+      RedmineMcp::Core::Helpers.model_errors(record)
+    end
+
+    def conflict_if_stale(record, expected_updated_at)
+      RedmineMcp::Core::Helpers.conflict_if_stale(record, expected_updated_at)
+    end
+
+    def resolve_user_ref(user, value)
+      RedmineMcp::Core::Helpers.resolve_user_ref(user, value)
     end
 
   private

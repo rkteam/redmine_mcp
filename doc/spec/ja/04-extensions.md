@@ -21,10 +21,14 @@ MCP サーバーの重複や Redmine MCP コードの変更なしに、Redmine �
 ### 自動検出
 
 - Redmine 起動時（MCP が有効な場合）、システムはインストール済みのすべてのプラグインをチェックする。
-- 次のいずれかのパスに `mcp.rb` ファイルがある場合、プラグインは MCP 拡張を持つとみなされる:
-  - `lib/<plugin.id>/mcp.rb`;
-  - `lib/<plugin directory basename>/mcp.rb`;
-  - 識別子が `redmine_` で始まる場合は `lib/<plugin.id without redmine_ prefix>/mcp.rb`（典型例: `redmine_advanced_checklists` → `lib/advanced_checklists/mcp.rb`）。
+- 次のいずれかのソースが見つかった場合、プラグインは MCP 拡張を持つとみなされる:
+  - **プラグイン自体の拡張** — 次のいずれかのパスにある `mcp.rb` ファイル:
+    - `lib/<plugin.id>/mcp.rb`;
+    - `lib/<plugin directory basename>/mcp.rb`;
+    - 識別子が `redmine_` で始まる場合は `lib/<plugin.id without redmine_ prefix>/mcp.rb`（典型例: `redmine_advanced_checklists` → `lib/advanced_checklists/mcp.rb`）;
+  - **`redmine_mcp` 内蔵の統合** — 対象プラグインがインストールされている場合、`redmine_mcp` プラグイン内の `lib/redmine_mcp/extensions/<plugin.id>.rb` ファイル。
+- 1 つのプラグインに両方のソースが存在する場合、プラグイン自身の拡張を先に読み込む。内蔵統合は、その `mcp.rb` の `require` が失敗した場合のみ fallback として使用される。`mcp.rb` が正常に読み込まれた場合、内蔵統合は読み込まれず、tools/resources/prompts を再登録しない。
+- 内蔵統合はサードパーティの `mcp.rb` と同じ Extension API を使用する。別の登録メカニズムはない。
 - `redmine_mcp` プラグインは拡張として自身を読み込まない。
 - 設定で MCP 拡張チェックボックスがオフのプラグインはスキップされる。
 - 1 つのプラグインの拡張が失敗しても、拡張ファイルの構文エラーを含め、他のプラグインの読み込みはブロックされない。
@@ -99,7 +103,7 @@ Ruby API メソッドリストとコード例はプラグイン README および
 
 ## エッジケース
 
-- 拡張ファイルのないプラグインは無視される。
+- 拡張ファイルも内蔵統合もないプラグインは無視される。
 - 拡張ファイルが存在するが `require` が失敗する場合 — ログエントリ、拡張は読み込み済みとみなされない; ツール登録は成功した `require` の副作用である。
 - 存在しないツールの拡張試行 — 拡張登録時にエラー。
 - 設定で MCP 拡張チェックボックスがオフのプラグインは、拡張ファイルが存在しても読み込まれない。
@@ -117,6 +121,8 @@ Ruby API メソッドリストとコード例はプラグイン README および
 8. 空引数でのリソースとプロンプトの検出は、少なくとも 1 プロジェクトで権限がある場合引き続き利用可能である。
 9. `redmine_*` のような `plugin.id` と `lib/<id without redmine_ prefix>/mcp.rb` ファイルを持つプラグインは MCP 統合ありとみなされ、MCP 拡張設定に表示される。
 10. モジュール要件を持つ課題スコープツールは、別プロジェクトで権限を持っていても、そのモジュールを持つ可視プロジェクトがないユーザーの `tools/list` には含まれない。
+11. 独自の `mcp.rb` がなく、対象プラグインがインストールされ、`redmine_mcp` に `lib/redmine_mcp/extensions/<plugin.id>.rb` ファイルがあるプラグインは、MCP 統合を持つとみなされ、MCP 拡張設定に表示される。
+12. プラグインに独自の `mcp.rb` と `redmine_mcp` 内の内蔵統合の両方がある場合、`mcp.rb` が正常に読み込まれたときはその tools/resources/prompts が MCP で利用可能。`mcp.rb` の `require` が失敗した場合、ローダーは内蔵統合を試行する。
 
 ## 拡張の例
 

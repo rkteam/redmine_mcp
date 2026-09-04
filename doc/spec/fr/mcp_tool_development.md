@@ -1822,7 +1822,9 @@ Si le modèle peut réaliser l'intention avec un outil séparé sans deviner `ac
 
 ### 18.2. Inscription
 
-- Le fichier d'extension se charge au démarrage de Redmine : `lib/<plugin_id>/mcp.rb` (voir `ExtensionLoader`).
+- Le fichier d'extension se charge au démarrage de Redmine (voir `ExtensionLoader`) :
+  - dans un plugin tiers — `lib/<plugin_id>/mcp.rb` (et autres chemins pris en charge, voir [04-extensions.md](04-extensions.md)) ;
+  - dans une intégration intégrée de `redmine_mcp` — `lib/redmine_mcp/extensions/<plugin.id>.rb`, si le plugin cible n'a pas son propre `mcp.rb`, ou comme fallback si le chargement de son `mcp.rb` échoue.
 - Le module dans `mcp.rb` DOIT être `PluginName::Mcp` (`extend RedmineMcp::ExtensionApi`) : Zeitwerk dérive le nom du fichier.
 - Avant l'enregistrement DEVRAIT vérifier `mcp_extension_enabled?` — une dépendance dure sur `redmine_mcp` dans gemspec n'est pas requise.
 - Utilisez `register_tool_once` pour l'enregistrement afin que le rechargement ne duplique pas l'outil.

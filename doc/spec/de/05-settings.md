@@ -33,7 +33,7 @@ Einstellungen sind unter **Administration → Plugins → Redmine MCP → Config
 - Ein Textfeld für eine Liste von Identifikatoren („Disabled extensions“) und eine Referenzliste aller installierten Plugins werden nicht verwendet.
 - Eine separate Auto-Load-Erweiterungen-Checkbox wird nicht verwendet.
 - Stattdessen zeigt die Einstellungsseite eine Liste installierter Plugins mit MCP-Integration.
-- Ein Plugin gilt als MCP-integriert, wenn es eine Erweiterungsdatei nach derselben Konvention wie Auto-Load hat (siehe [04-extensions.md](04-extensions.md)).
+- Ein Plugin gilt als MCP-integriert, wenn eine Erweiterungsquelle nach der Auto-Load-Konvention gefunden wird: `mcp.rb` im Plugin oder die eingebaute Datei `lib/redmine_mcp/extensions/<plugin.id>.rb` in `redmine_mcp` (siehe [04-extensions.md](04-extensions.md)).
 - Das Plugin `redmine_mcp` erscheint nicht in dieser Liste.
 - Jedes Element hat eine Checkbox und den Plugin-Namen.
 - Die Listenlegende hat einen Check all / Uncheck all-Schalter wie bei Projekten und Trackern in einem Custom-Field-Formular.
@@ -68,7 +68,7 @@ Einstellungen sind unter **Administration → Plugins → Redmine MCP → Config
 ## Randfälle
 
 - Sind alle MCP-Erweiterungs-Checkboxen aktiviert (oder hat kein Plugin Integration), werden beim Aktivieren von MCP alle gefundenen Erweiterungen geladen.
-- Ein Plugin ohne MCP-Erweiterungsdatei erscheint nicht in der Liste und wird durch diese Einstellungen nicht deaktiviert.
+- Ein Plugin ohne MCP-Erweiterung (weder `mcp.rb` noch eingebaute Integration) erscheint nicht in der Liste und wird durch diese Einstellungen nicht deaktiviert.
 - Erhält ein Plugin später MCP-Integration, ist seine Checkbox standardmäßig aktiviert, sofern das Plugin nicht zuvor deaktiviert war.
 - Unbekannte oder entfernte Plugin-Identifikatoren in gespeicherten Deaktivierungslisten werden ignoriert.
 - Ein zuvor gespeichertes Extension-Auto-Load-Flag wird ignoriert: das Laden von Erweiterungen folgt Enable MCP.

@@ -387,7 +387,39 @@ Wird die Erweiterung aus dem `after_initialize` eines Plugins geladen, bevor `re
 
 `redmine_mcp` sucht beim Redmine-Start automatisch nach der Erweiterungsdatei in den unterstützten Pfaden.
 
-Prüfen Sie auf `redmine_mcp` nur am `mcp.rb`-Einstiegspunkt (üblicherweise `lib/<plugin>.rb` oder `after_initialize` des Plugin-Loaders). Aus `mcp.rb` geladene Dateien (`mcp_tools.rb`, `mcp_tools/*.rb` usw.) dürfen dieselben Prüfungen nicht wiederholen.
+Zwei Integrationsvarianten:
+
+1. **Erweiterung in einem Drittanbieter-Plugin** — `lib/<...>/mcp.rb` im Ziel-Plugin-Verzeichnis (siehe «Schnellstart»).
+2. **Eingebaute Integration in `redmine_mcp`** — `lib/redmine_mcp/extensions/<plugin.id>.rb` für Fälle, in denen das Drittanbieter-Plugin nicht geändert werden kann. Die Datei registriert tools/resources/prompts über dieselbe `RedmineMcp::ExtensionApi`. Hat das Ziel-Plugin bereits ein eigenes `mcp.rb`, wird die eingebaute Integration nur verwendet, wenn das Laden dieser Datei fehlschlägt.
+
+Beispiel einer eingebauten Integration:
+
+```ruby
+module RedmineMcp
+  module Extensions
+    module AdvancedSearch
+      extend RedmineMcp::ExtensionApi
+
+      plugin_id :advanced_search
+
+      if mcp_extension_enabled?
+        register_tool_once(
+          name: 'semantic_search_issues',
+          description: 'Semantic search for issues.',
+          input_schema: {type: 'object', properties: {}},
+          output_schema: RedmineMcp::SchemaNormalizer.envelope_output(type: 'object', properties: {}),
+          permission: :view_issues,
+          handler: ->(_args, _context) { {} }
+        )
+      end
+    end
+  end
+end
+```
+
+Hilfscode für eine Integration kann in `lib/redmine_mcp/extensions/<plugin_id>/` liegen und per explizitem `require` aus der Hauptdatei geladen werden.
+
+Prüfen Sie auf `redmine_mcp` nur am `mcp.rb`-Einstiegspunkt (üblicherweise `lib/<plugin>.rb` oder `after_initialize` des Plugin-Loaders). Aus `mcp.rb` geladene Dateien (`mcp_tools.rb`, `mcp_tools/*.rb` usw.) dürfen dieselben Prüfungen nicht wiederholen. Für eingebaute Integrationen in `redmine_mcp` ist keine separate Prüfung am Einstiegspunkt nötig: die Datei wird nur vom `ExtensionLoader` geladen.
 
 Rufen Sie `ExtensionLoader.load_plugin_extension` nicht manuell aus einem Drittanbieter-Plugin auf: `ExtensionLoader` ist ein interner `redmine_mcp`-Mechanismus. Ein bedingtes `require` Ihrer `mcp.rb` genügt; verhinderte die Plugin-Ladereihenfolge dieses `require`, greift der standardmäßige `redmine_mcp`-`ExtensionLoader` als Fallback.
 
