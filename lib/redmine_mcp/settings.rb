@@ -23,9 +23,15 @@ module RedmineMcp
 
     class << self
       def plugin_settings
-        return {} unless ActiveRecord::Base.connection.table_exists?('settings')
+        return {} unless settings_table_available?
 
         Setting.plugin_redmine_mcp || {}
+      end
+
+      def settings_table_available?
+        ActiveRecord::Base.connection.table_exists?('settings')
+      rescue ActiveRecord::AdapterError
+        false
       end
 
       def enabled?
