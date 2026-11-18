@@ -1,4 +1,11 @@
-# Redmine MCP
+# Redmine MCP - ChatGPT 연동 및 OAuth2 인증
+
+<!-- CART ChatGPT introduction -->
+
+이 MCP 플러그인을 사용하면 ChatGPT 및 기타 호환 AI 클라이언트가 OAuth2 Authorization Code와 PKCE S256을 통해 Redmine에 연결할 수 있습니다. 기존 API 키 인증도 계속 지원됩니다.
+
+이 통합은 Model Context Protocol(MCP)로 Redmine과 ChatGPT를 연결하여 Redmine 권한에 따라 프로젝트, 이슈, 작업 시간 및 Wiki 페이지를 다룰 수 있게 합니다. OAuth2는 개발 버전에 포함되어 있으며 운영 환경 호환성은 아직 검증되지 않았습니다. [ChatGPT 설정](../../../README.md#connecting-chatgpt).
+
 
 [웹사이트](https://redmine-kanban.com/)
 
@@ -69,6 +76,57 @@ MCP를 통해 작업할 모든 사용자는 API 키를 보유해야 합니다:
 ```
 X-Redmine-API-Key: <your_key>
 ```
+
+## OAuth2 인증
+
+이 확장 기능을 사용하면 ChatGPT와 같은 AI 클라이언트가 OAuth2 Authorization Code 및 PKCE S256을 통해 Redmine에 연결할 수 있습니다.
+
+### 요구 사항
+
+Redmine에 Doorkeeper를 설치하고 구성해야 합니다. MCP 서버는 HTTPS를 통해 접근할 수 있어야 합니다.
+
+### OAuth2 endpoints
+
+| Endpoint | Purpose |
+|---|---|
+| `/mcp` | MCP Streamable HTTP |
+| `/oauth/authorize` | OAuth2 authorization |
+| `/oauth/token` | OAuth2 token exchange |
+| `/.well-known/oauth-protected-resource` | Protected resource metadata |
+| `/.well-known/oauth-protected-resource/mcp` | MCP resource metadata |
+| `/.well-known/oauth-authorization-server` | Authorization server metadata |
+
+### ChatGPT 연결
+
+MCP URL: `https://your-redmine.example.com/mcp`
+
+- Authorization URL: `https://your-redmine.example.com/oauth/authorize`
+- Token URL: `https://your-redmine.example.com/oauth/token`
+- Scope: `use_mcp`
+- PKCE: `S256`
+
+`use_mcp` 범위, PKCE S256 및 MCP 클라이언트가 제공하는 리디렉션 URI로 OAuth2 클라이언트를 구성하세요.
+
+### 보안 및 호환성
+
+기존 API 키 인증은 계속 지원됩니다. Redmine 권한과 전역 `use_mcp` 권한이 적용됩니다.
+
+The public Redmine hostname and HTTPS protocol must match the external URL.
+Production compatibility has not yet been validated.
+
+### 개발 및 기여
+
+**Andrea Costa — CART Software**
+
+OAuth2 integration, authentication strategies, authorization policy,
+metadata discovery and tests.
+
+- Website: https://www.cartsoftware.eu
+- Contact: assistenza@cartsoftware.eu
+- GitHub: https://github.com/cartsofware/redmine_mcp
+
+This extension builds upon the original Redmine MCP project.
+Original authorship and licensing remain unchanged.
 
 ## MCP 클라이언트 연결
 

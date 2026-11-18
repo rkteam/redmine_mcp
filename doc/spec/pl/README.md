@@ -1,4 +1,11 @@
-# Redmine MCP
+# Redmine MCP - Integracja z ChatGPT przez OAuth2
+
+<!-- CART ChatGPT introduction -->
+
+Ta wtyczka MCP umożliwia ChatGPT i innym zgodnym klientom AI łączenie się z Redmine przez OAuth2 Authorization Code z PKCE S256. Uwierzytelnianie kluczem API pozostaje dostępne.
+
+Integracja łączy Redmine z ChatGPT przez Model Context Protocol (MCP), umożliwiając pracę z projektami, zgłoszeniami, wpisami czasu i stronami Wiki zgodnie z uprawnieniami Redmine. OAuth2 jest częścią wersji rozwojowej; zgodność produkcyjna nie została jeszcze zweryfikowana. [Konfiguracja ChatGPT](../../../README.md#connecting-chatgpt).
+
 
 [Strona](https://redmine-kanban.com/)
 
@@ -69,6 +76,57 @@ Przekaż klucz w nagłówku:
 ```
 X-Redmine-API-Key: <twój_klucz>
 ```
+
+## Uwierzytelnianie OAuth2
+
+To rozszerzenie umożliwia klientom AI, takim jak ChatGPT, łączenie się z Redmine za pomocą OAuth2 Authorization Code i PKCE S256.
+
+### Wymagania
+
+Doorkeeper musi być zainstalowany i skonfigurowany w Redmine. Serwer MCP musi być dostępny przez HTTPS.
+
+### OAuth2 endpoints
+
+| Endpoint | Purpose |
+|---|---|
+| `/mcp` | MCP Streamable HTTP |
+| `/oauth/authorize` | OAuth2 authorization |
+| `/oauth/token` | OAuth2 token exchange |
+| `/.well-known/oauth-protected-resource` | Protected resource metadata |
+| `/.well-known/oauth-protected-resource/mcp` | MCP resource metadata |
+| `/.well-known/oauth-authorization-server` | Authorization server metadata |
+
+### Połączenie z ChatGPT
+
+MCP URL: `https://your-redmine.example.com/mcp`
+
+- Authorization URL: `https://your-redmine.example.com/oauth/authorize`
+- Token URL: `https://your-redmine.example.com/oauth/token`
+- Scope: `use_mcp`
+- PKCE: `S256`
+
+Skonfiguruj klienta OAuth2 z zakresem `use_mcp`, PKCE S256 i adresem przekierowania podanym przez klienta MCP.
+
+### Bezpieczeństwo i zgodność
+
+Dotychczasowe uwierzytelnianie kluczem API pozostaje dostępne. Obowiązują uprawnienia Redmine i globalne uprawnienie `use_mcp`.
+
+The public Redmine hostname and HTTPS protocol must match the external URL.
+Production compatibility has not yet been validated.
+
+### Rozwój i wkład
+
+**Andrea Costa — CART Software**
+
+OAuth2 integration, authentication strategies, authorization policy,
+metadata discovery and tests.
+
+- Website: https://www.cartsoftware.eu
+- Contact: assistenza@cartsoftware.eu
+- GitHub: https://github.com/cartsofware/redmine_mcp
+
+This extension builds upon the original Redmine MCP project.
+Original authorship and licensing remain unchanged.
 
 ## Podłączenie klienta MCP
 

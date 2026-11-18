@@ -202,7 +202,7 @@ module RedmineMcp
           tracker_id: :tracker_id,
           status_id: :status_id,
           is_private: :is_private,
-          parent_issue_id: :parent_id,
+          parent_issue_id: :parent_issue_id,
           assigned_to_id: :assigned_to_id
         }.freeze
 

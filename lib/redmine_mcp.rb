@@ -17,7 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-Rails.autoloaders.each { |loader| loader.ignore(__dir__.to_s) } if Rails.configuration.respond_to?(:autoloader) && Rails.configuration.autoloader == :zeitwerk
+#Rails.autoloaders.each { |loader| loader.ignore(__dir__.to_s) } if Rails.configuration.respond_to?(:autoloader) && Rails.configuration.autoloader == :zeitwerk
+Rails.autoloaders.each do |loader|
+  loader.ignore(__dir__.to_s)
+end
 
 require "#{__dir__}/redmine_mcp/version"
 require "#{__dir__}/redmine_mcp/settings"
@@ -41,6 +44,11 @@ require "#{__dir__}/redmine_mcp/extension_api"
 require "#{__dir__}/redmine_mcp/internal_request"
 require "#{__dir__}/redmine_mcp/extension_loader"
 require "#{__dir__}/redmine_mcp/auth"
+require "#{__dir__}/redmine_mcp/authentication/api_key_strategy"
+require "#{__dir__}/redmine_mcp/authentication/oauth2_strategy"
+require "#{__dir__}/redmine_mcp/auth_strategy_resolver"
+require "#{__dir__}/redmine_mcp/authorization_policy"
+
 require "#{__dir__}/redmine_mcp/mcp_server"
 require "#{__dir__}/redmine_mcp/server_builder"
 require "#{__dir__}/redmine_mcp/core/output_schemas"

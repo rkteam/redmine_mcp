@@ -1,4 +1,11 @@
-# Redmine MCP
+# Redmine MCP: collegare Redmine a ChatGPT tramite OAuth2
+
+<!-- CART ChatGPT introduction -->
+
+Redmine MCP è un plugin per collegare Redmine a ChatGPT tramite il Model Context Protocol (MCP). Mette a disposizione dei client AI compatibili strumenti per lavorare con progetti, issue, attività registrate e pagine Wiki, nel rispetto dei permessi Redmine dell'utente. Supporta OAuth2 Authorization Code con PKCE S256 e l'autenticazione tramite chiave API.
+
+L'integrazione OAuth2 con ChatGPT è inclusa nella versione di sviluppo; la compatibilità in produzione non è ancora stata validata. Consulta [Collegamento di ChatGPT](#collegamento-di-chatgpt) per configurazione e prerequisiti.
+
 
 [Sito](https://redmine-kanban.com/)
 
@@ -28,7 +35,7 @@ Clonare il repository git nella directory `plugins` di Redmine:
 
 ```bash
 cd /path/to/redmine/plugins
-git clone https://github.com/rkteam/redmine_mcp.git
+git clone https://github.com/cartsofware/redmine_mcp.git
 ```
 
 Dalla directory radice di Redmine, installare le dipendenze e riavviare l'applicazione:
@@ -60,7 +67,7 @@ Riavviare Redmine.
 
 ### 5. Chiave API utente
 
-Ogni utente che lavorerà tramite MCP deve avere una chiave API:
+Gli utenti che si autenticano tramite chiave API devono ottenerne una:
 
 **Il mio account → Chiave di accesso API** (oppure tramite la REST API utente).
 
@@ -69,6 +76,57 @@ Passare la chiave nell'header:
 ```
 X-Redmine-API-Key: <la_tua_chiave>
 ```
+
+## Autenticazione OAuth2
+
+Questa estensione consente ai client AI come ChatGPT di collegarsi a Redmine mediante OAuth2 Authorization Code con PKCE S256.
+
+### Requisiti
+
+Redmine 7 include Doorkeeper per OAuth2. Abilitare l'API REST in **Amministrazione → Impostazioni → API**. Il server MCP deve essere raggiungibile tramite HTTPS. La compatibilità in produzione dell'integrazione OAuth2 non è ancora stata validata.
+
+### OAuth2 endpoints
+
+| Endpoint | Purpose |
+|---|---|
+| `/mcp` | MCP Streamable HTTP |
+| `/oauth/authorize` | OAuth2 authorization |
+| `/oauth/token` | OAuth2 token exchange |
+| `/.well-known/oauth-protected-resource` | Protected resource metadata |
+| `/.well-known/oauth-protected-resource/mcp` | MCP resource metadata |
+| `/.well-known/oauth-authorization-server` | Authorization server metadata |
+
+### Collegamento di ChatGPT
+
+MCP URL: `https://your-redmine.example.com/mcp`
+
+- Authorization URL: `https://your-redmine.example.com/oauth/authorize`
+- Token URL: `https://your-redmine.example.com/oauth/token`
+- Scope: `use_mcp`
+- PKCE: `S256`
+
+La registrazione dinamica del client (DCR) non è attualmente supportata. In Redmine, registrare manualmente un'applicazione OAuth2 pubblica in **Amministrazione → Applicazioni** (`/oauth/applications`), con scope `use_mcp`, PKCE S256 e l'URI di reindirizzamento esatto fornito da ChatGPT. Inserire il Client ID nelle impostazioni OAuth avanzate di ChatGPT; lasciare vuoto il Client Secret se l'interfaccia lo consente. Per tutti i passaggi, consulta la [guida in inglese](../../../README.md#register-the-chatgpt-oauth2-application).
+
+### Sicurezza e compatibilità
+
+L'autenticazione tramite API key rimane disponibile. Si applicano i permessi Redmine e il permesso globale `use_mcp`.
+
+The public Redmine hostname and HTTPS protocol must match the external URL.
+Production compatibility has not yet been validated.
+
+### Sviluppo e contributi
+
+**Andrea Costa — CART Software**
+
+OAuth2 integration, authentication strategies, authorization policy,
+metadata discovery and tests.
+
+- Website: https://www.cartsoftware.eu
+- Contact: assistenza@cartsoftware.eu
+- GitHub: https://github.com/cartsofware/redmine_mcp
+
+This extension builds upon the original Redmine MCP project.
+Original authorship and licensing remain unchanged.
 
 ## Connessione di un client MCP
 

@@ -23,16 +23,14 @@ module RedmineMcp
       def authenticate!(request)
         raise Unauthorized, I18n.t(:error_mcp_rest_api_disabled) unless Setting.rest_api_enabled?
 
-        key = request.headers['X-Redmine-API-Key'].presence
-        # rubocop:disable Rails/DynamicFindBy
-        user = User.find_by_api_key(key) if key.present?
-        # rubocop:enable Rails/DynamicFindBy
-        raise Unauthorized, I18n.t(:error_mcp_invalid_api_key) unless user&.active?
 
-        unless user.allowed_to?(:use_mcp, nil, global: true)
-          Logger.warn("permission denied for MCP access, user=#{user.login}")
-          raise Forbidden, I18n.t(:error_mcp_access_denied)
-        end
+
+        strategy = AuthStrategyResolver.resolve(request)
+        user = strategy.authenticate!(request)
+
+        AuthorizationPolicy.authorize!(user)
+
+
 
         user.remote_ip = request.remote_ip
         User.current = user

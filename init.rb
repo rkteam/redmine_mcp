@@ -36,4 +36,4 @@ Redmine::Plugin.register(:redmine_mcp) do
   permission :use_mcp, {mcp: [:handle]}, global: true, require: :loggedin
 end
 
-require File.expand_path('lib/redmine_mcp', __dir__)
+require File.join(File.realpath(__dir__), 'lib/redmine_mcp')

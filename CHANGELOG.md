@@ -1,5 +1,26 @@
 # Changelog
 
+## [Unreleased] - OAuth2 Integration
+
+### Added
+- OAuth2 Bearer token authentication using Doorkeeper.
+- Authorization Code flow with PKCE S256.
+- OAuth2 Protected Resource and Authorization Server metadata endpoints.
+- Authentication strategy resolver supporting OAuth2 and Redmine API keys.
+- Centralized authorization policy enforcing the global `use_mcp` permission.
+- Automated OAuth2 authentication and metadata tests.
+
+### Compatibility
+- Existing Redmine API key authentication remains supported.
+- OAuth2 requires Doorkeeper configuration.
+- Production compatibility has not yet been validated.
+
+### Contributors
+- **Andrea Costa — CART Software**: OAuth2 integration, authentication architecture, metadata discovery and tests.
+- Website: https://www.cartsoftware.eu
+- Contact: assistenza@cartsoftware.eu
+
+
 ## [1.1.0] - 2026-09-04
 
 ### Added

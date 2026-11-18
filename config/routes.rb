@@ -18,3 +18,11 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 match '/mcp', to: 'mcp#handle', via: [:get, :post, :delete]
+get '/.well-known/oauth-protected-resource',
+    to: 'mcp_oauth_metadata#protected_resource'
+
+get '/.well-known/oauth-protected-resource/mcp',
+    to: 'mcp_oauth_metadata#protected_resource'
+
+get '/.well-known/oauth-authorization-server',
+    to: 'mcp_oauth_metadata#authorization_server'

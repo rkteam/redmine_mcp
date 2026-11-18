@@ -29,6 +29,14 @@ class RedmineMcpToolWriteExecutionTest < RedmineMcpTestCase
   def setup
     super
     @admin = User.find(1)
+    @original_mcp_settings = Setting.plugin_redmine_mcp.deep_dup
+    Setting.plugin_redmine_mcp =
+      @original_mcp_settings.merge('read_only' => '0')
+  end
+
+  def teardown
+    Setting.plugin_redmine_mcp = @original_mcp_settings if @original_mcp_settings
+    super
   end
 
   test 'create_time_entry creates entry for project' do
@@ -131,6 +139,98 @@ class RedmineMcpToolWriteExecutionTest < RedmineMcpTestCase
     assert_equal before + 1, Issue.count
     assert_equal 'MCP write create issue', payload.dig(:data, :subject)
     assert_equal "#{Setting.protocol}://#{Setting.host_name}/issues/#{payload.dig(:data, :id)}", payload.dig(:data, :url)
+  end
+
+  test 'create_issue validates and creates subtask' do
+    parent = Issue.find(1)
+    args = {
+      project: 'ecookbook',
+      subject: 'MCP regression subtask',
+      tracker_id: 1,
+      status_id: 1,
+      parent_issue_id: parent.id
+    }
+
+    validation = invoke_mcp_tool(
+      'validate_issue_create',
+      user: @admin,
+      args: args
+    )
+
+    assert_mcp_ok(validation)
+
+    original_settings = Setting.plugin_redmine_mcp.deep_dup
+
+    begin
+      Setting.plugin_redmine_mcp =
+        original_settings.merge('read_only' => '0')
+
+      created = invoke_mcp_tool(
+        'create_issue',
+        user: @admin,
+        args: args
+      )
+    ensure
+      Setting.plugin_redmine_mcp = original_settings
+    end
+
+    assert_mcp_ok(created)
+
+    child = Issue.find(created.dig(:data, :id))
+    assert_equal parent.id, child.parent_id
+    assert_equal 'MCP regression subtask', child.subject
+  end
+
+  test 'create_issue rejects subtask without manage_subtasks' do
+    project, user, role = generate_stats_project(
+      permissions: %i[view_issues add_issues]
+    )
+
+    parent = Issue.generate!(
+      project: project,
+      author: user,
+      subject: 'MCP permission parent'
+    )
+
+    assert user.allowed_to?(:add_issues, project)
+    assert_not user.allowed_to?(:manage_subtasks, project)
+
+    args = {
+      project: project.identifier,
+      subject: 'MCP forbidden subtask',
+      tracker_id: 1,
+      parent_issue_id: parent.id
+    }
+
+    validation = invoke_mcp_tool(
+      'validate_issue_create',
+      user: user,
+      args: args
+    )
+
+    assert_mcp_ok(validation)
+    assert_equal false, validation.dig(:data, :valid)
+    assert_includes validation.dig(:data, :rejected_fields), 'parent_issue_id'
+
+    before = Issue.count
+
+    original_settings = Setting.plugin_redmine_mcp.deep_dup
+
+    begin
+      Setting.plugin_redmine_mcp =
+        original_settings.merge('read_only' => '0')
+
+      created = invoke_mcp_tool(
+        'create_issue',
+        user: user,
+        args: args
+      )
+
+      assert_equal false, created[:ok]
+      assert_equal before, Issue.count
+    ensure
+      Setting.plugin_redmine_mcp = original_settings
+    end
   end
 
   test 'update_issue updates subject' do

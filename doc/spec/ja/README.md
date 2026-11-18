@@ -1,4 +1,11 @@
-# Redmine MCP
+# Redmine MCP - ChatGPT 連携と OAuth2 認証
+
+<!-- CART ChatGPT introduction -->
+
+この MCP プラグインを使用すると、ChatGPT などの対応 AI クライアントから OAuth2 Authorization Code と PKCE S256 を利用して Redmine に接続できます。従来の API キー認証も引き続き利用できます。
+
+この連携は Model Context Protocol（MCP）で Redmine と ChatGPT を接続し、Redmine の権限に従ってプロジェクト、チケット、作業時間、Wiki ページを扱えます。OAuth2 は開発版に含まれており、本番環境での互換性はまだ検証されていません。[ChatGPT の設定](../../../README.md#connecting-chatgpt)。
+
 
 [ウェブサイト](https://redmine-kanban.com/)
 
@@ -69,6 +76,57 @@ MCP 経由で作業する各ユーザーは API キーを持つ必要があり�
 ```
 X-Redmine-API-Key: <your_key>
 ```
+
+## OAuth2 認証
+
+この拡張機能により、ChatGPT などの AI クライアントは OAuth2 Authorization Code と PKCE S256 を使用して Redmine に接続できます。
+
+### 要件
+
+Redmine に Doorkeeper をインストールして設定する必要があります。MCP サーバーは HTTPS で公開してください。
+
+### OAuth2 endpoints
+
+| Endpoint | Purpose |
+|---|---|
+| `/mcp` | MCP Streamable HTTP |
+| `/oauth/authorize` | OAuth2 authorization |
+| `/oauth/token` | OAuth2 token exchange |
+| `/.well-known/oauth-protected-resource` | Protected resource metadata |
+| `/.well-known/oauth-protected-resource/mcp` | MCP resource metadata |
+| `/.well-known/oauth-authorization-server` | Authorization server metadata |
+
+### ChatGPT の接続
+
+MCP URL: `https://your-redmine.example.com/mcp`
+
+- Authorization URL: `https://your-redmine.example.com/oauth/authorize`
+- Token URL: `https://your-redmine.example.com/oauth/token`
+- Scope: `use_mcp`
+- PKCE: `S256`
+
+スコープ `use_mcp`、PKCE S256、および MCP クライアントが指定するリダイレクト URI を使用して OAuth2 クライアントを設定してください。
+
+### セキュリティと互換性
+
+既存の API キー認証も引き続き使用できます。Redmine の権限とグローバル権限 `use_mcp` が適用されます。
+
+The public Redmine hostname and HTTPS protocol must match the external URL.
+Production compatibility has not yet been validated.
+
+### 開発と貢献
+
+**Andrea Costa — CART Software**
+
+OAuth2 integration, authentication strategies, authorization policy,
+metadata discovery and tests.
+
+- Website: https://www.cartsoftware.eu
+- Contact: assistenza@cartsoftware.eu
+- GitHub: https://github.com/cartsofware/redmine_mcp
+
+This extension builds upon the original Redmine MCP project.
+Original authorship and licensing remain unchanged.
 
 ## MCP クライアントの接続
 

@@ -1,4 +1,11 @@
-# Redmine MCP
+# Redmine MCP - 通过 OAuth2 集成 ChatGPT
+
+<!-- CART ChatGPT introduction -->
+
+此 MCP 插件允许 ChatGPT 和其他兼容的 AI 客户端通过 OAuth2 Authorization Code 和 PKCE S256 连接 Redmine，同时继续支持现有的 API 密钥认证。
+
+该集成通过 Model Context Protocol（MCP）连接 Redmine 和 ChatGPT，按照 Redmine 权限处理项目、议题、工时记录和 Wiki 页面。OAuth2 包含在开发版本中，生产环境兼容性尚未验证。[配置 ChatGPT](../../../README.md#connecting-chatgpt)。
+
 
 [网站](https://redmine-kanban.com/)
 
@@ -69,6 +76,57 @@ bundle install
 ```
 X-Redmine-API-Key: <your_key>
 ```
+
+## OAuth2 身份验证
+
+此扩展允许 ChatGPT 等 AI 客户端通过 OAuth2 Authorization Code 和 PKCE S256 安全连接到 Redmine。
+
+### 要求
+
+必须在 Redmine 中安装并配置 Doorkeeper。MCP 服务器必须通过 HTTPS 访问。
+
+### OAuth2 endpoints
+
+| Endpoint | Purpose |
+|---|---|
+| `/mcp` | MCP Streamable HTTP |
+| `/oauth/authorize` | OAuth2 authorization |
+| `/oauth/token` | OAuth2 token exchange |
+| `/.well-known/oauth-protected-resource` | Protected resource metadata |
+| `/.well-known/oauth-protected-resource/mcp` | MCP resource metadata |
+| `/.well-known/oauth-authorization-server` | Authorization server metadata |
+
+### 连接 ChatGPT
+
+MCP URL: `https://your-redmine.example.com/mcp`
+
+- Authorization URL: `https://your-redmine.example.com/oauth/authorize`
+- Token URL: `https://your-redmine.example.com/oauth/token`
+- Scope: `use_mcp`
+- PKCE: `S256`
+
+使用 `use_mcp` 范围、PKCE S256 和 MCP 客户端提供的重定向 URI 配置 OAuth2 客户端。
+
+### 安全性与兼容性
+
+现有 API 密钥认证仍然可用。Redmine 权限和全局 `use_mcp` 权限仍然适用。
+
+The public Redmine hostname and HTTPS protocol must match the external URL.
+Production compatibility has not yet been validated.
+
+### 开发与贡献
+
+**Andrea Costa — CART Software**
+
+OAuth2 integration, authentication strategies, authorization policy,
+metadata discovery and tests.
+
+- Website: https://www.cartsoftware.eu
+- Contact: assistenza@cartsoftware.eu
+- GitHub: https://github.com/cartsofware/redmine_mcp
+
+This extension builds upon the original Redmine MCP project.
+Original authorship and licensing remain unchanged.
 
 ## 连接 MCP 客户端
 
